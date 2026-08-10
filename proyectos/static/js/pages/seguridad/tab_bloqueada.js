@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
     "use strict";
-    const LOCK_KEY = "DISTRICC_ACTIVE_TAB_LOCK_V4";
+    const LOCK_KEY = "DISTRICC_ACTIVE_TAB_LOCK_V5";
     const TAB_KEY = "DISTRICC_CURRENT_TAB_ID";
-    const HANDOFF_KEY = "DISTRICC_TAB_NAVIGATION_HANDOFF_V4";
+    const HANDOFF_KEY = "DISTRICC_TAB_NAVIGATION_HANDOFF_V5";
     const BLOCKED_DESTINATION_KEY = "DISTRICC_BLOCKED_DESTINATION";
     const EXPIRES_MS = 9000;
     const notice = document.getElementById("tabLockNotice");

@@ -11,9 +11,9 @@
      * Esta versión conserva el control durante toda la navegación y entrega la
      * propiedad a la página siguiente de la MISMA pestaña.
      */
-    const LOCK_KEY = "DISTRICC_ACTIVE_TAB_LOCK_V4";
+    const LOCK_KEY = "DISTRICC_ACTIVE_TAB_LOCK_V5";
     const TAB_KEY = "DISTRICC_CURRENT_TAB_ID";
-    const HANDOFF_KEY = "DISTRICC_TAB_NAVIGATION_HANDOFF_V4";
+    const HANDOFF_KEY = "DISTRICC_TAB_NAVIGATION_HANDOFF_V5";
     const BLOCKED_DESTINATION_KEY = "DISTRICC_BLOCKED_DESTINATION";
 
     const HEARTBEAT_MS = 1800;
@@ -169,9 +169,13 @@
 
     function verifyOwnership(initialCheck) {
         const lock = readLock();
-        const sameInstance = Boolean(
+        const sameTab = Boolean(
             lock &&
-            lock.tabId === tabId &&
+            lock.tabId === tabId
+        );
+
+        const sameInstance = Boolean(
+            sameTab &&
             lock.instanceId === instanceId
         );
 
@@ -193,7 +197,12 @@
             lock.tabId === tabId
         );
 
-        if (!isActive(lock) || sameInstance || validSameTabNavigation || validBrowserHistoryNavigation) {
+        /*
+         * Una navegación, recarga o restauración de esta misma pestaña conserva
+         * el tabId. En ese caso recuperamos el bloqueo sin enviar al usuario a
+         * la pantalla de "otra pestaña". Solo bloqueamos un tabId diferente.
+         */
+        if (!isActive(lock) || sameTab || sameInstance || validSameTabNavigation || validBrowserHistoryNavigation) {
             claimLock();
             document.documentElement.style.visibility = "visible";
             return true;
@@ -303,7 +312,7 @@
         const lock = readLock();
         if (
             isActive(lock) &&
-            (lock.tabId !== tabId || lock.instanceId !== instanceId)
+            lock.tabId !== tabId
         ) {
             goToBlockedPage();
         }

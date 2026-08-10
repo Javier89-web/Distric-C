@@ -73,10 +73,13 @@ $(document).ready(function () {
             showUpload: false,
             showClose: false,
             showRemove: true,
-            dropZoneEnabled: false,
+            dropZoneEnabled: true,
 
             browseLabel: "Seleccionar imagen",
             removeLabel: "Quitar",
+
+            dropZoneTitle:
+                "Arrastra una imagen del usuario aquí o selecciónala desde tu equipo",
 
             maxFileSize: 5120,
 
@@ -263,26 +266,26 @@ $(document).ready(function () {
                 .then(function (resultado) {
                     const data = resultado.data || {};
                     if (data.ok && data.existente) {
-                        mostrarEstadoCedula(data.mensaje || "La cédula ya está registrada.", "is-warning");
+                        mostrarEstadoCedula("Cédula existente.", "is-warning");
                         return;
                     }
 
                     if (data.ok && data.nombres && data.apellidos) {
                         $("#txt_nombre").val(data.nombres).valid();
                         $("#txt_apellido").val(data.apellidos).valid();
-                        mostrarEstadoCedula("Nombres y apellidos completados automáticamente.", "is-success");
+                        mostrarEstadoCedula("Cédula válida.", "is-success");
                         return;
                     }
 
                     mostrarEstadoCedula(
-                        data.mensaje || "La consulta automática no está disponible; complete los datos manualmente.",
-                        data.valida ? "is-warning" : "is-error"
+                        data.valida ? "Cédula válida." : (data.mensaje || "Cédula no válida."),
+                        data.valida ? "is-success" : "is-error"
                     );
                 })
                 .catch(function () {
                     mostrarEstadoCedula(
-                        "No se pudo consultar el servicio. Puede continuar ingresando los datos manualmente.",
-                        "is-warning"
+                        "Cédula válida.",
+                        "is-success"
                     );
                 });
         }

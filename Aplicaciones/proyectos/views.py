@@ -797,7 +797,7 @@ def api_consultar_cedula(request, cedula):
             'existente': True,
             'nombres': existente.nombre_usuario,
             'apellidos': existente.apellido_usuario,
-            'mensaje': 'La cédula ya está registrada en el sistema.'
+            'mensaje': 'Cédula existente.'
         })
 
     url = (getattr(settings, 'CEDULA_LOOKUP_URL', '') or '').strip()
@@ -807,10 +807,7 @@ def api_consultar_cedula(request, cedula):
             'ok': False,
             'valida': True,
             'disponible': False,
-            'mensaje': (
-                'Cédula válida. La consulta externa es opcional y no está configurada; '
-                'puede ingresar nombres y apellidos manualmente.'
-            )
+            'mensaje': 'Cédula válida.'
         })
 
     headers = {'Accept': 'application/json'}
@@ -2077,7 +2074,7 @@ def _obtener_datos_producto_carga(
             codigo_catalogo = producto_actual.codigo_catalogo or ''
         else:
             return None, (
-                "Seleccione una marca y un producto válidos del inventario de agosto."
+                "Seleccione una marca y un producto válidos del registro."
             )
 
     else:

@@ -406,3 +406,35 @@
         width: 100%;
     }
 }
+
+.cloud-backup-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 34px;
+    padding: 6px 8px;
+    color: #166534;
+    font-size: 8px;
+    font-weight: 800;
+    white-space: nowrap;
+    background: #ecfdf3;
+    border: 1px solid #bbf7d0;
+    border-radius: 7px;
+}
+
+.cloud-backup-badge.is-pending {
+    color: #6b7280;
+    background: #f7f8fa;
+    border-color: #e2e5e9;
+}
+
+@media (max-width: 760px) {
+    .report-actions {
+        flex-wrap: wrap;
+    }
+
+    .cloud-backup-badge {
+        min-height: 32px;
+    }
+}

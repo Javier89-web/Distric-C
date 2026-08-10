@@ -296,52 +296,115 @@ $(document).ready(function () {
                     .addClass("valid");
             },
 
-            submitHandler: async function (form) {
-                if (esAdministrador()) {
-                    const resultado = window.Swal
-                        ? await Swal.fire({
-                            title: "Autorización para crear administrador",
-                            text: "Ingresa la contraseña de superusuario para confirmar la creación de esta cuenta administrativa.",
-                            input: "password",
-                            inputLabel: "Contraseña de superusuario",
-                            inputPlaceholder: "Ingresa la contraseña",
-                            showCancelButton: true,
-                            confirmButtonText: "Autorizar y guardar",
-                            cancelButtonText: "Cancelar",
-                            confirmButtonColor: "#d71920",
-                            cancelButtonColor: "#23262b",
-                            reverseButtons: true,
-                            allowOutsideClick: false,
-                            preConfirm: function (value) {
-                                if (!value) {
-                                    Swal.showValidationMessage("Ingresa la contraseña de superusuario.");
-                                    return false;
-                                }
-                                return value;
-                            }
-                        })
-                        : {
-                            isConfirmed: true,
-                            value: window.prompt("Contraseña de superusuario:")
-                        };
+            submitHandler: function (form) {
+                const enviarFormulario = function () {
+                    $("#btnGuardar")
+                        .prop("disabled", true)
+                        .html(
+                            '<span class="spinner-border spinner-border-sm"></span> ' +
+                            "Guardando..."
+                        );
 
-                    if (!resultado.isConfirmed || !resultado.value) {
-                        return;
-                    }
+                    // Envío nativo: evita volver a disparar jQuery Validate.
+                    HTMLFormElement.prototype.submit.call(form);
+                };
 
-                    $("#clave_superusuario").val(resultado.value);
-                } else {
+                if (!esAdministrador()) {
                     $("#clave_superusuario").val("");
+                    enviarFormulario();
+                    return false;
                 }
 
-                $("#btnGuardar")
-                    .prop("disabled", true)
-                    .html(
-                        '<span class="spinner-border spinner-border-sm"></span> ' +
-                        "Guardando..."
-                    );
+                const validarClave = async function (clave) {
+                    const url = form.dataset.validarSuperusuarioUrl;
+                    const csrf = form.querySelector('[name="csrfmiddlewaretoken"]').value;
+                    const cuerpo = new URLSearchParams();
+                    cuerpo.append("clave", clave);
 
-                form.submit();
+                    const response = await fetch(url, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+                            "X-CSRFToken": csrf,
+                            "Accept": "application/json"
+                        },
+                        body: cuerpo.toString(),
+                        credentials: "same-origin"
+                    });
+
+                    let data = {};
+                    try {
+                        data = await response.json();
+                    } catch (error) {
+                        data = {};
+                    }
+
+                    if (!response.ok || !data.ok) {
+                        throw new Error(
+                            data.mensaje ||
+                            "No se pudo validar la contraseña de superusuario."
+                        );
+                    }
+
+                    return clave;
+                };
+
+                if (window.Swal) {
+                    Swal.fire({
+                        title: "Autorización para crear administrador",
+                        text: "Ingresa la contraseña de superusuario para confirmar la creación de esta cuenta administrativa.",
+                        input: "password",
+                        inputLabel: "Contraseña de superusuario",
+                        inputPlaceholder: "Ingresa la contraseña",
+                        showCancelButton: true,
+                        confirmButtonText: "Autorizar y guardar",
+                        cancelButtonText: "Cancelar",
+                        confirmButtonColor: "#d71920",
+                        cancelButtonColor: "#23262b",
+                        reverseButtons: true,
+                        allowOutsideClick: false,
+                        showLoaderOnConfirm: true,
+                        preConfirm: async function (value) {
+                            if (!value) {
+                                Swal.showValidationMessage(
+                                    "Ingresa la contraseña de superusuario."
+                                );
+                                return false;
+                            }
+
+                            try {
+                                return await validarClave(value);
+                            } catch (error) {
+                                Swal.showValidationMessage(error.message);
+                                return false;
+                            }
+                        }
+                    }).then(function (resultado) {
+                        if (!resultado.isConfirmed || !resultado.value) {
+                            return;
+                        }
+
+                        $("#clave_superusuario").val(resultado.value);
+                        enviarFormulario();
+                    });
+                } else {
+                    const clave = window.prompt("Contraseña de superusuario:");
+                    if (!clave) {
+                        return false;
+                    }
+
+                    validarClave(clave)
+                        .then(function () {
+                            $("#clave_superusuario").val(clave);
+                            enviarFormulario();
+                        })
+                        .catch(function (error) {
+                            window.alert(error.message);
+                        });
+                }
+
+                // Impide el envío inicial mientras se solicita y valida la clave.
+                return false;
             }
         });
 

@@ -1232,6 +1232,42 @@ class Viaje(models.Model):
         return f"Viaje {self.id_viaje} - {self.usuario.nombre_usuario}"
 
 
+class ReportePDFViaje(models.Model):
+    UNIDADES = [
+        ('LITROS', 'LITROS'),
+        ('GALONES', 'GALONES'),
+    ]
+
+    id_reporte_pdf = models.AutoField(primary_key=True)
+    viaje = models.ForeignKey(
+        Viaje,
+        on_delete=models.CASCADE,
+        related_name='respaldos_pdf',
+    )
+    unidad_combustible = models.CharField(
+        max_length=10,
+        choices=UNIDADES,
+        default='LITROS',
+    )
+    nombre_archivo = models.CharField(max_length=255)
+    cloudinary_public_id = models.CharField(max_length=500)
+    cloudinary_url = models.URLField(max_length=1000)
+    tamanio_bytes = models.PositiveBigIntegerField(default=0)
+    fecha_respaldo = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-fecha_respaldo']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['viaje', 'unidad_combustible'],
+                name='uq_reporte_pdf_viaje_unidad',
+            )
+        ]
+
+    def __str__(self):
+        return f"PDF viaje {self.viaje_id} - {self.unidad_combustible}"
+
+
 class TramoViaje(models.Model):
     ESTADOS = [
         ('PLANIFICADO', 'PLANIFICADO'),

@@ -199,6 +199,15 @@
                                             <i class="bi bi-file-earmark-pdf"></i> PDF
                                         </button>
                                     </form>
+                                    {% if viaje.respaldos_cloud %}
+                                    <span class="cloud-backup-badge" title="Existe al menos un PDF respaldado en Cloudinary">
+                                        <i class="bi bi-cloud-check"></i> Respaldo
+                                    </span>
+                                    {% else %}
+                                    <span class="cloud-backup-badge is-pending" title="El respaldo se genera al finalizar o descargar el PDF">
+                                        <i class="bi bi-cloud"></i> Pendiente
+                                    </span>
+                                    {% endif %}
                                 </div>
                             </td>
                         </tr>

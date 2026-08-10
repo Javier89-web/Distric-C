@@ -70,6 +70,12 @@ urlpatterns = [
     ),
 
     path(
+        'api/administracion/validar-clave-superusuario/',
+        views.api_validar_clave_superusuario,
+        name='api_validar_clave_superusuario'
+    ),
+
+    path(
         'api/cedula/<str:cedula>/',
         views.api_consultar_cedula,
         name='api_consultar_cedula'

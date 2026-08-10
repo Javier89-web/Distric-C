@@ -786,6 +786,41 @@ def nuevousuario(request):
     return render(request, 'usuario/perfil/nuevousuario.html')
 
 
+@require_POST
+def api_validar_clave_superusuario(request):
+    """Valida la clave sensible sin enviar todavía el formulario completo.
+
+    Se usa para crear administradores: si la clave es incorrecta, el usuario
+    permanece en el formulario y no pierde los datos que ya ingresó. La misma
+    clave vuelve a comprobarse en ``guardarusuario`` antes de persistir nada.
+    """
+    acceso = _validar_acceso_admin_usuarios(request)
+    if acceso:
+        return JsonResponse(
+            {'ok': False, 'mensaje': 'No tienes permisos para realizar esta acción.'},
+            status=403,
+        )
+
+    clave_configurada = _clave_superusuario_administracion()
+    if not clave_configurada:
+        return JsonResponse(
+            {
+                'ok': False,
+                'mensaje': 'No se ha configurado la contraseña de autorización administrativa en Render.',
+            },
+            status=503,
+        )
+
+    clave_recibida = str(request.POST.get('clave', '') or '').strip()
+    if not clave_recibida or not secrets.compare_digest(clave_recibida, clave_configurada):
+        return JsonResponse(
+            {'ok': False, 'mensaje': 'Contraseña de superusuario incorrecta.'},
+            status=403,
+        )
+
+    return JsonResponse({'ok': True})
+
+
 def guardarusuario(request):
     acceso = _validar_acceso_admin_usuarios(request)
 

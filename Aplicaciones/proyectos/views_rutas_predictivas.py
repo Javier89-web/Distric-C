@@ -11,6 +11,7 @@ Flujo principal:
 from __future__ import annotations
 
 import json
+import logging
 import secrets
 from decimal import Decimal, InvalidOperation
 from urllib.parse import urlencode
@@ -37,6 +38,7 @@ from .models import (
     PrecioCombustible,
     PuntoGPSViaje,
     RendimientoVehiculoTipo,
+    ReportePDFViaje,
     RutaOpcion,
     TramoViaje,
     UbicacionVehiculo,
@@ -56,6 +58,7 @@ from .rutas_utils import (
     seleccionar_mejor_enganche_ruta,
 )
 from .reportes_viaje import construir_pdf_viaje
+from .respaldo_pdf_cloudinary import respaldar_pdf_viaje
 from .servicios_contexto_ruta import buscar_lugares_google, obtener_factores_ruta
 
 
@@ -69,6 +72,8 @@ COLORES_RUTAS = [
     "#0891b2",
 ]
 RADIO_LLEGADA_M = 120.0
+
+logger = logging.getLogger(__name__)
 
 
 def _decimal(valor, defecto="0") -> Decimal:
@@ -1310,6 +1315,34 @@ def _unidad_combustible_pdf(request):
     return 'GALONES' if unidad in {'GALON', 'GALONES', 'GAL'} else 'LITROS'
 
 
+def _tramos_para_pdf(viaje):
+    return list(
+        viaje.tramos
+        .select_related("ruta_seleccionada")
+        .prefetch_related(
+            "entregas_realizadas__detalle_carga__producto",
+            "puntos_gps",
+        )
+        .order_by("orden")
+    )
+
+
+def _respaldar_pdf_seguro(viaje, contenido, unidad):
+    try:
+        return respaldar_pdf_viaje(
+            viaje,
+            contenido,
+            unidad_combustible=unidad,
+        )
+    except Exception:
+        logger.exception(
+            "No se pudo respaldar en Cloudinary el PDF del viaje %s (%s).",
+            viaje.id_viaje,
+            unidad,
+        )
+        return None
+
+
 def finalizar_tramo(request, id_tramo):
     usuario = _usuario_actual(request)
     if not usuario:
@@ -1621,10 +1654,40 @@ def finalizar_viaje(request, id_viaje):
         viaje.plan_carga.estado = "COMPLETADO"
         viaje.plan_carga.save(update_fields=["estado", "fecha_actualizacion"])
 
+    # El respaldo no debe impedir el cierre del viaje. Se genera una copia
+    # canónica en litros y, si algo externo falla, el PDF puede reintentarse
+    # más tarde desde el botón de reportes.
+    respaldo_generado = None
+    try:
+        tramos_pdf = _tramos_para_pdf(viaje)
+        contenido_pdf = construir_pdf_viaje(
+            viaje,
+            tramos_pdf,
+            unidad_combustible="LITROS",
+        )
+        respaldo_generado = _respaldar_pdf_seguro(
+            viaje,
+            contenido_pdf,
+            "LITROS",
+        )
+    except Exception:
+        logger.exception(
+            "No se pudo construir el respaldo PDF al finalizar el viaje %s.",
+            viaje.id_viaje,
+        )
+
     request.session.pop("viaje_activo_id", None)
     request.session.pop("tramo_planificado_id", None)
     request.session.pop("tramo_activo_id", None)
     messages.success(request, "Viaje finalizado. Se consolidaron todos los tramos.")
+    if respaldo_generado:
+        messages.success(request, "El informe PDF quedó respaldado en Cloudinary.")
+    else:
+        messages.warning(
+            request,
+            "El viaje se guardó correctamente, pero el respaldo PDF en Cloudinary quedó pendiente. "
+            "Se volverá a intentar cuando descargues el informe.",
+        )
     if viaje.es_prueba_administrativa and _administrador_actual(request):
         _limpiar_modo_admin_rutas(request, limpiar_tramo=False)
         return redirect("admin_detalle_viaje", id_viaje=viaje.id_viaje)
@@ -1727,17 +1790,10 @@ def reporte_pdf_viaje(request, id_viaje):
         messages.error(request, "El viaje no existe o no te pertenece.")
         return redirect("historial")
 
-    tramos = list(
-        viaje.tramos
-        .select_related("ruta_seleccionada")
-        .prefetch_related(
-            "entregas_realizadas__detalle_carga__producto",
-            "puntos_gps",
-        )
-        .order_by("orden")
-    )
+    tramos = _tramos_para_pdf(viaje)
     unidad = _unidad_combustible_pdf(request)
     contenido = construir_pdf_viaje(viaje, tramos, unidad_combustible=unidad)
+    _respaldar_pdf_seguro(viaje, contenido, unidad)
     response = HttpResponse(contenido, content_type="application/pdf")
     sufijo = "galones" if unidad == "GALONES" else "litros"
     response["Content-Disposition"] = f'attachment; filename="viaje_{viaje.id_viaje}_distric_c_{sufijo}.pdf"'
@@ -1929,7 +1985,12 @@ def admin_reportes_viajes(request):
                 queryset=TramoViaje.objects.order_by("orden").prefetch_related(
                     "entregas_realizadas"
                 ),
-            )
+            ),
+            Prefetch(
+                "respaldos_pdf",
+                queryset=ReportePDFViaje.objects.order_by("-fecha_respaldo"),
+                to_attr="respaldos_cloud",
+            ),
         )
         .order_by("-fecha_creacion")
     )
@@ -2040,17 +2101,10 @@ def admin_reporte_pdf_viaje(request, id_viaje):
         messages.error(request, "Esta prueba administrativa pertenece a otro administrador.")
         return redirect(f"{reverse('admin_reportes_viajes')}?tipo=PRUEBA")
 
-    tramos = list(
-        viaje.tramos
-        .select_related("ruta_seleccionada")
-        .prefetch_related(
-            "entregas_realizadas__detalle_carga__producto",
-            "puntos_gps",
-        )
-        .order_by("orden")
-    )
+    tramos = _tramos_para_pdf(viaje)
     unidad = _unidad_combustible_pdf(request)
     contenido = construir_pdf_viaje(viaje, tramos, unidad_combustible=unidad)
+    _respaldar_pdf_seguro(viaje, contenido, unidad)
     response = HttpResponse(contenido, content_type="application/pdf")
     etiqueta = "prueba" if viaje.es_prueba_administrativa else "viaje"
     sufijo = "galones" if unidad == "GALONES" else "litros"

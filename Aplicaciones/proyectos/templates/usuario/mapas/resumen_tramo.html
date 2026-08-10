@@ -103,10 +103,10 @@
                     </button>
                 </form>
 
-                {% if modo_prueba_habilitado %}
+                {% if modo_prueba_habilitado and not puede_nueva_ruta_gps %}
                 <button type="button" id="btnNuevaRutaPrueba" class="route-btn route-btn-test">
-                    <i class="bi bi-wrench-adjustable"></i>
-                    Probar siguiente tramo sin GPS
+                    <i class="bi bi-shield-lock"></i>
+                    Generar ruta sin validación GPS
                 </button>
                 {% endif %}
 

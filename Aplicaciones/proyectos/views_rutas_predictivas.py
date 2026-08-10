@@ -328,8 +328,17 @@ def _clave_modo_prueba():
     return str(getattr(settings, "RUTAS_MODO_PRUEBA_CLAVE", "") or "")
 
 
-def _modo_prueba_habilitado():
-    return bool(getattr(settings, "DEBUG", False) and _clave_modo_prueba())
+def _modo_prueba_habilitado(request):
+    """Permite omitir GPS únicamente al administrador en modo de rutas.
+
+    La clave se obtiene de RUTAS_MODO_PRUEBA_CLAVE para no exponerla en el
+    repositorio. Un usuario normal nunca recibe ni puede usar esta opción.
+    """
+    return bool(
+        _administrador_actual(request)
+        and _modo_admin_rutas(request)
+        and _clave_modo_prueba()
+    )
 
 
 def _datos_origen_siguiente_tramo(ultimo, usar_gps=True):
@@ -1521,7 +1530,7 @@ def resumen_tramo(request, id_tramo):
         "distancia_destino_m": distancia_destino,
         "ultimo_punto_gps": ultimo_punto,
         "radio_llegada_m": int(RADIO_LLEGADA_M),
-        "modo_prueba_habilitado": _modo_prueba_habilitado(),
+        "modo_prueba_habilitado": _modo_prueba_habilitado(request),
     })
 
 
@@ -1555,12 +1564,17 @@ def nueva_ruta_viaje(request, id_viaje):
 
 @require_POST
 def nueva_ruta_viaje_prueba(request, id_viaje):
+    # Bypass GPS exclusivo del administrador. Aunque alguien conozca la URL,
+    # un usuario normal no puede ejecutar este endpoint.
+    if not _administrador_actual(request) or not _modo_admin_rutas(request):
+        return JsonResponse({"ok": False, "mensaje": "Acción exclusiva del administrador."}, status=403)
+    if not _modo_prueba_habilitado(request):
+        return JsonResponse({"ok": False, "mensaje": "La autorización administrativa no está configurada."}, status=403)
+
     usuario = _usuario_actual(request)
-    viaje = _viaje_usuario(usuario, id_viaje, es_prueba=_modo_admin_rutas(request)) if usuario else None
+    viaje = _viaje_usuario(usuario, id_viaje, es_prueba=True) if usuario else None
     if not viaje:
         return JsonResponse({"ok": False, "mensaje": "Viaje no válido."}, status=404)
-    if not _modo_prueba_habilitado():
-        return JsonResponse({"ok": False, "mensaje": "El modo de prueba no está habilitado."}, status=403)
 
     supplied = str((_json_request(request).get("clave") or ""))
     if not secrets.compare_digest(supplied, _clave_modo_prueba()):

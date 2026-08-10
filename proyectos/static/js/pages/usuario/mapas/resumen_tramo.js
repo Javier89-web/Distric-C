@@ -73,13 +73,13 @@
             testButton.disabled = true;
 
             const prompt = await Swal.fire({
-                title: "Modo de prueba",
-                text: "Ingresa la contraseña temporal. La prueba iniciará el siguiente tramo desde el destino B que acabas de completar, sin usar posiciones GPS anteriores.",
+                title: "Autorización administrativa",
+                text: "Esta opción permite generar la siguiente ruta sin validar la llegada por GPS. Ingresa la contraseña administrativa para continuar.",
                 input: "password",
                 inputLabel: "Contraseña",
-                inputPlaceholder: "Contraseña de prueba",
+                inputPlaceholder: "Contraseña administrativa",
                 showCancelButton: true,
-                confirmButtonText: "Continuar prueba",
+                confirmButtonText: "Generar ruta",
                 cancelButtonText: "Cancelar",
                 confirmButtonColor: "#23262b",
                 cancelButtonColor: "#6b7280",
@@ -110,7 +110,7 @@
                 });
                 const data = await response.json();
                 if (!response.ok || !data.ok) {
-                    throw new Error(data.mensaje || "No se pudo activar el modo de prueba.");
+                    throw new Error(data.mensaje || "No se pudo autorizar la generación sin GPS.");
                 }
 
                 if (
@@ -125,7 +125,7 @@
                 testRequestActive = false;
                 testButton.disabled = false;
                 await Swal.fire({
-                    title: "No autorizado",
+                    title: "Acceso no autorizado",
                     text: error.message,
                     icon: "error",
                     confirmButtonColor: "#23262b"

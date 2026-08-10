@@ -259,12 +259,13 @@ GOOGLE_MAPS_SERVER_API_KEY = os.environ.get("GOOGLE_MAPS_SERVER_API_KEY", "").st
 
 
 
-# Clave temporal para probar el encadenamiento B -> C sin estar físicamente
-# en el destino. En producción (DEBUG=False) permanece deshabilitada.
+# Clave administrativa para permitir continuar al siguiente tramo sin
+# validación GPS. En producción debe configurarse como variable de entorno
+# RUTAS_MODO_PRUEBA_CLAVE en Render; no se guarda la contraseña en GitHub.
 RUTAS_MODO_PRUEBA_CLAVE = os.environ.get(
     "RUTAS_MODO_PRUEBA_CLAVE",
-    "superusuario" if DEBUG else "",
-)
+    "",
+).strip()
 
 # Consulta opcional de cédula para autocompletar nombres/apellidos.
 # Puede apuntar a un proveedor autorizado usando una URL con {cedula}

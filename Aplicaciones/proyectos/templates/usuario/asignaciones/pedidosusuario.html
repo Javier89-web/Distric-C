@@ -1,0 +1,115 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/asignaciones/pedidosusuario.css' %}">
+{% endblock %}
+{% block contenido %}
+
+
+<div class="box">
+  <h3>Mis eventos asignados</h3>
+  <a href="/inicio/" class="btn-cancel">Menu</a>
+  <br>
+  <br>
+  <div id="calendar" data-events-url="{% url 'usuario_eventos_json' %}"></div>
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped" id="tbl_asignados">
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Inicio</th>
+          <th>Fin</th>
+          <th>Descripción</th>
+          <th>Asignado</th>
+          <th>Creado por</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in asignaciones %}
+        <tr>
+          <td>{{ a.evento.titulo }}</td>
+
+          <td>
+            {{ a.evento.inicio_fecha|date:"d-m-Y" }}
+            {{ a.evento.inicio_hora|time:"h:i A" }}
+          </td>
+
+          <td>
+            {% if a.evento.fin_fecha and a.evento.fin_hora %}
+            {{ a.evento.fin_fecha|date:"d-m-Y" }}
+            {{ a.evento.fin_hora|time:"h:i A" }}
+            {% elif a.evento.fin_fecha and not a.evento.fin_hora %}
+            {{ a.evento.fin_fecha|date:"d-m-Y" }} <span class="text-muted">Sin hora</span>
+            {% else %}
+            <span class="text-muted">Sin final</span>
+            {% endif %}
+          </td>
+
+          <td>{{ a.evento.descripcion|default:"-" }}</td>
+
+          <td>
+            {% if a.fecha_asignacion %}
+            {{ a.fecha_asignacion|date:"d-m-Y h:i A" }}
+            {% else %}
+            <span class="text-muted">-</span>
+            {% endif %}
+          </td>
+
+          <td>
+            {{ a.evento.creado_por.usuario.nombre_usuario }}
+            {{ a.evento.creado_por.usuario.apellido_usuario }}
+          </td>
+          <td>
+            {% if a.estado == "COMPLETADO" %}
+            <span class="badge bg-success">Completado</span>
+            {% elif a.estado == "ATRASADO" %}
+            <span class="badge bg-danger">Atrasado</span>
+            {% elif a.estado == "NO_COMPLETADO" %}
+            <span class="badge bg-info text-dark">No completado</span>
+            {% else %}
+            <span class="badge bg-secondary">Pendiente</span>
+            {% endif %}
+          </td>
+          <td>
+            <form method="POST" action="{% url 'usuario_cambiar_estado' a.id_usuario_evento %}" class="inline-form">
+              {% csrf_token %}
+              <input type="hidden" name="estado" value="COMPLETADO">
+              <button type="submit" class="btn btn-success btn-sm">Completado</button>
+            </form>
+            <a href="{% url 'usuario_motivo_atrasado' a.id_usuario_evento %}" class="btn btn-danger btn-sm">
+              Atrasado
+            </a>
+            <a href="{% url 'usuario_motivo_no_completado' a.id_usuario_evento %}" class="btn btn-info btn-sm">
+              No completado
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td class="text-center text-muted">No tienes eventos asignados.</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/usuario/asignaciones/pedidosusuario.js' %}" defer></script>
+{% endblock %}

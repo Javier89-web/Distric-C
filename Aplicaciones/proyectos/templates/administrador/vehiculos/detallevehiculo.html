@@ -1,0 +1,228 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/vehiculos/detallevehiculo.css' %}">
+{% endblock %}
+
+{% block contener %}
+
+
+<div class="detalle-page">
+
+    <div class="detalle-container">
+
+        <div class="page-header">
+
+            <h2>Detalle del Vehículo</h2>
+
+            <p>
+                Información técnica, capacidad y asignación actual del vehículo.
+            </p>
+
+        </div>
+
+        <div class="detail-card">
+
+            <div class="card-title">
+
+                <i class="bi bi-car-front-fill"></i>
+
+                <div>
+
+                    <strong>
+                        {{ vehiculo.matricula_vehiculo }}
+                    </strong>
+
+                    <span>
+                        {{ vehiculo.modelo_vehiculo|default:"Sin modelo registrado" }}
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="detail-grid">
+
+                <div class="detail-item">
+
+                    <span>Tipo de vehículo</span>
+
+                    <strong>
+                        {{ vehiculo.get_tipovehiculo_vehiculo_display }}
+                    </strong>
+
+                </div>
+
+                <div class="detail-item">
+
+                    <span>Combustible</span>
+
+                    <strong>
+                        {{ vehiculo.get_tipocombustible_vehiculo_display }}
+                    </strong>
+
+                </div>
+
+                <div class="detail-item">
+
+                    <span>Cédula del propietario</span>
+
+                    <strong>
+                        {{ vehiculo.numero_cedula|default:"—" }}
+                    </strong>
+
+                </div>
+
+                <div class="detail-item">
+
+                    <span>Número de motor</span>
+
+                    <strong>
+                        {{ vehiculo.numero_motor|default:"—" }}
+                    </strong>
+
+                </div>
+
+                <div class="detail-item full">
+
+                    <span>Número de chasis</span>
+
+                    <strong>
+                        {{ vehiculo.numero_chasis|default:"—" }}
+                    </strong>
+
+                </div>
+
+                <div class="detail-item">
+
+                    <span>Peso propio</span>
+
+                    <strong>
+                        {{ vehiculo.peso_auto|default:"—" }} toneladas
+                    </strong>
+
+                </div>
+
+                <div class="detail-item">
+
+                    <span>Capacidad máxima de carga</span>
+
+                    <strong>
+                        {% if vehiculo.capacidad_carga_kg %}
+                            {{ vehiculo.capacidad_carga_kg|floatformat:2 }} kg
+                        {% else %}
+                            —
+                        {% endif %}
+                    </strong>
+
+                </div>
+
+                <div class="detail-item">
+
+                    <span>Cilindraje</span>
+
+                    <strong>
+                        {{ vehiculo.cilindraje|default:"—" }}
+                    </strong>
+
+                </div>
+
+                <div class="detail-item">
+
+                    <span>Estado de asignación</span>
+
+                    {% if vehiculo.usuario %}
+
+                        <strong class="status status-assigned">
+                            <i class="bi bi-check-circle"></i>
+                            ASIGNADO
+                        </strong>
+
+                    {% else %}
+
+                        <strong class="status status-available">
+                            <i class="bi bi-dash-circle"></i>
+                            DISPONIBLE
+                        </strong>
+
+                    {% endif %}
+
+                </div>
+
+                <div class="detail-item full">
+
+                    <span>Usuario asignado</span>
+
+                    {% if vehiculo.usuario %}
+
+                        <strong>
+                            {{ vehiculo.usuario.nombre_usuario }}
+                            {{ vehiculo.usuario.apellido_usuario }}
+                            — {{ vehiculo.usuario.correo_usuario }}
+                        </strong>
+
+                    {% else %}
+
+                        <strong>
+                            Sin usuario asignado
+                        </strong>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+
+                <a
+                    href="{% url 'listadocarros' %}"
+                    class="form-btn btn-dark"
+                >
+                    <i class="bi bi-arrow-left"></i>
+                    Regresar
+                </a>
+
+                {% if vehiculo.usuario %}
+
+                    <form
+                        action="{% url 'desasignarvehiculoadmin' vehiculo.id_vehiculo %}"
+                        method="post"
+                        class="js-confirm-form" data-confirm-message="¿Deseas desasignar este vehículo?"
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="form-btn btn-outline"
+                        >
+                            <i class="bi bi-person-dash"></i>
+                            Desasignar
+                        </button>
+
+                    </form>
+
+                {% endif %}
+
+                <a
+                    href="{% url 'editarvehiculoadmin' vehiculo.id_vehiculo %}"
+                    class="form-btn btn-red"
+                >
+                    <i class="bi bi-pencil"></i>
+                    Editar vehículo
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/vehiculos/detallevehiculo.js' %}" defer></script>
+{% endblock %}

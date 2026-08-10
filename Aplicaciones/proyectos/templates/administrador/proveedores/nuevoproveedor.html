@@ -1,0 +1,48 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/proveedores/nuevoproveedor.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+  <h3>Nuevo Proveedor</h3>
+
+  <div class="contenedor-ver-eventos">
+    <a href="/listadoproveedor/">Listado de proveedor</a>
+  </div>
+
+  <form action="/guardarproveedor/" method="POST">
+    {% csrf_token %}
+
+    <label>Nombre</label>
+    <input type="text" name="txt_nombre" class="form-control" required>
+
+    <label>Dirección</label>
+    <input type="text" name="txt_direccion" class="form-control">
+
+    <label>Teléfono</label>
+    <input type="text" name="txt_telefono" class="form-control">
+
+    <label>Correo</label>
+    <input type="email" name="txt_correo" class="form-control" required>
+
+    <label>RUC</label>
+    <input type="text" name="txt_ruc" class="form-control" required>
+
+    <label>Estado</label>
+    <select name="txt_estado" class="form-control">
+      <option value="ACTIVO">ACTIVO</option>
+      <option value="INACTIVO">INACTIVO</option>
+    </select>
+
+    <div class="form-actions-top">
+      <button class="btn-save" type="submit">Guardar</button>
+    </div>
+
+  </form>
+</div>
+
+{% endblock %}

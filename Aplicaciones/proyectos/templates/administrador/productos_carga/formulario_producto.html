@@ -1,0 +1,150 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static l10n %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/productos_carga/formulario_producto.css' %}">
+{% endblock %}
+
+{% block contener %}
+<main class="product-form-page">
+    <div class="product-form-container">
+        <header class="product-form-header">
+            <div>
+                <h1>{% if modo == "editar" %}Editar producto{% else %}Registrar producto{% endif %}</h1>
+                <p>Datos básicos del producto y peso utilizado para calcular la carga del vehículo.</p>
+            </div>
+        </header>
+
+        <form
+            id="frmProductoCarga"
+            class="product-form-card"
+            action="{% if modo == 'editar' %}{% url 'procesareditarproductocarga' %}{% else %}{% url 'guardarproductocarga' %}{% endif %}"
+            method="post"
+            novalidate
+        >
+            {% csrf_token %}
+            {% if producto %}<input type="hidden" name="id_producto_carga" value="{{ producto.id_producto_carga }}">{% endif %}
+
+            <div class="product-mode-switch" role="radiogroup" aria-label="Origen del producto">
+                <label>
+                    <input type="radio" name="txt_modo_producto" value="CATALOGO" {% if modo_producto_actual != 'PERSONALIZADO' %}checked{% endif %}>
+                    <span><i class="bi bi-list-check"></i> Inventario de agosto</span>
+                </label>
+                <label>
+                    <input type="radio" name="txt_modo_producto" value="PERSONALIZADO" {% if modo_producto_actual == 'PERSONALIZADO' %}checked{% endif %}>
+                    <span><i class="bi bi-plus-square"></i> Producto propio</span>
+                </label>
+            </div>
+
+            <section id="catalogSection" class="product-section">
+                <div class="field-grid two-cols">
+                    <div class="field-group">
+                        <label for="txt_marca_catalogo">Marca</label>
+                        <select name="txt_marca_catalogo" id="txt_marca_catalogo">
+                            <option value="">Seleccione una marca</option>
+                            {% for marca in marcas_catalogo %}
+                            <option value="{{ marca|escape }}" {% if marca_catalogo_actual == marca %}selected{% endif %}>{{ marca }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label for="txt_catalogo_producto">Producto</label>
+                        <select name="txt_catalogo_producto" id="txt_catalogo_producto">
+                            <option value="">Seleccione una marca</option>
+                            {% if producto and not codigo_catalogo_actual and modo_producto_actual == 'CATALOGO' %}
+                            <option value="LEGACY-{{ producto.id_producto_carga }}"
+                                data-nombre="{{ producto.nombre_producto|escape }}"
+                                data-marca="{{ producto.marca_producto|default:'Registro anterior'|escape }}"
+                                data-precio="{% if producto.precio_referencia != None %}{{ producto.precio_referencia|unlocalize }}{% endif %}"
+                                data-peso-base="{{ producto.peso_unitario_kg|unlocalize }}"
+                                data-legacy="1" selected>Registro anterior · {{ producto.nombre_producto }}</option>
+                            {% endif %}
+                            {% for item in catalogo_productos %}
+                            <option value="{{ item.codigo }}"
+                                data-nombre="{{ item.nombre|escape }}"
+                                data-marca="{{ item.marca|escape }}"
+                                data-precio="{{ item.precio_referencia|unlocalize }}"
+                                data-peso-base="{{ item.peso_base_kg|unlocalize }}"
+                                {% if codigo_catalogo_actual == item.codigo %}selected{% endif %}>
+                                {{ item.descripcion }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="selected-product" id="catalogPreview" aria-live="polite">
+                    <strong id="vistaNombreProducto">Seleccione un producto</strong>
+                    <span id="vistaDetalleProducto">—</span>
+                </div>
+            </section>
+
+            <section id="customSection" class="product-section" hidden>
+                <div class="field-grid two-cols">
+                    <div class="field-group">
+                        <label for="txt_marca_personalizada_select">Marca</label>
+                        <select name="txt_marca_personalizada_select" id="txt_marca_personalizada_select">
+                            <option value="">Seleccione una marca</option>
+                            {% for marca in marcas_catalogo %}
+                            <option value="{{ marca|escape }}" {% if modo_producto_actual == 'PERSONALIZADO' and producto.marca_producto == marca %}selected{% endif %}>{{ marca }}</option>
+                            {% endfor %}
+                            <option value="OTRA" {% if modo_producto_actual == 'PERSONALIZADO' and producto and producto.marca_producto not in marcas_catalogo %}selected{% endif %}>Otra marca</option>
+                        </select>
+                    </div>
+                    <div class="field-group" id="otraMarcaGroup">
+                        <label for="txt_marca_personalizada">Nueva marca</label>
+                        <input type="text" name="txt_marca_personalizada" id="txt_marca_personalizada" maxlength="100"
+                            value="{% if modo_producto_actual == 'PERSONALIZADO' and producto and producto.marca_producto not in marcas_catalogo %}{{ producto.marca_producto }}{% endif %}"
+                            placeholder="Nombre de la marca">
+                    </div>
+                    <div class="field-group">
+                        <label for="txt_nombre_personalizado">Nombre del producto</label>
+                        <input type="text" name="txt_nombre_personalizado" id="txt_nombre_personalizado" maxlength="100"
+                            value="{% if modo_producto_actual == 'PERSONALIZADO' and producto %}{{ producto.nombre_producto }}{% endif %}"
+                            placeholder="Ejemplo: Agua sin gas 500 ml">
+                    </div>
+                    <div class="field-group">
+                        <label for="txt_precio_referencia">Precio de referencia <span>(opcional)</span></label>
+                        <input type="number" step="0.01" min="0" max="9999999.99" name="txt_precio_referencia" id="txt_precio_referencia"
+                            value="{% if modo_producto_actual == 'PERSONALIZADO' and producto.precio_referencia != None %}{{ producto.precio_referencia|unlocalize }}{% endif %}"
+                            placeholder="0.00" inputmode="decimal">
+                    </div>
+                </div>
+            </section>
+
+            <div class="form-divider"></div>
+
+            <div class="field-grid two-cols load-fields">
+                <div class="field-group">
+                    <label for="txt_presentacion_producto">Presentación de carga</label>
+                    <select name="txt_presentacion_producto" id="txt_presentacion_producto" required>
+                        <option value="">Seleccione una presentación</option>
+                        {% for valor, etiqueta in presentaciones %}
+                        <option value="{{ valor }}" {% if producto.presentacion_producto == valor %}selected{% endif %}>{{ etiqueta }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label for="txt_peso_unitario_kg">Peso para la carga (kg)</label>
+                    <input type="number" step="0.01" min="0.01" max="2000" name="txt_peso_unitario_kg" id="txt_peso_unitario_kg"
+                        value="{% if producto %}{{ producto.peso_unitario_kg|unlocalize }}{% endif %}" placeholder="Se calcula al seleccionar" inputmode="decimal" required>
+                    <small id="pesoEstimadoAyuda">Se propone automáticamente según el producto y presentación; puedes editarlo. Máximo 2000 kg.</small>
+                </div>
+            </div>
+
+            <div class="field-group observation-field">
+                <label for="txt_nota_producto">Observación <span>(opcional)</span></label>
+                <textarea name="txt_nota_producto" id="txt_nota_producto" maxlength="250" rows="3" placeholder="Ejemplo: transportar en jaba retornable">{{ producto.nota_producto|default:'' }}</textarea>
+            </div>
+
+            <div class="product-form-actions">
+                <a href="{% url 'listadoproductoscarga' %}" class="form-action dark"><i class="bi bi-arrow-left"></i> Regresar</a>
+                <button type="submit" class="form-action red" id="btnGuardarProducto"><i class="bi bi-check-circle"></i> Guardar producto</button>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/productos_carga/formulario_producto.js' %}" defer></script>
+{% endblock %}

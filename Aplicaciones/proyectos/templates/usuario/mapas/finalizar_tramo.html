@@ -1,0 +1,165 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block titulo %}Finalizar tramo | Distric C{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/rutas_base.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/finalizar_tramo.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<main class="finish-segment-page">
+    <div class="finish-segment-container">
+        <header class="route-page-header">
+            <span class="route-eyebrow">Viaje #{{ tramo.viaje.id_viaje }} · Tramo {{ tramo.orden }}</span>
+            <h1>Finalizar {{ tramo.origen_nombre }} → {{ tramo.destino_nombre }}</h1>
+            <p>Registra los productos entregados. El sistema descontará su peso para calcular el siguiente tramo.</p>
+        </header>
+
+        <form method="post" enctype="multipart/form-data" id="finishSegmentForm" class="finish-segment-card" novalidate>
+            {% csrf_token %}
+
+            <div class="finish-summary-grid">
+                <div><span>Carga al iniciar</span><strong>{{ tramo.carga_inicio_kg|floatformat:2 }} kg</strong></div>
+                <div><span>Distancia estimada</span><strong>{{ tramo.distancia_estimada_km|floatformat:2 }} km</strong></div>
+                <div><span>Distancia GPS</span><strong>{{ tramo.distancia_real_km|floatformat:2 }} km</strong></div>
+                <div><span>Destino</span><strong>{{ tramo.destino_nombre }}</strong></div>
+            </div>
+
+            {% if distancia_destino_m != None %}
+            <div class="arrival-check{% if distancia_destino_m <= radio_llegada_m %} arrival-ok{% else %} arrival-warning{% endif %}">
+                <i class="bi bi-geo-alt"></i>
+                <div>
+                    <strong>Verificación de llegada</strong>
+                    <span>Última ubicación registrada a {{ distancia_destino_m|floatformat:0 }} m del destino. Radio de referencia: {{ radio_llegada_m }} m.</span>
+                </div>
+            </div>
+            {% else %}
+            <div class="arrival-check arrival-warning">
+                <i class="bi bi-exclamation-triangle"></i>
+                <div>
+                    <strong>Sin punto GPS final</strong>
+                    <span>No se recibió una última ubicación. El cierre seguirá disponible para registrar la entrega, pero el siguiente tramo normal exigirá validación GPS.</span>
+                </div>
+            </div>
+            {% endif %}
+
+            <section class="delivery-products-section">
+                <div class="section-heading">
+                    <div>
+                        <h2>Productos entregados en {{ tramo.destino_nombre }}</h2>
+                        <p>Ingresa las unidades dejadas en este punto. Si no entregas nada, explica el motivo en la observación.</p>
+                    </div>
+                </div>
+
+                {% if filas_detalles %}
+                <div class="delivery-products-toolbar">
+                    <label class="delivery-search" for="deliveryProductSearch">
+                        <i class="bi bi-search"></i>
+                        <input type="search" id="deliveryProductSearch" placeholder="Buscar producto..." autocomplete="off">
+                    </label>
+                    <span>{{ filas_detalles|length }} producto{{ filas_detalles|length|pluralize }}</span>
+                </div>
+                {% endif %}
+
+                <div class="delivery-products-list" id="deliveryProductsList">
+                    {% for fila in filas_detalles %}
+                    <div class="delivery-product-row{% if fila.error %} has-error{% endif %}">
+                        <div class="delivery-product-info">
+                            <strong>{{ fila.producto_nombre }}</strong>
+                            <span>
+                                {% if fila.marca_producto %}{{ fila.marca_producto }} · {% endif %}
+                                {{ fila.presentacion_descriptiva }} ·
+                                {{ fila.peso_unitario_kg|floatformat:2 }} kg por {{ fila.unidad_carga }}
+                            </span>
+                        </div>
+                        <div class="delivery-product-available">
+                            <span>Disponible</span>
+                            <strong>
+                                {{ fila.cantidad_actual }}
+                                {% if fila.cantidad_actual == 1 %}
+                                    {{ fila.unidad_carga }}
+                                {% else %}
+                                    {{ fila.unidad_carga_plural }}
+                                {% endif %}
+                            </strong>
+                        </div>
+                        <div class="delivery-product-input">
+                            <label for="{{ fila.campo }}">Cantidad entregada</label>
+                            <input
+                                type="number"
+                                id="{{ fila.campo }}"
+                                name="{{ fila.campo }}"
+                                min="0"
+                                max="{{ fila.cantidad_actual }}"
+                                value="{{ fila.valor }}"
+                                data-unit-weight="{{ fila.peso_unitario_kg }}"
+                            >
+                            {% if fila.error %}<small>{{ fila.error }}</small>{% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-delivery">No quedan productos disponibles en la carga.</div>
+                    {% endfor %}
+                </div>
+
+                <div class="delivery-total-bar">
+                    <span>Peso que se descontará</span>
+                    <strong id="deliveryWeightTotal">0,00 kg</strong>
+                </div>
+            </section>
+
+            <div class="form-field note-field{% if errores.nota_finalizacion %} has-error{% endif %}">
+                <label for="nota_finalizacion">Observación de finalización</label>
+                <textarea id="nota_finalizacion" name="nota_finalizacion" rows="4" placeholder="Incidencias, entrega parcial o motivo de no entregar productos.">{{ nota_valor }}</textarea>
+                {% if errores.nota_finalizacion %}<small>{{ errores.nota_finalizacion }}</small>{% else %}<small>Es obligatoria únicamente cuando no se registra ninguna entrega.</small>{% endif %}
+            </div>
+
+            <div class="evidence-field{% if errores.evidencia_entrega %} has-error{% endif %}">
+                <div class="evidence-copy">
+                    <div class="evidence-icon"><i class="bi bi-camera-fill"></i></div>
+                    <div>
+                        <label for="evidencia_entrega">Fotografía de evidencia <strong>*</strong></label>
+                        <p>Adjunta una fotografía real de la entrega. Es obligatoria para cerrar el tramo y quedará guardada junto al reporte.</p>
+                    </div>
+                </div>
+                <label class="evidence-picker" for="evidencia_entrega">
+                    <i class="bi bi-image"></i>
+                    <span><strong>Seleccionar o tomar fotografía</strong><small>PNG, JPG, JPEG o WEBP · máximo 8 MB.</small></span>
+                    <em>Elegir imagen</em>
+                </label>
+                <input
+                    type="file"
+                    name="evidencia_entrega"
+                    id="evidencia_entrega"
+                    class="evidence-input"
+                    accept="image/png,image/jpeg,image/webp"
+                    capture="environment"
+                    required
+                >
+                {% if errores.evidencia_entrega %}<small class="evidence-error">{{ errores.evidencia_entrega }}</small>{% endif %}
+                <div class="evidence-preview" id="evidencePreview" hidden>
+                    <img id="evidencePreviewImage" alt="Vista previa de la evidencia seleccionada">
+                    <span id="evidencePreviewName"></span>
+                </div>
+            </div>
+
+            <div class="finish-segment-actions">
+                <a href="{% url 'recorrido_tramo' tramo.id_tramo_viaje %}" class="route-btn route-btn-outline">
+                    <i class="bi bi-arrow-left"></i>
+                    Volver al recorrido
+                </a>
+                <button type="submit" class="route-btn route-btn-red">
+                    Confirmar finalización
+                    <i class="bi bi-check-circle"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/usuario/mapas/finalizar_tramo.js' %}" defer></script>
+{% endblock %}

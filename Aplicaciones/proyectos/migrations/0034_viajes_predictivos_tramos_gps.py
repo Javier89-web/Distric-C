@@ -1,0 +1,187 @@
+from decimal import Decimal
+
+from django.db import migrations, models
+import django.db.models.deletion
+import django.utils.timezone
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('proyectos', '0033_datos_usuario_y_notas'),
+    ]
+
+    operations = [
+        migrations.RemoveConstraint(
+            model_name='rutaopcion',
+            name='uniq_viaje_tipo',
+        ),
+        migrations.AlterField(
+            model_name='viaje',
+            name='origen',
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name='viajes_origen',
+                to='proyectos.ubicacionvehiculo',
+            ),
+        ),
+        migrations.AlterField(
+            model_name='viaje',
+            name='destino',
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name='viajes_destino',
+                to='proyectos.lugarguardado',
+            ),
+        ),
+        migrations.AddField(
+            model_name='viaje',
+            name='plan_carga',
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name='viajes',
+                to='proyectos.plancarga',
+            ),
+        ),
+        migrations.AddField(
+            model_name='viaje',
+            name='estado',
+            field=models.CharField(
+                choices=[
+                    ('PLANIFICADO', 'PLANIFICADO'),
+                    ('EN_RUTA', 'EN RUTA'),
+                    ('COMPLETADO', 'COMPLETADO'),
+                    ('CANCELADO', 'CANCELADO'),
+                ],
+                default='PLANIFICADO',
+                max_length=20,
+            ),
+        ),
+        migrations.AddField(model_name='viaje', name='origen_nombre', field=models.CharField(blank=True, max_length=250)),
+        migrations.AddField(model_name='viaje', name='origen_latitud', field=models.DecimalField(blank=True, decimal_places=7, max_digits=10, null=True)),
+        migrations.AddField(model_name='viaje', name='origen_longitud', field=models.DecimalField(blank=True, decimal_places=7, max_digits=10, null=True)),
+        migrations.AddField(model_name='viaje', name='destino_final_nombre', field=models.CharField(blank=True, max_length=250)),
+        migrations.AddField(model_name='viaje', name='destino_final_latitud', field=models.DecimalField(blank=True, decimal_places=7, max_digits=10, null=True)),
+        migrations.AddField(model_name='viaje', name='destino_final_longitud', field=models.DecimalField(blank=True, decimal_places=7, max_digits=10, null=True)),
+        migrations.AddField(model_name='viaje', name='carga_inicial_kg', field=models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=11)),
+        migrations.AddField(model_name='viaje', name='carga_final_kg', field=models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=11)),
+        migrations.AddField(model_name='viaje', name='distancia_estimada_total_km', field=models.DecimalField(decimal_places=3, default=Decimal('0.000'), max_digits=11)),
+        migrations.AddField(model_name='viaje', name='distancia_real_total_km', field=models.DecimalField(decimal_places=3, default=Decimal('0.000'), max_digits=11)),
+        migrations.AddField(model_name='viaje', name='tiempo_estimado_total_min', field=models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=11)),
+        migrations.AddField(model_name='viaje', name='tiempo_real_total_min', field=models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=11)),
+        migrations.AddField(model_name='viaje', name='consumo_estimado_total_l', field=models.DecimalField(decimal_places=3, default=Decimal('0.000'), max_digits=11)),
+        migrations.AddField(model_name='viaje', name='consumo_real_total_l', field=models.DecimalField(blank=True, decimal_places=3, max_digits=11, null=True)),
+        migrations.AddField(model_name='viaje', name='costo_estimado_total', field=models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=11)),
+        migrations.AddField(model_name='viaje', name='costo_real_total', field=models.DecimalField(blank=True, decimal_places=2, max_digits=11, null=True)),
+        migrations.AddField(model_name='viaje', name='fecha_inicio', field=models.DateTimeField(blank=True, null=True)),
+        migrations.AddField(model_name='viaje', name='fecha_fin', field=models.DateTimeField(blank=True, null=True)),
+        migrations.AddField(model_name='viaje', name='notas_cierre', field=models.TextField(blank=True)),
+        migrations.AlterModelOptions(name='viaje', options={'ordering': ['-fecha_creacion']}),
+
+        migrations.CreateModel(
+            name='TramoViaje',
+            fields=[
+                ('id_tramo_viaje', models.AutoField(primary_key=True, serialize=False)),
+                ('orden', models.PositiveIntegerField()),
+                ('estado', models.CharField(choices=[('PLANIFICADO', 'PLANIFICADO'), ('PREPARADO', 'PREPARADO'), ('EN_RUTA', 'EN RUTA'), ('PAUSADO', 'PAUSADO'), ('COMPLETADO', 'COMPLETADO'), ('CANCELADO', 'CANCELADO')], default='PLANIFICADO', max_length=20)),
+                ('origen_nombre', models.CharField(max_length=250)),
+                ('origen_latitud', models.DecimalField(decimal_places=7, max_digits=10)),
+                ('origen_longitud', models.DecimalField(decimal_places=7, max_digits=10)),
+                ('destino_nombre', models.CharField(max_length=250)),
+                ('destino_latitud', models.DecimalField(decimal_places=7, max_digits=10)),
+                ('destino_longitud', models.DecimalField(decimal_places=7, max_digits=10)),
+                ('carga_inicio_kg', models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=11)),
+                ('peso_entregado_kg', models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=11)),
+                ('carga_restante_kg', models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=11)),
+                ('distancia_estimada_km', models.DecimalField(decimal_places=3, default=Decimal('0.000'), max_digits=11)),
+                ('distancia_real_km', models.DecimalField(decimal_places=3, default=Decimal('0.000'), max_digits=11)),
+                ('tiempo_estimado_min', models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=11)),
+                ('tiempo_real_min', models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=11)),
+                ('consumo_base_l', models.DecimalField(decimal_places=3, default=Decimal('0.000'), max_digits=11)),
+                ('consumo_estimado_l', models.DecimalField(decimal_places=3, default=Decimal('0.000'), max_digits=11)),
+                ('consumo_real_l', models.DecimalField(blank=True, decimal_places=3, max_digits=11, null=True)),
+                ('costo_estimado', models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=11)),
+                ('costo_real', models.DecimalField(blank=True, decimal_places=2, max_digits=11, null=True)),
+                ('trafico_factor', models.DecimalField(decimal_places=2, default=Decimal('1.00'), max_digits=5)),
+                ('trafico_descripcion', models.CharField(blank=True, max_length=100)),
+                ('clima_factor', models.DecimalField(decimal_places=2, default=Decimal('1.00'), max_digits=5)),
+                ('clima_descripcion', models.CharField(blank=True, max_length=150)),
+                ('temperatura_c', models.DecimalField(blank=True, decimal_places=2, max_digits=6, null=True)),
+                ('modelo_ia', models.CharField(blank=True, max_length=120)),
+                ('detalle_prediccion', models.JSONField(blank=True, default=dict)),
+                ('geometria_ruta', models.JSONField(blank=True, default=list)),
+                ('fecha_inicio', models.DateTimeField(blank=True, null=True)),
+                ('fecha_fin', models.DateTimeField(blank=True, null=True)),
+                ('fecha_creacion', models.DateTimeField(auto_now_add=True)),
+                ('nota_finalizacion', models.TextField(blank=True)),
+                ('ruta_seleccionada', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='seleccionada_en_tramos', to='proyectos.rutaopcion')),
+                ('viaje', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tramos', to='proyectos.viaje')),
+            ],
+            options={'ordering': ['orden']},
+        ),
+        migrations.AddConstraint(
+            model_name='tramoviaje',
+            constraint=models.UniqueConstraint(fields=('viaje', 'orden'), name='orden_unico_tramo_por_viaje'),
+        ),
+
+        migrations.AddField(model_name='rutaopcion', name='tramo', field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='opciones', to='proyectos.tramoviaje')),
+        migrations.AddField(model_name='rutaopcion', name='indice_opcion', field=models.PositiveSmallIntegerField(default=1)),
+        migrations.AddField(model_name='rutaopcion', name='es_recomendada', field=models.BooleanField(default=False)),
+        migrations.AddField(model_name='rutaopcion', name='seleccionada', field=models.BooleanField(default=False)),
+        migrations.AddField(model_name='rutaopcion', name='geometria', field=models.JSONField(blank=True, default=list)),
+        migrations.AddField(model_name='rutaopcion', name='fuente_ruta', field=models.CharField(default='Dijkstra + teoría de grafos', max_length=80)),
+        migrations.AddField(model_name='rutaopcion', name='consumo_base_litros', field=models.DecimalField(decimal_places=3, default=Decimal('0.000'), max_digits=11)),
+        migrations.AddField(model_name='rutaopcion', name='consumo_predicho_litros', field=models.DecimalField(decimal_places=3, default=Decimal('0.000'), max_digits=11)),
+        migrations.AddField(model_name='rutaopcion', name='carga_inicio_kg', field=models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=11)),
+        migrations.AddField(model_name='rutaopcion', name='score_optimizacion', field=models.DecimalField(decimal_places=5, default=Decimal('0.00000'), max_digits=12)),
+        migrations.AddField(model_name='rutaopcion', name='modelo_ia', field=models.CharField(blank=True, max_length=120)),
+        migrations.AddField(model_name='rutaopcion', name='detalle_prediccion', field=models.JSONField(blank=True, default=dict)),
+        migrations.AddField(model_name='rutaopcion', name='fecha_calculo', field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now), preserve_default=False),
+        migrations.AlterField(
+            model_name='rutaopcion',
+            name='tipo',
+            field=models.CharField(choices=[('OPTIMA', 'ÓPTIMA'), ('RECOMENDADA', 'RECOMENDADA'), ('ALTERNATIVA', 'ALTERNATIVA')], default='ALTERNATIVA', max_length=20),
+        ),
+        migrations.AlterModelOptions(name='rutaopcion', options={'ordering': ['tramo__orden', 'indice_opcion']}),
+        migrations.AddConstraint(
+            model_name='rutaopcion',
+            constraint=models.UniqueConstraint(fields=('tramo', 'indice_opcion'), name='indice_unico_opcion_por_tramo'),
+        ),
+
+        migrations.CreateModel(
+            name='PuntoGPSViaje',
+            fields=[
+                ('id_punto_gps', models.BigAutoField(primary_key=True, serialize=False)),
+                ('latitud', models.DecimalField(decimal_places=7, max_digits=10)),
+                ('longitud', models.DecimalField(decimal_places=7, max_digits=10)),
+                ('precision_m', models.DecimalField(blank=True, decimal_places=2, max_digits=9, null=True)),
+                ('velocidad_m_s', models.DecimalField(blank=True, decimal_places=3, max_digits=9, null=True)),
+                ('rumbo_grados', models.DecimalField(blank=True, decimal_places=2, max_digits=7, null=True)),
+                ('distancia_desde_anterior_m', models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=11)),
+                ('distancia_destino_m', models.DecimalField(blank=True, decimal_places=2, max_digits=11, null=True)),
+                ('fecha_hora', models.DateTimeField(default=django.utils.timezone.now)),
+                ('tramo', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='puntos_gps', to='proyectos.tramoviaje')),
+            ],
+            options={'ordering': ['fecha_hora']},
+        ),
+        migrations.CreateModel(
+            name='EntregaTramoViaje',
+            fields=[
+                ('id_entrega_tramo', models.AutoField(primary_key=True, serialize=False)),
+                ('producto_nombre', models.CharField(max_length=200)),
+                ('cantidad_entregada', models.PositiveIntegerField(default=0)),
+                ('peso_unitario_kg', models.DecimalField(decimal_places=2, max_digits=9)),
+                ('peso_entregado_kg', models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=11)),
+                ('fecha_entrega', models.DateTimeField(default=django.utils.timezone.now)),
+                ('detalle_carga', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='entregas_tramos', to='proyectos.detalleplancarga')),
+                ('tramo', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='entregas_realizadas', to='proyectos.tramoviaje')),
+            ],
+            options={'ordering': ['producto_nombre']},
+        ),
+    ]

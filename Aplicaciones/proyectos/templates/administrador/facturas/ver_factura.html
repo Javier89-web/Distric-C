@@ -1,0 +1,71 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/facturas/ver_factura.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+
+  <h4>Factura {{ factura.numero_factura }}</h4>
+
+  <div class="factura-info">
+    <p><strong>Cliente:</strong> {{ factura.cliente_nombre }}</p>
+    <p><strong>Numero de Cuenta:</strong> {{ factura.numero_cuenta }}</p>
+    <p><strong>Fecha:</strong> {{ factura.fecha_emision }}</p>
+    <p><strong>Estado:</strong> {{ factura.estado_factura }}</p>
+  </div>
+
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th>Cantidad</th>
+          <th>Precio Unitario</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in detalles %}
+        <tr>
+          <td>{{ d.descripcion_item }}</td>
+          <td>{{ d.cantidad }}</td>
+          <td>$ {{ d.precio_unitario }}</td>
+          <td>$ {{ d.subtotal }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="cell-centered">
+            No existen detalles asociados
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="totales">
+    <p><strong>Subtotal:</strong> $ {{ factura.subtotal }}</p>
+    <p><strong>IVA (15%):</strong> $ {{ factura.iva }}</p>
+    <h4><strong>Total:</strong> $ {{ factura.total }}</h4>
+  </div>
+  <div class="acciones-factura">
+
+    {% if factura.estado_factura == "PENDIENTE" %}
+    <a href="{% url 'registrar_pago' factura.id_factura %}" class="btn-pago">
+      Registrar Pago
+    </a>
+    {% endif %}
+
+    <a href="{% url 'factura_pdf' factura.id_factura %}" class="btn-pdf">
+      Descargar PDF
+    </a>
+
+  </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,463 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/vehiculos/formulario_vehiculo.css' %}">
+{% endblock %}
+
+{% block contener %}
+
+
+
+
+
+<div class="vehiculo-form-page">
+
+    <div class="vehiculo-form-container">
+
+        <div class="page-header">
+
+            {% if modo == "editar" %}
+
+                <h2>Editar Vehículo</h2>
+
+                <p>
+                    Actualiza la información y asignación del vehículo seleccionado.
+                </p>
+
+            {% else %}
+
+                <h2>Registrar Vehículo</h2>
+
+                <p>
+                    Agrega un vehículo al inventario y asígnalo ahora o posteriormente.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+        <div class="form-card">
+
+            <div class="form-card-title">
+
+                <i class="bi bi-car-front-fill"></i>
+
+                <h3>Información del vehículo</h3>
+
+            </div>
+
+            <form
+                id="frmVehiculoAdmin"
+                action="{% if modo == 'editar' %}{% url 'procesareditarvehiculoadmin' %}{% else %}{% url 'guardarvehiculoadmin' %}{% endif %}"
+                method="post"
+                enctype="multipart/form-data"
+                novalidate
+            >
+
+                {% csrf_token %}
+
+                {% if vehiculo %}
+
+                    <input
+                        type="hidden"
+                        name="id_vehiculo"
+                        value="{{ vehiculo.id_vehiculo }}"
+                    >
+
+                {% endif %}
+
+                <div class="row">
+
+                    <div class="col-12 mb-3">
+
+                        <label for="usuario" class="form-label">
+                            Usuario asignado
+                            <span class="optional">(opcional)</span>
+                        </label>
+
+                        <select
+                            name="usuario"
+                            id="usuario"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                Sin asignar
+                            </option>
+
+                            {% for usuario in usuarios_disponibles %}
+
+                                <option
+                                    value="{{ usuario.id_usuario }}"
+                                    {% if vehiculo and vehiculo.usuario_id == usuario.id_usuario %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ usuario.nombre_usuario }}
+                                    {{ usuario.apellido_usuario }}
+                                    — {{ usuario.correo_usuario }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                        <p class="form-hint">
+                            Puedes registrar el vehículo sin usuario y asignarlo después.
+                        </p>
+
+                    </div>
+
+                    <div class="col-12 mb-3">
+
+                        <label for="foto_vehiculo" class="form-label">
+                            Imagen del vehículo
+                            <span class="optional">(opcional)</span>
+                        </label>
+
+                        {% if vehiculo and vehiculo.foto_vehiculo %}
+
+                            <div class="foto-actual">
+
+                                <a
+                                    href="{{ vehiculo.foto_vehiculo.url }}"
+                                    target="_blank"
+                                    title="Ver imagen actual"
+                                >
+                                    <img
+                                        src="{{ vehiculo.foto_vehiculo.url }}"
+                                        alt="Imagen actual del vehículo {{ vehiculo.matricula_vehiculo }}"
+                                    >
+                                </a>
+
+                                <div>
+                                    <strong>Imagen actual</strong>
+
+                                    <span>
+                                        Selecciona otra imagen únicamente cuando quieras reemplazarla.
+                                    </span>
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+                        <input
+                            type="file"
+                            name="foto_vehiculo"
+                            id="foto_vehiculo"
+                            accept="image/png,image/jpeg,image/webp"
+                        >
+
+                        <div id="errorFotoVehiculo"></div>
+
+                        <p class="form-hint">
+                            Formatos permitidos: PNG, JPG, JPEG y WEBP. Tamaño máximo: 5 MB.
+                        </p>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_tipo_vehiculo" class="form-label">
+                            Tipo de vehículo
+                        </label>
+
+                        <select
+                            name="txt_tipo_vehiculo"
+                            id="txt_tipo_vehiculo"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                Seleccione una opción
+                            </option>
+
+                            <option
+                                value="AUTOMOVIL"
+                                {% if vehiculo.tipovehiculo_vehiculo == "AUTOMOVIL" %}selected{% endif %}
+                            >
+                                AUTOMÓVIL
+                            </option>
+
+                            <option
+                                value="TAXI"
+                                {% if vehiculo.tipovehiculo_vehiculo == "TAXI" %}selected{% endif %}
+                            >
+                                TAXI
+                            </option>
+
+                            <option
+                                value="MOTOCICLETA"
+                                {% if vehiculo.tipovehiculo_vehiculo == "MOTOCICLETA" %}selected{% endif %}
+                            >
+                                MOTOCICLETA
+                            </option>
+
+                            <option
+                                value="CAMION"
+                                {% if vehiculo.tipovehiculo_vehiculo == "CAMION" %}selected{% endif %}
+                            >
+                                CAMIÓN
+                            </option>
+
+                            <option
+                                value="CAMIONETA"
+                                {% if vehiculo.tipovehiculo_vehiculo == "CAMIONETA" %}selected{% endif %}
+                            >
+                                CAMIONETA
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_tipo_combustible" class="form-label">
+                            Tipo de combustible
+                        </label>
+
+                        <select
+                            name="txt_tipo_combustible"
+                            id="txt_tipo_combustible"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                Seleccione una opción
+                            </option>
+
+                            <option
+                                value="EXTRA"
+                                {% if vehiculo.tipocombustible_vehiculo == "EXTRA" %}selected{% endif %}
+                            >
+                                EXTRA
+                            </option>
+
+                            <option
+                                value="DIESEL"
+                                {% if vehiculo.tipocombustible_vehiculo == "DIESEL" %}selected{% endif %}
+                            >
+                                DIÉSEL
+                            </option>
+
+                            <option
+                                value="SUPER"
+                                {% if vehiculo.tipocombustible_vehiculo == "SUPER" %}selected{% endif %}
+                            >
+                                SÚPER
+                            </option>
+
+                            <option
+                                value="ECOPAIS"
+                                {% if vehiculo.tipocombustible_vehiculo == "ECOPAIS" %}selected{% endif %}
+                            >
+                                ECOPAÍS
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_matricula" class="form-label">
+                            Placa
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_matricula"
+                            id="txt_matricula"
+                            class="form-control"
+                            value="{{ vehiculo.matricula_vehiculo|default:'' }}"
+                            placeholder="Ejemplo: ABC-1234"
+                            maxlength="8"
+                        >
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_modelo" class="form-label">
+                            Modelo
+                            <span class="optional">(opcional)</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_modelo"
+                            id="txt_modelo"
+                            class="form-control"
+                            value="{{ vehiculo.modelo_vehiculo|default:'' }}"
+                            placeholder="Ejemplo: Chevrolet D-Max"
+                            maxlength="50"
+                        >
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_numero_cedula" class="form-label">
+                            Cédula del propietario
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_numero_cedula"
+                            id="txt_numero_cedula"
+                            class="form-control"
+                            value="{{ vehiculo.numero_cedula|default:'' }}"
+                            maxlength="10"
+                            inputmode="numeric"
+                            placeholder="Ingrese 10 dígitos"
+                        >
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_numero_motor" class="form-label">
+                            Número de motor
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_numero_motor"
+                            id="txt_numero_motor"
+                            class="form-control"
+                            value="{{ vehiculo.numero_motor|default:'' }}"
+                            maxlength="12"
+                            placeholder="Letras, números o guiones"
+                        >
+
+                    </div>
+
+                    <div class="col-12 mb-3">
+
+                        <label for="txt_numero_chasis" class="form-label">
+                            Número de chasis
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_numero_chasis"
+                            id="txt_numero_chasis"
+                            class="form-control"
+                            value="{{ vehiculo.numero_chasis|default:'' }}"
+                            maxlength="17"
+                            placeholder="Ingrese los 17 caracteres"
+                        >
+
+                        <p class="form-hint">
+                            No se permiten las letras I, O ni Q.
+                        </p>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_peso_auto" class="form-label">
+                            Peso propio del vehículo (t)
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_peso_auto"
+                            id="txt_peso_auto"
+                            class="form-control"
+                            value="{{ vehiculo.peso_auto|default:'' }}"
+                            inputmode="decimal"
+                            placeholder="Ejemplo: 1.5"
+                        >
+
+                        <p class="form-hint">
+                            Peso del vehículo vacío, expresado en toneladas.
+                        </p>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_capacidad_carga_kg" class="form-label">
+                            Capacidad máxima de carga (kg)
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_capacidad_carga_kg"
+                            id="txt_capacidad_carga_kg"
+                            class="form-control"
+                            value="{{ vehiculo.capacidad_carga_kg|default:'' }}"
+                            inputmode="decimal"
+                            placeholder="Ejemplo: 1000"
+                        >
+
+                        <p class="form-hint">
+                            Registra la capacidad real indicada para este vehículo.
+                        </p>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_cilindraje" class="form-label">
+                            Cilindraje
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_cilindraje"
+                            id="txt_cilindraje"
+                            class="form-control"
+                            value="{{ vehiculo.cilindraje|default:'' }}"
+                            inputmode="decimal"
+                            placeholder="Ejemplo: 2000"
+                        >
+
+                    </div>
+
+                </div>
+
+                <div class="form-actions">
+
+                    <a
+                        href="{% url 'listadocarros' %}"
+                        class="form-btn btn-back"
+                    >
+                        <i class="bi bi-arrow-left"></i>
+                        Regresar
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="form-btn btn-save"
+                        id="btnGuardarVehiculo"
+                    >
+                        <i class="bi bi-check-circle"></i>
+
+                        {% if modo == "editar" %}
+                            Guardar cambios
+                        {% else %}
+                            Registrar vehículo
+                        {% endif %}
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/vehiculos/formulario_vehiculo.js' %}" defer></script>
+{% endblock %}

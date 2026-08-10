@@ -1,0 +1,377 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/usuarios/listadousuario.css' %}">
+{% endblock %}
+
+{% block contener %}
+
+
+
+
+<div class="usuarios-page">
+
+    <div class="usuarios-container">
+
+        <!-- ENCABEZADO -->
+        <div class="page-header">
+
+            <h2>Control de Usuarios</h2>
+
+            <p>
+                Administración de usuarios, roles y estados de acceso al sistema.
+            </p>
+
+        </div>
+
+        <!-- RESUMEN -->
+        <div class="stats-grid">
+
+            <div class="stat-card">
+                <span>Total de usuarios</span>
+                <strong>{{ total_usuarios }}</strong>
+            </div>
+
+            <div class="stat-card">
+                <span>Total de administradores</span>
+                <strong>{{ total_admins }}</strong>
+            </div>
+
+        </div>
+
+        <!-- BUSCADOR, FILTROS Y CREAR -->
+        <div class="toolbar">
+
+            <div class="toolbar-left">
+
+                <div class="search-box">
+
+                    <i class="bi bi-search"></i>
+
+                    <input
+                        type="text"
+                        id="buscarUsuario"
+                        placeholder="Buscar por nombre o correo..."
+                        autocomplete="off"
+                    >
+
+                </div>
+
+                <select
+                    id="filtroRol"
+                    class="filter-select"
+                >
+                    <option value="">
+                        Todos los roles
+                    </option>
+
+                    <option value="USUARIO">
+                        Usuarios
+                    </option>
+
+                    <option value="ADMINISTRADOR">
+                        Administradores
+                    </option>
+                </select>
+
+                <select
+                    id="filtroEstado"
+                    class="filter-select"
+                >
+                    <option value="">
+                        Todos los estados
+                    </option>
+
+                    <option value="ACTIVO">
+                        Activos
+                    </option>
+
+                    <option value="INACTIVO">
+                        Inactivos
+                    </option>
+                </select>
+
+            </div>
+
+            {% if es_admin %}
+
+                <a
+                    href="/nuevousuario/"
+                    class="btn-create"
+                >
+                    <i class="bi bi-person-plus"></i>
+                    Crear usuario
+                </a>
+
+            {% endif %}
+
+        </div>
+
+        <!-- TABLA -->
+        <div class="table-card">
+
+            <div class="table-tools">
+
+                <span class="table-tools-title">
+                    Exportar información
+                </span>
+
+                <div id="botonesExportacion"></div>
+
+            </div>
+
+            <div class="table-responsive-admin">
+
+                <table
+                    class="usuarios-table"
+                    id="tablaUsuarios" data-columna-acciones="{% if es_admin %}8{% else %}-1{% endif %}"
+                >
+
+                    <thead>
+
+                        <tr>
+                            <th>Nombres</th>
+                            <th>Cédula</th>
+                            <th>Teléfono</th>
+                            <th>Correo</th>
+                            <th>Contraseña</th>
+                            <th>Foto</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+
+                            {% if es_admin %}
+                                <th>Acciones</th>
+                            {% endif %}
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for u in usuarios %}
+
+                            <tr
+                                data-rol="{{ u.tiporol }}"
+                                data-estado="{% if u.activo %}ACTIVO{% else %}INACTIVO{% endif %}"
+                            >
+
+                                <!-- NOMBRE -->
+                                <td>
+
+                                    <span class="usuario-nombre">
+
+                                        {{ u.nombre_usuario }}
+                                        {{ u.apellido_usuario }}
+
+                                    </span>
+
+                                </td>
+
+                                <!-- CÉDULA -->
+                                <td>
+                                    <span class="usuario-correo">
+                                        {{ u.cedula_usuario|default:"—" }}
+                                    </span>
+                                </td>
+
+                                <!-- TELÉFONO -->
+                                <td>
+                                    <span class="usuario-correo">
+                                        {{ u.telefono_usuario|default:"—" }}
+                                    </span>
+                                </td>
+
+                                <!-- CORREO -->
+                                <td>
+
+                                    <span class="usuario-correo">
+                                        {{ u.correo_usuario }}
+                                    </span>
+
+                                </td>
+
+                                <!-- CONTRASEÑA -->
+                                <td>
+
+                                    {% if u.tiporol == "ADMINISTRADOR" %}
+
+                                        <span class="sin-dato">
+                                            —
+                                        </span>
+
+                                    {% else %}
+
+                                        {{ u.contrasena_usuario }}
+
+                                    {% endif %}
+
+                                </td>
+
+                                <!-- FOTO -->
+                                <td>
+
+                                    {% if u.foto_usuario %}
+
+                                        <a
+                                            href="{{ u.foto_usuario.url }}"
+                                            target="_blank"
+                                            title="Ver fotografía"
+                                        >
+
+                                            <img
+                                                src="{{ u.foto_usuario.url }}"
+                                                alt="Foto de {{ u.nombre_usuario }}"
+                                                class="usuario-foto"
+                                            >
+
+                                        </a>
+
+                                    {% else %}
+
+                                        <span class="sin-dato">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <!-- ROL -->
+                                <td>
+
+                                    {% if u.tiporol == "ADMINISTRADOR" %}
+
+                                        <span class="role-badge role-admin">
+                                            ADMINISTRADOR
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="role-badge role-user">
+                                            USUARIO
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <!-- ESTADO -->
+                                <td>
+
+                                    {% if u.activo %}
+
+                                        <span class="status-badge status-active">
+                                            ACTIVO
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="status-badge status-inactive">
+                                            INACTIVO
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <!-- ACCIONES -->
+                                {% if es_admin %}
+
+                                    <td>
+
+                                        {% if u.tiporol != "ADMINISTRADOR" %}
+
+                                            <div class="user-actions">
+
+                                                {% if u.activo %}
+
+                                                    <a
+                                                        href="{% url 'editarusuarioadministrador' u.id_usuario %}"
+                                                        class="action-btn"
+                                                        title="Editar usuario"
+                                                    >
+                                                        <i class="bi bi-pencil"></i>
+                                                        Editar
+                                                    </a>
+
+                                                    <a
+                                                        href="{% url 'inactivarusuarioadministrador' u.id_usuario %}"
+                                                        class="action-btn action-outline confirmar-estado"
+                                                        data-titulo="¿Inactivar usuario?"
+                                                        data-texto="El usuario no podrá ingresar al sistema hasta que sea activado nuevamente."
+                                                        data-confirmar="Sí, inactivar"
+                                                        title="Inactivar usuario"
+                                                    >
+                                                        <i class="bi bi-person-x"></i>
+                                                        Inactivar
+                                                    </a>
+
+                                                {% else %}
+
+                                                    <a
+                                                        href="{% url 'activarusuarioadministrador' u.id_usuario %}"
+                                                        class="action-btn action-activate confirmar-estado"
+                                                        data-titulo="¿Activar usuario?"
+                                                        data-texto="El usuario recuperará el acceso al sistema."
+                                                        data-confirmar="Sí, activar"
+                                                        title="Activar usuario"
+                                                    >
+                                                        <i class="bi bi-person-check"></i>
+                                                        Activar
+                                                    </a>
+
+                                                {% endif %}
+
+                                                <form method="post" action="{% url 'eliminarusuarioadministrador' u.id_usuario %}" class="form-eliminar-usuario" data-usuario="{{ u.nombre_usuario }} {{ u.apellido_usuario }}">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="action-btn action-delete" title="Eliminar usuario">
+                                                        <i class="bi bi-trash"></i> Eliminar
+                                                    </button>
+                                                </form>
+
+                                            </div>
+
+                                        {% else %}
+
+                                            <span class="sin-dato">
+                                                —
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                {% endif %}
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/usuarios/listadousuario.js' %}" defer></script>
+{% endblock %}

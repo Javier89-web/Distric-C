@@ -1,0 +1,17 @@
+{
+  "id": "/",
+  "name": "Distric C - Rutas Inteligentes",
+  "short_name": "Distric C",
+  "description": "PWA para la optimización de recursos de combustible y rutas de transporte en Latacunga.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#23262b",
+  "background_color": "#f4f5f7",
+  "prefer_related_applications": false,
+  "icons": [
+    {"src": "/static/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "/static/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}

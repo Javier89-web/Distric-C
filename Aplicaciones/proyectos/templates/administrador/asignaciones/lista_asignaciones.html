@@ -1,0 +1,48 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/asignaciones/lista_asignaciones.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+  <h3 class="text-center my-2">Asignaciones de Eventos</h3>
+
+  <div class="table-responsive">
+    <table class="table table-bordered" id="tabla_asignaciones">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Evento</th>
+          <th>Fecha asignación</th>
+          <th>Descripción</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for a in asignaciones %}
+        <tr>
+          <td>{{ a.usuario.nombre_usuario }} {{ a.usuario.apellido_usuario }}</td>
+          <td>{{ a.evento.titulo }}</td>
+          <td>{{ a.fecha_asignacion|date:"d-m-Y H:i" }}</td>
+          <td>{{ a.descripcion_evento|default:"-" }}</td>
+          <td>
+            <a href="/asignaciones/editar/{{ a.id_usuario_evento }}" class="btn btn-warning btn-sm">Editar</a>
+            <a href="/asignaciones/eliminar/{{ a.id_usuario_evento }}" class="btn btn-danger btn-sm">Eliminar</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/asignaciones/lista_asignaciones.js' %}" defer></script>
+{% endblock %}

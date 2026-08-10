@@ -1,0 +1,45 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/calendario/editar_evento.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+  <h3>Editar Evento</h3>
+
+  <div class="card-form">
+    <form method="post">
+      {% csrf_token %}
+
+      <label>Título</label>
+      <input type="text" name="titulo" value="{{ evento.titulo }}" class="form-control" required>
+
+      <label>Inicio (fecha)</label>
+      <input type="date" name="inicio_fecha" value="{{ evento.inicio_fecha|date:'Y-m-d' }}" class="form-control"
+        required>
+
+      <label>Inicio (hora)</label>
+      <input type="time" name="inicio_hora" value="{{ evento.inicio_hora|time:'H:i' }}" class="form-control" required>
+
+      <label>Fin (fecha)</label>
+      <input type="date" name="fin_fecha" value="{{ evento.fin_fecha|date:'Y-m-d' }}" class="form-control">
+
+      <label>Fin (hora)</label>
+      <input type="time" name="fin_hora" value="{{ evento.fin_hora|time:'H:i' }}" class="form-control" required>
+
+      <label>Descripción</label>
+      <textarea name="descripcion" class="form-control" rows="3">{{ evento.descripcion }}</textarea>
+
+      <div class="acciones">
+        <button class="btn btn-success" type="submit">Guardar cambios</button>
+        <a href="/panel/calendario/lista/" class="btn btn-success">Cancelar</a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+{% endblock %}

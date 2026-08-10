@@ -1,0 +1,55 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/facturas/listadofacturas.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+  <h3>Listado de Facturas</h3>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped" id="tabla_facturas">
+      <thead>
+        <tr>
+          <th>N° Factura</th>
+          <th>Cliente</th>
+          <th>Fecha</th>
+          <th>Total</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for f in facturas %}
+        <tr>
+          <td>{{ f.numero_factura }}</td>
+          <td>{{ f.cliente_nombre }}</td>
+          <td>{{ f.fecha_emision|date:"Y-m-d" }}</td>
+          <td>$ {{ f.total }}</td>
+          <td>{{ f.estado_factura }}</td>
+          <td>
+            <a href="{% url 'ver_factura' f.id_factura %}" class="btn-ver">
+              Ver
+            </a>
+            <a href="{% url 'eliminar_factura' f.id_factura %}" class="btn-eliminar">
+              Eliminar
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+
+    </table>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/facturas/listadofacturas.js' %}" defer></script>
+{% endblock %}

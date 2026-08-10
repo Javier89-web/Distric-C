@@ -1,0 +1,56 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/calendario/listacalendarios.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+
+<div class="box">
+  <h3 class="text-center my-2">Listado de Eventos del Calendario</h3>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped" id="tbl_eventos">
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Inicio</th>
+          <th>Fin</th>
+          <th>Descripción</th>
+          <th>Creado por</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in eventos %}
+        <tr>
+          <td>{{ e.titulo }}</td>
+          <td>{{ e.inicio_fecha }} {{ e.inicio_hora|time:"h:i A" }}</td>
+          <td>
+            {% if e.fin_fecha %}
+            {{ e.fin_fecha }} {{ e.fin_hora|time:"h:i A" }}
+            {% else %}
+            <span class="text-muted">Sin final</span>
+            {% endif %}
+          </td>
+          <td>{{ e.descripcion|default:"-" }}</td>
+          <td>{{ e.creado_por.usuario.nombre_usuario }} {{ e.creado_por.usuario.apellido_usuario }}</td>
+          <td>
+            <a href="/panel/calendario/editar/{{ e.id_evento }}" class="btn btn-warning btn-sm">Editar</a>
+            <a href="/panel/calendario/eliminar/{{ e.id_evento }}" class="btn btn-danger btn-sm">Eliminar</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/calendario/listacalendarios.js' %}" defer></script>
+{% endblock %}

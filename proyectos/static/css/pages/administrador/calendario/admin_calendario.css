@@ -1,0 +1,112 @@
+body {
+    background: #ffffff;
+  }
+
+
+  .box {
+    width: 92%;
+    max-width: 1000px;
+    margin: 30px auto;
+    background: #06080D;
+    color: #F3F4F6;
+    padding: 22px;
+    border-radius: 18px;
+    margin-left: 380px;
+    border: 1px solid #1F2937;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  }
+
+
+  #calendar {
+    background: #ffffff;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid #E5E7EB;
+  }
+
+
+  .form-box {
+    margin-top: 18px;
+    background: #111827;
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid #1F2937;
+  }
+
+  .form-box h3 {
+    color: #F3F4F6;
+    margin-bottom: 12px;
+  }
+
+  .form-box label {
+    color: #A1A1AA;
+    font-weight: 600;
+    margin-top: 10px;
+    display: block;
+  }
+
+  .form-box input,
+  .form-box textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #1F2937;
+    margin-top: 6px;
+    margin-bottom: 12px;
+    background: #06080D;
+    color: #F3F4F6;
+    outline: none;
+  }
+
+  .form-box input:focus,
+  .form-box textarea:focus {
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+  }
+
+  /* BOTONES */
+  .btn {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+  }
+
+  .btn-primary {
+    background: #3B82F6;
+    color: #ffffff;
+  }
+
+  .btn-primary:hover {
+    background: #2563EB;
+  }
+
+  .btn-back {
+    background: #EF4444;
+    color: #fff;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  /* BOTÓN VER EVENTOS */
+  .contenedor-ver-eventos {
+    text-align: right;
+    margin-bottom: 20px;
+  }
+
+  .contenedor-ver-eventos a.btn {
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+
+  @media (max-width: 992px) {
+    .box {
+      margin-left: 0;
+      width: 96%;
+      max-width: 100%;
+    }
+  }

@@ -1,0 +1,432 @@
+/* ==========================================================
+           ESTILO ACTUAL DEL NAVBAR Y MENÚ
+           NO TOCAR LÓGICA, SOLO VISUAL
+        ========================================================== */
+
+        .navbar {
+            background: #23262b !important;
+            min-height: 58px !important;
+            height: 58px !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            box-shadow: none !important;
+            border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
+        .navbar .container-fluid {
+            min-height: 58px !important;
+            height: 58px !important;
+            padding-left: 18px !important;
+            padding-right: 18px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+        }
+
+        .navbar-brand {
+            color: #ffffff !important;
+            font-size: 20px !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.2px !important;
+            margin: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
+        .navbar-brand span {
+            color: #d71920 !important;
+        }
+
+        .navbar-toggler {
+            width: 42px !important;
+            height: 42px !important;
+            min-width: 42px !important;
+            min-height: 42px !important;
+            border-radius: 12px !important;
+            border: 1px solid rgba(255,255,255,0.14) !important;
+            background: rgba(255,255,255,0.06) !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            position: relative !important;
+        }
+
+        .navbar-toggler:hover {
+            background: rgba(255,255,255,0.10) !important;
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: none !important;
+        }
+
+        .navbar-toggler-icon {
+            width: 22px !important;
+            height: 22px !important;
+            background-size: 22px 22px !important;
+            margin: 0 auto !important;
+            display: block !important;
+        }
+
+        .offcanvas.text-bg-dark,
+        .offcanvas.bg-dark {
+            background: #23262b !important;
+            box-shadow: none !important;
+            border-left: 1px solid rgba(255,255,255,0.06) !important;
+        }
+
+        .offcanvas-header {
+            padding: 24px 24px 12px !important;
+        }
+
+        .offcanvas-title {
+            font-size: 25px !important;
+            font-weight: 700 !important;
+            color: #ffffff !important;
+            letter-spacing: 0 !important;
+        }
+
+        .offcanvas-title::before {
+            content: "DISTRIC C";
+            display: block;
+            color: #d71920;
+            font-size: 11px;
+            letter-spacing: 3px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .offcanvas-body {
+            padding: 14px 24px 26px !important;
+        }
+
+        .offcanvas .nav-link {
+            font-size: 19px !important;
+            font-weight: 600 !important;
+            color: #eeeeee !important;
+            padding: 12px 0 !important;
+            letter-spacing: 0 !important;
+            text-transform: none !important;
+            background: transparent !important;
+        }
+
+        .offcanvas .nav-link i {
+            color: #ffffff !important;
+            font-size: 20px !important;
+            margin-right: 8px !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+
+        .offcanvas .nav-link:hover,
+        .offcanvas .nav-link.active {
+            color: #ffffff !important;
+            background: transparent !important;
+        }
+
+        .offcanvas .nav-link[href="/logout/"] {
+            color: #ffffff !important;
+            background: #30343a !important;
+            border-radius: 10px !important;
+            padding: 14px 18px !important;
+            margin-top: 22px !important;
+            text-align: center !important;
+            justify-content: center !important;
+            font-weight: 700 !important;
+        }
+
+        .offcanvas .nav-link[href="/logout/"] i {
+            color: #d71920 !important;
+        }
+
+        .offcanvas .nav-link[href="/logout/"]:hover {
+            background: #393e45 !important;
+        }
+
+        .btn-close-white {
+            width: 34px !important;
+            height: 34px !important;
+            opacity: 0.85 !important;
+        }
+
+        /* ==========================================================
+           CLASES GENERALES DISTRIC C
+           Estas clases NO afectan nada si no las usas en cada interfaz.
+           Sirven para reutilizar diseño después.
+        ========================================================== */
+
+        .dc-page {
+            min-height: 100vh;
+            background: #f4f5f7;
+            padding: 80px 20px 40px;
+        }
+
+        .dc-page-dark {
+            min-height: 100vh;
+            background: #000000;
+            padding: 80px 20px 40px;
+        }
+
+        .dc-container {
+            width: 100%;
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .dc-container-sm {
+            width: 100%;
+            max-width: 720px;
+            margin: auto;
+        }
+
+        .dc-card {
+            background: #ffffff;
+            color: #111111;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 8px 22px rgba(0,0,0,.08);
+        }
+
+        .dc-card-dark {
+            background: #23262b;
+            color: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255,255,255,.08);
+        }
+
+        .dc-brand {
+            color: #d71920;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .dc-title {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 800;
+            color: #111111;
+        }
+
+        .dc-title-dark {
+            color: #ffffff;
+        }
+
+        .dc-subtitle {
+            margin: 6px 0 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .dc-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .dc-field {
+            margin-bottom: 14px;
+        }
+
+        .dc-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 700;
+            color: #374151;
+        }
+
+        .dc-input {
+            width: 100%;
+            padding: 11px 13px;
+            border-radius: 10px;
+            border: 1px solid #d1d5db;
+            background: #ffffff;
+            color: #111111;
+            outline: none;
+        }
+
+        .dc-input:focus {
+            border-color: #2563eb;
+        }
+
+        .dc-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 11px 18px;
+            border-radius: 10px;
+            border: none;
+            text-decoration: none;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .dc-btn-red {
+            background: #d71920;
+            color: #ffffff !important;
+        }
+
+        .dc-btn-blue {
+            background: #2563eb;
+            color: #ffffff !important;
+        }
+
+        .dc-btn-dark {
+            background: #111111;
+            color: #ffffff !important;
+        }
+
+        .dc-btn-gray {
+            background: #e5e7eb;
+            color: #111111 !important;
+        }
+
+        .dc-btn:hover {
+            opacity: .88;
+        }
+
+        .dc-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .dc-badge-red {
+            background: rgba(215,25,32,.12);
+            color: #d71920;
+        }
+
+        .dc-badge-blue {
+            background: rgba(37,99,235,.12);
+            color: #2563eb;
+        }
+
+        .dc-badge-green {
+            background: rgba(22,163,74,.12);
+            color: #16a34a;
+        }
+
+        .dc-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                min-height: 56px !important;
+                height: 56px !important;
+            }
+
+            .navbar .container-fluid {
+                min-height: 56px !important;
+                height: 56px !important;
+                padding-left: 16px !important;
+                padding-right: 16px !important;
+            }
+
+            .navbar-brand {
+                font-size: 18px !important;
+            }
+
+            .navbar-toggler {
+                width: 40px !important;
+                height: 40px !important;
+                min-width: 40px !important;
+                min-height: 40px !important;
+            }
+
+            .navbar-toggler-icon {
+                width: 21px !important;
+                height: 21px !important;
+                background-size: 21px 21px !important;
+            }
+
+            .offcanvas .nav-link {
+                font-size: 20px !important;
+                padding: 13px 0 !important;
+            }
+
+            .dc-page,
+            .dc-page-dark {
+                padding: 70px 14px 30px;
+            }
+
+            .dc-card,
+            .dc-card-dark {
+                padding: 18px;
+            }
+
+            .dc-title {
+                font-size: 23px;
+            }
+
+            .dc-actions {
+                flex-direction: column;
+            }
+
+            .dc-btn {
+                width: 100%;
+            }
+        }
+
+/* Notificaciones alineadas con la identidad visual de Distric C. */
+    .iziToast {
+      overflow: hidden !important;
+      background: #ffffff !important;
+      border: 1px solid #e5e7eb !important;
+      border-left: 4px solid #23262b !important;
+      border-radius: 12px !important;
+      box-shadow: 0 14px 32px rgba(17, 24, 39, 0.18) !important;
+    }
+
+    .iziToast > .iziToast-body {
+      padding-right: 12px !important;
+    }
+
+    .iziToast > .iziToast-body .iziToast-title {
+      color: #111827 !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.01em;
+    }
+
+    .iziToast > .iziToast-body .iziToast-message {
+      color: #374151 !important;
+    }
+
+    .iziToast > .iziToast-close {
+      filter: none !important;
+      opacity: 0.62 !important;
+    }
+
+    .iziToast.toast-success-custom {
+      border-left-color: #23262b !important;
+    }
+
+    .iziToast.toast-error-custom {
+      border-left-color: #d71920 !important;
+    }
+
+    .iziToast.toast-warning-custom {
+      border-left-color: #b45309 !important;
+    }
+
+    .iziToast.toast-info-custom {
+      border-left-color: #2563eb !important;
+    }
+
+/* Base PWA: márgenes seguros, contenido fluido y sin desplazamiento lateral accidental. */
+html,body{max-width:100%;overflow-x:hidden}body{padding-bottom:env(safe-area-inset-bottom)}img,svg,video,canvas{max-width:100%}.navbar>.container-fluid{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}.offcanvas{max-width:min(88vw,380px)!important}.table-responsive,.dataTables_wrapper{max-width:100%}@media(max-width:600px){.container,.container-fluid{max-width:100%}.dataTables_wrapper .dataTables_info,.dataTables_wrapper .dataTables_paginate{float:none!important;text-align:left!important}.dataTables_wrapper .dataTables_paginate{margin-top:6px}.iziToast-wrapper{padding-left:max(8px,env(safe-area-inset-left))!important;padding-right:max(8px,env(safe-area-inset-right))!important}}

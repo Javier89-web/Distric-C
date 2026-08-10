@@ -1,0 +1,99 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block titulo %}Revisar origen y destino | Distric C{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/rutas_base.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/ver_lugar.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<div
+    id="routePointsConfig"
+    hidden
+    data-google-maps-key="{{ google_maps_api_key|escape }}"
+    data-destino-lat="{{ lat }}"
+    data-destino-lon="{{ lon }}"
+    data-destino-nombre="{{ nombre|escape }}"
+    data-origen-lat="{{ origen_lat }}"
+    data-origen-lon="{{ origen_lon }}"
+    data-origen-nombre="{{ origen_nombre|escape }}"
+    data-viaje-id="{{ viaje_id }}"
+    data-icon-origen="{% static 'img/punto.png' %}"
+    data-icon-destino="{% static 'img/puntorojo.png' %}"
+    data-guardar-url="{% url 'api_guardar_lugar' %}"
+    data-rutas-url="{% url 'rutas' %}"
+></div>
+
+<main class="points-review-page">
+    <div class="points-review-container">
+        <header class="route-page-header">
+            <span class="route-eyebrow">Preparación del tramo</span>
+            <h1>Revisa el punto de inicio y el destino</h1>
+            <p>Puedes mover ambos marcadores hasta el acceso vehicular que realmente utilizarás.</p>
+        </header>
+
+        <section class="points-review-card">
+            <div class="maps-split-grid">
+                <article class="point-map-panel">
+                    <div class="point-map-heading">
+                        <div class="point-number point-number-origin">A</div>
+                        <div>
+                            <span>Inicio del tramo</span>
+                            <h2 id="originTitle">Ubicación del vehículo</h2>
+                        </div>
+                        <button type="button" id="btnActualizarGps" class="mini-action-btn">
+                            <i class="bi bi-crosshair"></i>
+                            Usar GPS
+                        </button>
+                    </div>
+                    <div id="mapaOrigen" class="point-map"></div>
+                    <div class="point-map-data">
+                        <strong id="originAddress">Obteniendo ubicación actual…</strong>
+                        <span id="originCoords">—</span>
+                        <small>Arrastra el marcador azul o haz clic en el mapa para ajustar la salida.</small>
+                    </div>
+                </article>
+
+                <article class="point-map-panel">
+                    <div class="point-map-heading">
+                        <div class="point-number point-number-destination">B</div>
+                        <div>
+                            <span>Destino del tramo</span>
+                            <h2 id="destinationTitle">{{ nombre }}</h2>
+                        </div>
+                        <button type="button" id="btnCentrarDestino" class="mini-action-btn">
+                            <i class="bi bi-geo-alt"></i>
+                            Centrar
+                        </button>
+                    </div>
+                    <div id="mapaDestino" class="point-map"></div>
+                    <div class="point-map-data">
+                        <strong id="destinationAddress">{{ nombre }}</strong>
+                        <span id="destinationCoords">{{ lat }}, {{ lon }}</span>
+                        <small>Arrastra el marcador rojo o haz clic en el acceso exacto de llegada.</small>
+                    </div>
+                </article>
+            </div>
+
+            <div id="routePointErrors" class="points-error-box" hidden></div>
+
+            <div class="points-review-actions">
+                <button type="button" id="btnVolverSeleccion" class="route-btn route-btn-outline">
+                    <i class="bi bi-arrow-left"></i>
+                    Volver
+                </button>
+                <button type="button" id="btnGuardarCalcular" class="route-btn route-btn-red">
+                    <i class="bi bi-signpost-split"></i>
+                    Guardar y calcular alternativas
+                </button>
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/usuario/mapas/ver_lugar.js' %}" defer></script>
+{% endblock %}

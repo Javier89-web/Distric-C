@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#23262b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="{% url 'manifest' %}">
+    <title>Iniciar sesión | Distric C</title>
+
+    <link rel="icon" type="image/png" href="{% static 'icons/distric-favicon.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'icons/distric-favicon.png' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/pages/seguridad/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base/branding.css' %}">
+</head>
+<body data-service-worker-url="{% url 'service-worker' %}">
+    <main class="login-page">
+        <div class="login-shell">
+            <section class="login-brand" aria-label="Identidad visual de Distric C">
+                <div class="brand-copy">
+                    <span class="brand-overline">DISTRIC C</span>
+                    <h1>Rutas y combustible en un solo sistema.</h1>
+                </div>
+
+                <div class="brand-logo-card">
+                    <img
+                        src="{% static 'img/branding/distric-c-logo.png' %}"
+                        alt="Distric C Latacunga, rutas y combustible"
+                    >
+                </div>
+            </section>
+
+            <section class="login-card" aria-labelledby="tituloLogin">
+                <div class="login-identity">
+                    <div class="identity-icon">
+                        <img
+                            src="{% static 'img/login/icono-distric.png' %}"
+                            alt="Icono Distric C"
+                        >
+                    </div>
+                    <span>DISTRIC C</span>
+                </div>
+
+                <div class="login-heading">
+                    <h2 id="tituloLogin">Iniciar sesión</h2>
+                    <p>Ingresa tus credenciales.</p>
+                </div>
+
+                {% if messages %}
+                    <div class="login-messages" aria-live="polite">
+                        {% for message in messages %}
+                            <div class="login-message login-message-{{ message.tags|default:'info' }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <form action="{% url 'login' %}" method="post" id="loginForm" novalidate>
+                    {% csrf_token %}
+
+                    <div class="login-field">
+                        <label for="usuario">Correo electrónico</label>
+                        <div class="field-control">
+                            <span class="field-symbol" aria-hidden="true">@</span>
+                            <input
+                                type="email"
+                                name="usuario"
+                                id="usuario"
+                                value="{{ request.POST.usuario|default:'' }}"
+                                autocomplete="email"
+                                maxlength="150"
+                                placeholder="usuario@email.com"
+                                aria-describedby="errorUsuario"
+                            >
+                        </div>
+                        <small class="field-error" id="errorUsuario"></small>
+                    </div>
+
+                    <div class="login-field">
+                        <label for="contrasena">Contraseña</label>
+                        <div class="field-control">
+                            <span class="field-symbol field-symbol-lock" aria-hidden="true"></span>
+                            <input
+                                type="password"
+                                name="contrasena"
+                                id="contrasena"
+                                autocomplete="current-password"
+                                minlength="6"
+                                maxlength="12"
+                                placeholder="Ingresa tu contraseña"
+                                aria-describedby="errorContrasena"
+                            >
+                        </div>
+                        <small class="field-error" id="errorContrasena"></small>
+                    </div>
+
+                    <label class="row-check" for="chkMostrar">
+                        <input type="checkbox" id="chkMostrar">
+                        <span>Mostrar contraseña</span>
+                    </label>
+
+                    <button type="submit" class="login-submit">Ingresar</button>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <script src="{% static 'js/base/tab_lock.js' %}"></script>
+    <script src="{% static 'js/pages/seguridad/login.js' %}" defer></script>
+</body>
+</html>

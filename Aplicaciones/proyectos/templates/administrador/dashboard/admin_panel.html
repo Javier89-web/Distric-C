@@ -1,0 +1,47 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/administrador/dashboard/admin_panel.css' %}">{% endblock %}
+
+{% block contener %}
+<div id="adminDashboardData" hidden
+     data-kpi3-labels="{{ kpi3_labels|default:'[]'|escape }}"
+     data-kpi3-data="{{ kpi3_data|default:'[]'|escape }}"
+     data-kpi4-labels="{{ kpi4_labels|default:'[]'|escape }}"
+     data-kpi4-data="{{ kpi4_data|default:'[]'|escape }}"
+     data-kpi6-labels="{{ kpi6_labels|default:'[]'|escape }}"
+     data-kpi6-data="{{ kpi6_data|default:'[]'|escape }}"></div>
+
+<main class="dashboard-wrapper">
+  <div class="dashboard-container">
+    <header class="dashboard-title">
+      <div><h1>Panel administrativo</h1><p>Indicadores operativos que afectan la jornada y el costo de combustible.</p></div>
+      <span class="dashboard-date"><i class="bi bi-calendar3"></i> {% now "d/m/Y" %}</span>
+    </header>
+
+    <section class="admin-summary" aria-label="Resumen operativo de hoy">
+      <article><i class="bi bi-box-seam"></i><div><span>Cargas pendientes hoy</span><strong>{{ cargas_pendientes_hoy }}</strong></div></article>
+      <article><i class="bi bi-truck-front"></i><div><span>Viajes en ruta</span><strong>{{ viajes_en_ruta }}</strong></div></article>
+      <article><i class="bi bi-fuel-pump"></i><div><span>Combustible estimado hoy</span><strong>{{ litros_estimados_hoy|floatformat:2 }} L</strong></div></article>
+      <article><i class="bi bi-cash-coin"></i><div><span>Costo estimado hoy</span><strong>${{ costo_estimado_hoy|floatformat:2 }}</strong></div></article>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="dashboard-card">
+        <div class="card-title"><div><h2>Consumo mensual</h2><p>Litros estimados en rutas seleccionadas.</p></div></div>
+        <div id="kpi3" class="chart-box"></div>
+      </article>
+
+      <article class="dashboard-card">
+        <div class="card-title"><div><h2>Costo mensual</h2><p>Costo estimado de combustible por mes.</p></div></div>
+        <div id="kpi4" class="chart-box"></div>
+      </article>
+
+      <article class="dashboard-card fuel-distribution-card">
+        <div class="card-title"><div><h2>Combustible utilizado</h2><p>Distribución del consumo estimado por tipo.</p></div></div>
+        <div id="kpi6" class="chart-box"></div>
+      </article>
+    </section>
+  </div>
+</main>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/pages/administrador/dashboard/admin_panel.js' %}" defer></script>{% endblock %}

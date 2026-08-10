@@ -1,0 +1,202 @@
+.vehiculo-page {
+        min-height: 100vh;
+        padding: 85px 15px 40px;
+        background: #f4f5f7;
+    }
+
+    .vehiculo-container {
+        width: 100%;
+        max-width: 850px;
+        margin: auto;
+    }
+
+    .page-header {
+        margin-bottom: 25px;
+    }
+
+    .page-header h2 {
+        margin: 0;
+        color: #111111;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .page-header p {
+        margin: 7px 0 0;
+        color: #6b7280;
+        font-size: 15px;
+    }
+
+    .page-header::after {
+        content: "";
+        display: block;
+        width: 55px;
+        height: 3px;
+        margin-top: 15px;
+        background: #d71920;
+        border-radius: 3px;
+    }
+
+    .vehicle-card {
+        padding: 26px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    }
+
+    .vehicle-title {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 20px;
+        padding-bottom: 17px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .vehicle-photo,
+    .vehicle-photo-empty {
+        width: 125px;
+        height: 82px;
+        flex-shrink: 0;
+        border-radius: 9px;
+    }
+
+    .vehicle-photo {
+        object-fit: cover;
+        border: 1px solid #e5e7eb;
+    }
+
+    .vehicle-photo-empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-size: 27px;
+        background: #23262b;
+    }
+
+    .vehicle-title strong {
+        display: block;
+        color: #23262b;
+        font-size: 20px;
+    }
+
+    .vehicle-title span {
+        display: block;
+        margin-top: 3px;
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 13px;
+    }
+
+    .detail-item {
+        padding: 13px;
+        background: #f8f9fa;
+        border: 1px solid #e5e7eb;
+        border-radius: 9px;
+    }
+
+    .detail-item.full {
+        grid-column: 1 / -1;
+    }
+
+    .detail-item span {
+        display: block;
+        margin-bottom: 5px;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .detail-item strong {
+        color: #23262b;
+        font-size: 14px;
+        word-break: break-word;
+    }
+
+    .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 9px;
+        margin-top: 20px;
+        padding-top: 18px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .page-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 41px;
+        padding: 9px 16px;
+        color: #ffffff !important;
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        border-radius: 8px;
+    }
+
+    .btn-dark {
+        background: #23262b;
+    }
+
+    .btn-red {
+        background: #d71920;
+    }
+
+    .empty-card {
+        padding: 30px;
+        color: #6b7280;
+        text-align: center;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+    }
+
+    @media (max-width: 700px) {
+        .vehiculo-page {
+            padding: 75px 12px 30px;
+        }
+
+        .page-header h2 {
+            font-size: 27px;
+        }
+
+        .vehicle-card {
+            padding: 18px;
+        }
+
+        .vehicle-title {
+            align-items: flex-start;
+        }
+
+        .vehicle-photo,
+        .vehicle-photo-empty {
+            width: 95px;
+            height: 66px;
+        }
+
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .detail-item.full {
+            grid-column: auto;
+        }
+
+        .actions {
+            flex-direction: column;
+        }
+
+        .page-btn {
+            width: 100%;
+        }
+    }

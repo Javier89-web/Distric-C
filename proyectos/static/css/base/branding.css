@@ -1,0 +1,111 @@
+/* Identidad institucional común: Distri C + Universidad Técnica de Cotopaxi. */
+/* La UTC se mantiene como una firma visual pequeña en la esquina inferior. */
+body::after {
+    content: "";
+    position: fixed;
+    right: 16px;
+    bottom: 12px;
+    width: 150px;
+    height: 68px;
+    background-image: url('../../img/branding/utc-watermark.png');
+    background-repeat: no-repeat;
+    background-position: right bottom;
+    background-size: contain;
+    pointer-events: none;
+    z-index: 9980;
+    opacity: .92;
+}
+
+.navbar,
+.offcanvas,
+.modal,
+.swal2-container,
+.iziToast-wrapper {
+    z-index: 9999;
+}
+
+.branding-navbar-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+.branding-navbar-logo img {
+    width: 108px;
+    height: 46px;
+    object-fit: contain;
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 10px;
+    padding: 3px 7px;
+}
+
+/* Se conserva por compatibilidad con vistas antiguas, pero ya no se usa como bloque lateral. */
+.branding-institutional {
+    display: none !important;
+}
+
+.login-institutional-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.login-institutional-mark img {
+    width: 108px;
+    height: auto;
+    display: block;
+    object-fit: contain;
+    opacity: .86;
+}
+
+.login-institutional-mark span {
+    display: none;
+}
+
+.pdf-unit-form {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pdf-unit-form select {
+    min-height: 38px;
+    border: 1px solid #d1d5db;
+    border-radius: 9px;
+    padding: 7px 32px 7px 10px;
+    background: #fff;
+    color: #23262b;
+    font: inherit;
+}
+
+.pdf-unit-form button {
+    white-space: nowrap;
+}
+
+.pdf-unit-form-compact {
+    gap: 5px;
+}
+
+.pdf-unit-form-compact select {
+    min-height: 34px;
+    padding: 5px 25px 5px 7px;
+    font-size: 11px;
+}
+
+@media (max-width: 720px) {
+    body::after {
+        right: 9px;
+        bottom: 8px;
+        width: 112px;
+        height: 51px;
+        opacity: .84;
+    }
+
+    .branding-navbar-logo img {
+        width: 92px;
+        height: 40px;
+    }
+}

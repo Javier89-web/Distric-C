@@ -1,0 +1,313 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/vehiculos/nuevovehiculo.css' %}">
+{% endblock %}
+
+{% block contener %}
+
+
+<div class="vehiculo-page">
+
+    <div class="vehiculo-container">
+
+        <!-- Título fuera de la tarjeta -->
+        <div class="vehiculo-header">
+
+            <h2>Agregar Vehículo</h2>
+
+            <p>
+                Registra la información del vehículo asignado al usuario seleccionado.
+            </p>
+
+        </div>
+
+        <!-- Tarjeta del formulario -->
+        <div class="form-card">
+
+            <div class="form-card-title">
+
+                <i class="bi bi-car-front-fill"></i>
+
+                <h3>Información del vehículo</h3>
+
+            </div>
+
+            <div class="info-usuario">
+
+                <strong>Usuario asignado:</strong>
+
+                {{ usuario.nombre_usuario }}
+                {{ usuario.apellido_usuario }}
+                — {{ usuario.correo_usuario }}
+
+            </div>
+
+            <form
+                id="formVehiculo"
+                action="{% url 'guardarvehiculo' %}"
+                method="post"
+                novalidate
+            >
+
+                {% csrf_token %}
+
+                <div class="row">
+
+                    <!-- USUARIO -->
+                    <div class="col-12 mb-3">
+
+                        <label for="usuario" class="form-label">
+                            Usuario
+                        </label>
+
+                        <select
+                            name="usuario"
+                            id="usuario"
+                            class="form-select usuario-select"
+                        >
+                            <option value="{{ usuario.id_usuario }}">
+                                {{ usuario.correo_usuario }}
+                            </option>
+                        </select>
+
+                    </div>
+
+                    <!-- TIPO DE VEHÍCULO -->
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_tipo_vehiculo" class="form-label">
+                            Tipo de vehículo
+                        </label>
+
+                        <select
+                            name="txt_tipo_vehiculo"
+                            id="txt_tipo_vehiculo"
+                            class="form-select"
+                        >
+                            <option value="">Seleccione una opción</option>
+                            <option value="AUTOMOVIL">AUTOMÓVIL</option>
+                            <option value="TAXI">TAXI</option>
+                            <option value="MOTOCICLETA">MOTOCICLETA</option>
+                            <option value="CAMION">CAMIÓN</option>
+                            <option value="CAMIONETA">CAMIONETA</option>
+                        </select>
+
+                    </div>
+
+                    <!-- TIPO DE COMBUSTIBLE -->
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_tipo_combustible" class="form-label">
+                            Tipo de combustible
+                        </label>
+
+                        <select
+                            name="txt_tipo_combustible"
+                            id="txt_tipo_combustible"
+                            class="form-select"
+                        >
+                            <option value="">Seleccione una opción</option>
+                            <option value="EXTRA">EXTRA</option>
+                            <option value="DIESEL">DIÉSEL</option>
+                            <option value="SUPER">SÚPER</option>
+                            <option value="ECOPAIS">ECOPAÍS</option>
+                        </select>
+
+                    </div>
+
+                    <!-- PLACA -->
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_matricula" class="form-label">
+                            Placa
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_matricula"
+                            id="txt_matricula"
+                            class="form-control"
+                            placeholder="Ejemplo: ABC-1234"
+                            maxlength="8"
+                            autocomplete="off"
+                        >
+
+                        <p class="form-hint">
+                            Formato requerido: tres letras, guion y cuatro números.
+                        </p>
+
+                    </div>
+
+                    <!-- MODELO -->
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_modelo" class="form-label">
+                            Modelo
+                            <span class="optional">(opcional)</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_modelo"
+                            id="txt_modelo"
+                            class="form-control"
+                            placeholder="Ejemplo: Chevrolet D-Max"
+                            maxlength="50"
+                        >
+
+                    </div>
+
+                    <!-- CÉDULA -->
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_numero_cedula" class="form-label">
+                            Cédula del propietario
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_numero_cedula"
+                            id="txt_numero_cedula"
+                            class="form-control"
+                            placeholder="Ingrese 10 dígitos"
+                            maxlength="10"
+                            inputmode="numeric"
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+                    <!-- NÚMERO DE MOTOR -->
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_numero_motor" class="form-label">
+                            Número de motor
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_numero_motor"
+                            id="txt_numero_motor"
+                            class="form-control"
+                            placeholder="Letras, números o guiones"
+                            maxlength="12"
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+                    <!-- NÚMERO DE CHASIS -->
+                    <div class="col-12 mb-3">
+
+                        <label for="txt_numero_chasis" class="form-label">
+                            Número de chasis
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_numero_chasis"
+                            id="txt_numero_chasis"
+                            class="form-control"
+                            placeholder="Ingrese los 17 caracteres del chasis"
+                            maxlength="17"
+                            autocomplete="off"
+                        >
+
+                        <p class="form-hint">
+                            El número de chasis debe contener 17 caracteres y no admite I, O ni Q.
+                        </p>
+
+                    </div>
+
+                    <!-- PESO -->
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_peso_auto" class="form-label">
+                            Peso del vehículo (t)
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_peso_auto"
+                            id="txt_peso_auto"
+                            class="form-control"
+                            placeholder="Ejemplo: 1.5"
+                            inputmode="decimal"
+                        >
+
+                    </div>
+
+                    <!-- CILINDRAJE -->
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_cilindraje" class="form-label">
+                            Cilindraje
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_cilindraje"
+                            id="txt_cilindraje"
+                            class="form-control"
+                            placeholder="Ejemplo: 2000"
+                            inputmode="decimal"
+                        >
+
+                    </div>
+
+                </div>
+
+                <!-- BOTONES -->
+                <div class="form-actions">
+
+                    <a
+                        href="/listadocarros/"
+                        class="form-btn btn-back"
+                    >
+                        <i class="bi bi-arrow-left"></i>
+                        Regresar
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="form-btn btn-save"
+                        id="btnGuardarVehiculo"
+                        {% if tiene_vehiculo %}disabled{% endif %}
+                    >
+                        <i class="bi bi-check-circle"></i>
+                        Guardar vehículo
+                    </button>
+
+                </div>
+
+                {% if tiene_vehiculo %}
+
+                    <div class="alerta-vehiculo">
+
+                        <i class="bi bi-exclamation-circle"></i>
+
+                        <span>
+                            Este usuario ya tiene un vehículo registrado.
+                            Elimínalo o edítalo antes de ingresar uno nuevo.
+                        </span>
+
+                    </div>
+
+                {% endif %}
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/usuario/vehiculos/nuevovehiculo.js' %}" defer></script>
+{% endblock %}

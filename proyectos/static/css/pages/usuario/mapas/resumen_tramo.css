@@ -1,0 +1,140 @@
+.segment-summary-page {
+    min-height: 100vh;
+    padding: 84px 18px 42px;
+    background: #f4f5f7;
+}
+
+.segment-summary-container {
+    width: min(1000px, 100%);
+    margin: auto;
+}
+
+.segment-summary-card {
+    position: relative;
+    padding: 24px;
+    background: #fff;
+    border: 1px solid #e2e5e9;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(16, 24, 40, .05);
+}
+
+.completion-mark {
+    position: absolute;
+    top: -18px;
+    right: 22px;
+    display: grid;
+    width: 42px;
+    height: 42px;
+    color: #fff;
+    font-size: 21px;
+    place-items: center;
+    background: #23262b;
+    border: 4px solid #f4f5f7;
+    border-radius: 50%;
+}
+
+.segment-result-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 9px;
+}
+
+.segment-result-grid > div {
+    padding: 11px;
+    background: #f8f9fb;
+    border: 1px solid #e7eaee;
+    border-radius: 9px;
+}
+
+.segment-result-grid span,
+.segment-result-grid strong { display: block; }
+.segment-result-grid span { color: #667085; font-size: 8px; text-transform: uppercase; }
+.segment-result-grid strong { margin-top: 4px; color: #111827; font-size: 14px; }
+
+.segment-deliveries {
+    margin-top: 17px;
+    padding-top: 15px;
+    border-top: 1px solid #e7eaee;
+}
+
+.section-heading > span {
+    color: #667085;
+    font-size: 9px;
+}
+
+.segment-delivery-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.segment-delivery-list > div {
+    padding: 10px 11px;
+    border: 1px solid #e2e5e9;
+    border-radius: 8px;
+}
+
+.segment-delivery-list strong,
+.segment-delivery-list span { display: block; }
+.segment-delivery-list strong { color: #111827; font-size: 11px; }
+.segment-delivery-list span { margin-top: 3px; color: #667085; font-size: 9px; }
+
+.segment-note {
+    margin-top: 12px;
+    padding: 11px 12px;
+    color: #344054;
+    font-size: 10px;
+    background: #f8f9fb;
+    border-left: 3px solid #d71920;
+    border-radius: 7px;
+}
+
+.segment-note p { margin: 3px 0 0; }
+
+.segment-next-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 17px;
+    padding-top: 14px;
+    border-top: 1px solid #e7eaee;
+}
+
+.segment-next-actions form { margin: 0; }
+.empty-delivery { padding: 13px; color: #667085; font-size: 10px; text-align: center; background: #f8f9fb; border-radius: 8px; }
+
+@media (max-width: 760px) {
+    .segment-summary-page { padding: 74px 10px 30px; }
+    .segment-summary-card { padding: 16px; }
+    .segment-result-grid, .segment-delivery-list { grid-template-columns: 1fr 1fr; }
+    .segment-next-actions, .segment-next-actions form { width: 100%; }
+}
+
+@media (max-width: 480px) {
+    .segment-result-grid, .segment-delivery-list { grid-template-columns: 1fr; }
+}
+.next-route-validation{display:flex;align-items:flex-start;gap:11px;margin:16px 0;padding:13px 14px;border:1px solid #e5e7eb;border-radius:10px}.next-route-validation>i{font-size:19px}.next-route-validation strong,.next-route-validation span{display:block}.next-route-validation strong{color:#23262b;font-size:12px}.next-route-validation span{margin-top:3px;color:#6b7280;font-size:10px;line-height:1.45}.validation-ok{background:#f0fdf4;border-color:#bbf7d0}.validation-ok>i{color:#166534}.validation-pending{background:#fffbeb;border-color:#fde68a}.validation-pending>i{color:#92400e}.route-btn-test{color:#23262b!important;background:#fff;border:1px dashed #23262b}.route-btn:disabled{opacity:.48;cursor:not-allowed}
+
+.segment-evidence {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e7eaee;
+}
+.segment-evidence-link {
+    display: grid;
+    grid-template-columns: minmax(180px, 360px) 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-top: 9px;
+    padding: 10px;
+    color: #444b53;
+    text-decoration: none;
+    border: 1px solid #e1e5e9;
+    border-radius: 10px;
+    background: #fafbfc;
+}
+.segment-evidence-link img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 8px; }
+.segment-evidence-link span { font-size: 10px; font-weight: 700; }
+@media(max-width:600px){ .segment-evidence-link{grid-template-columns:1fr} }

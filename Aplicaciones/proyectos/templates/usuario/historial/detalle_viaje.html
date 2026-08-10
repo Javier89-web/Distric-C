@@ -1,0 +1,102 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block titulo %}Detalle del viaje | Distric C{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/rutas_base.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/usuario/historial/detalle_viaje.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<main class="trip-detail-page">
+    <div class="trip-detail-container">
+        <header class="route-page-header">
+            <span class="route-eyebrow">Expediente del viaje #{{ viaje.id_viaje }}</span>
+            <h1>{{ viaje.fecha_creacion|date:"d/m/Y H:i" }} · {{ viaje.vehiculo.matricula_vehiculo }}</h1>
+            <p>Resumen consecutivo de todos los tramos registrados durante la jornada.</p>
+        </header>
+
+        <section class="trip-detail-summary">
+            <div><span>Estado</span><strong>{{ viaje.get_estado_display }}</strong></div>
+            <div><span>Tramos</span><strong>{{ viaje.tramos_completados }}</strong></div>
+            <div><span>Distancia estimada</span><strong>{{ viaje.distancia_estimada_total_km|floatformat:2 }} km</strong></div>
+            <div><span>Distancia real</span><strong>{{ viaje.distancia_real_total_km|floatformat:2 }} km</strong></div>
+            <div><span>Tiempo estimado</span><strong>{{ viaje.tiempo_estimado_total_min|floatformat:1 }} min</strong></div>
+            <div><span>Tiempo real</span><strong>{{ viaje.tiempo_real_total_min|floatformat:1 }} min</strong></div>
+            <div><span>Combustible IA</span><strong>{{ viaje.consumo_estimado_total_l|floatformat:2 }} L</strong></div>
+            <div><span>Costo estimado</span><strong>${{ viaje.costo_estimado_total|floatformat:2 }}</strong></div>
+        </section>
+
+        <section class="trip-timeline-card">
+            <div class="trip-timeline">
+                {% for tramo in tramos %}
+                <article class="timeline-segment">
+                    <div class="timeline-marker">{{ tramo.orden }}</div>
+                    <div class="timeline-content">
+                        <div class="timeline-heading">
+                            <div>
+                                <span>Parte {{ tramo.orden }}</span>
+                                <h2>{{ tramo.origen_nombre }} → {{ tramo.destino_nombre }}</h2>
+                            </div>
+                            <span class="trip-state trip-state-{{ tramo.estado|lower }}">{{ tramo.get_estado_display }}</span>
+                        </div>
+
+                        <div class="timeline-metrics">
+                            <div><span>Distancia estimada</span><strong>{{ tramo.distancia_estimada_km|floatformat:2 }} km</strong></div>
+                            <div><span>Distancia real</span><strong>{{ tramo.distancia_real_km|floatformat:2 }} km</strong></div>
+                            <div><span>Tiempo estimado</span><strong>{{ tramo.tiempo_estimado_min|floatformat:1 }} min</strong></div>
+                            <div><span>Tiempo real</span><strong>{{ tramo.tiempo_real_min|floatformat:1 }} min</strong></div>
+                            <div><span>Consumo IA</span><strong>{{ tramo.consumo_estimado_l|floatformat:2 }} L</strong></div>
+                            <div><span>Carga restante</span><strong>{{ tramo.carga_restante_kg|floatformat:2 }} kg</strong></div>
+                        </div>
+
+                        <div class="timeline-deliveries">
+                            {% for entrega in tramo.entregas_realizadas.all %}
+                            <span>
+                                {{ entrega.producto_nombre }} ·
+                                {{ entrega.presentacion_descriptiva }} ·
+                                {{ entrega.cantidad_entregada }}
+                                {% if entrega.cantidad_entregada == 1 %}{{ entrega.unidad_carga }}{% else %}{{ entrega.unidad_carga_plural }}{% endif %}
+                                · {{ entrega.peso_entregado_kg|floatformat:2 }} kg
+                            </span>
+                            {% empty %}
+                            <span>Sin productos entregados en este tramo.</span>
+                            {% endfor %}
+                        </div>
+
+                        {% if tramo.evidencia_entrega %}
+                        <div class="timeline-evidence">
+                            <div>
+                                <span>Evidencia de entrega</span>
+                                <strong>Fotografía registrada en el tramo {{ tramo.orden }}</strong>
+                            </div>
+                            <a href="{{ tramo.evidencia_entrega.url }}" target="_blank" rel="noopener">
+                                <img src="{{ tramo.evidencia_entrega.url }}" alt="Evidencia del tramo {{ tramo.orden }}">
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+
+        <div class="trip-detail-actions">
+            <a href="{% url 'historial' %}" class="route-btn route-btn-outline">
+                <i class="bi bi-arrow-left"></i>
+                Regresar al historial
+            </a>
+            <form method="get" action="{% url 'reporte_pdf_viaje' viaje.id_viaje %}" class="pdf-unit-form">
+                <select name="unidad" aria-label="Unidad de combustible del PDF">
+                    <option value="LITROS">Litros</option>
+                    <option value="GALONES">Galones</option>
+                </select>
+                <button type="submit" class="route-btn route-btn-red">
+                    <i class="bi bi-file-earmark-pdf"></i> Descargar informe PDF
+                </button>
+            </form>
+        </div>
+    </div>
+</main>
+{% endblock %}

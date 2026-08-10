@@ -1,0 +1,103 @@
+body {
+        background-color: #000;
+        font-family: Arial, sans-serif;
+    }
+
+    .form-container {
+        max-width: 380px;
+        margin: 80px auto;
+        background-color: #2b2b2b;
+        padding: 30px;
+        border-radius: 20px;
+        color: white;
+        text-align: center;
+        box-shadow: 0 4px 25px rgba(0, 0, 0, 0.7);
+    }
+
+    .barra {
+        width: 250px;
+        height: 18px;
+        background-color: #444;
+        margin: 10px auto 20px auto;
+        border-radius: 10px;
+    }
+
+    h3 {
+        color: white;
+        margin-bottom: 20px;
+        font-size: 20px;
+        text-transform: uppercase;
+    }
+
+    label {
+        display: block;
+        text-align: left;
+        font-weight: bold;
+        margin-top: 12px;
+        color: #ddd;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+        width: 100%;
+        padding: 12px;
+        margin-top: 5px;
+        border: none;
+        border-radius: 8px;
+        background-color: #444;
+        color: white;
+        font-size: 14px;
+    }
+
+    input::placeholder {
+        color: #aaa;
+    }
+
+    .btn-container {
+        margin-top: 25px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .btn-save {
+        background-color: #0ccb3a;
+        color: white;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        font-size: 16px;
+    }
+
+    .btn-save:hover {
+        background-color: #0aa330;
+    }
+
+    .btn-cancel {
+        background-color: #0ccb3a;
+        padding: 12px;
+        border-radius: 10px;
+        text-align: center;
+        display: block;
+        font-weight: bold;
+        color: white;
+        font-size: 16px;
+        text-decoration: none;
+    }
+
+    .btn-cancel:hover {
+        background-color: #0aa330;
+    }
+
+    .form-container input:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(12, 203, 58, 0.35);
+    }
+
+    .form-container input[type="number"] {
+        color-scheme: dark;
+    }
+.form-note { text-align: left; font-size: 14px; color: #ccc; }
+.form-note-top { margin-top: 5px; }

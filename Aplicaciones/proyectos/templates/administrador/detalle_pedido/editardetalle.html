@@ -1,0 +1,35 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/detalle_pedido/editardetalle.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+  <h3>Editar Detalle del Pedido</h3>
+
+  <form action="{% url 'procesareditardetalle' %}" method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="id" value="{{ detalle.id_detalle_pedido }}">
+
+    <label>Descripción del ítem</label>
+    <input type="text" name="txt_descripcion" class="form-control" value="{{ detalle.descripcion_item }}" required>
+
+    <label>Cantidad</label>
+    <input type="number" name="txt_cantidad" class="form-control" value="{{ detalle.cantidad }}" required>
+
+    <label>Precio Unitario</label>
+    <input type="number" step="0.01" name="txt_precio" class="form-control" value="{{ detalle.precio_unitario }}"
+      required>
+
+    <div class="acciones">
+      <button type="submit" class="btn-save">Actualizar</button>
+      <a href="{% url 'listadodetalle' detalle.pedido.id_pedido %}" class="btn-save">Cancelar</a>
+    </div>
+
+  </form>
+</div>
+
+{% endblock %}

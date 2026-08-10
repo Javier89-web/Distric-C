@@ -1,0 +1,26 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/dashboard/inicio.css' %}">
+{% endblock %}
+
+{% block contenido %}
+
+
+<button id="btnUbicacion">Activar ubicación</button>
+
+  <div id="estadoGPS"></div>
+
+  <div id="map" data-vehiculo-id="{{ vehiculo.id_vehiculo|default:'0' }}" data-google-maps-key="{{ google_maps_api_key|escape }}"></div>
+
+  
+
+
+  
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/usuario/dashboard/inicio.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/pedidos/nuevopedido.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+
+  <h3>Nuevo Pedido</h3>
+
+  <div class="contenedor-ver-listado">
+    <a href="/listadopedido/">Listado de pedidos</a>
+  </div>
+
+  <form action="/guardarpedido/" method="POST">
+    {% csrf_token %}
+
+    <label>Proveedor</label>
+    <select name="txt_proveedor" class="form-control">
+      <option value="">Sin provedor</option>
+      {% for p in proveedores %}
+      <option value="{{ p.id_proveedor }}">{{ p.nombre_proveedor }}</option>
+      {% endfor %}
+    </select>
+
+    <label>Evento</label>
+    <select name="txt_evento" class="form-control">
+      <option value="">Sin evento</option>
+      {% for ev in eventos %}
+      <option value="{{ ev.id_evento }}">{{ ev.titulo }}</option>
+      {% endfor %}
+    </select>
+
+    <label>Descripción del pedido</label>
+    <textarea name="txt_descripcion" class="form-control" rows="3"></textarea>
+
+    <label>Fecha del pedido</label>
+    <input type="date" name="txt_fecha" class="form-control" required>
+
+    <label>Estado</label>
+    <select name="txt_estado" class="form-control">
+      <option value="PENDIENTE">PENDIENTE</option>
+      <option value="EN PROCESO">EN PROCESO</option>
+      <option value="ENTREGADO">ENTREGADO</option>
+      <option value="CANCELADO">CANCELADO</option>
+    </select>
+
+    <div class="form-actions-top">
+      <button class="btn-save" type="submit">Guardar</button>
+    </div>
+
+  </form>
+
+</div>
+
+{% endblock %}

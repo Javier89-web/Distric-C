@@ -1,0 +1,61 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/pagos/editar_pago.css' %}">
+{% endblock %}
+{% block contener %}
+<div class="box">
+    <h3>Registrar Pago</h3>
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <label>Método de pago</label>
+      <select name="metodo_pago" class="form-control">
+        <option value="EFECTIVO" {% if pago.metodo_pago=="EFECTIVO" %}selected{% endif %}>EFECTIVO</option>
+        <option value="TRANSFERENCIA" {% if pago.metodo_pago=="TRANSFERENCIA" %}selected{% endif %}>TRANSFERENCIA
+        </option>
+      </select>
+
+      <label>Monto pagado</label>
+      <input type="number" step="0.01" name="monto_pagado" class="form-control" value="{{ pago.monto_pagado }}">
+
+      <label>Banco</label>
+      <input type="text" name="banco" class="form-control" value="{{ pago.banco }}">
+
+      <label>Referencia</label>
+      <input type="text" name="referencia" class="form-control" value="{{ pago.referencia }}">
+
+      <label>Estado del pago</label>
+      <select name="estado_pago" class="form-control">
+        <option value="CONFIRMADO" {% if pago.estado_pago=="CONFIRMADO" %}selected{% endif %}>CONFIRMADO</option>
+        <option value="PENDIENTE" {% if pago.estado_pago=="PENDIENTE" %}selected{% endif %}>PENDIENTE</option>
+        <option value="RECHAZADO" {% if pago.estado_pago=="RECHAZADO" %}selected{% endif %}>RECHAZADO</option>
+      </select>
+
+      <label>Comprobante actual</label>
+      {% if pago.comprobante %}
+      <a href="{{ pago.comprobante.url }}" target="_blank">
+        <img src="{{ pago.comprobante.url }}" class="preview">
+      </a>
+      {% else %}
+      <p>- No hay comprobante -</p>
+      {% endif %}
+
+      <label for="comprobante">Reemplazar comprobante</label>
+      <input type="file" name="comprobante" id="comprobante" class="file" accept="image/*">
+
+      <button class="btn-save" type="submit">
+        Guardar Cambios
+      </button>
+    </form>
+  </div>
+
+  
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/pagos/editar_pago.js' %}" defer></script>
+{% endblock %}

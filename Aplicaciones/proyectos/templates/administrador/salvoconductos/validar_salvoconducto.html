@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Validación de Salvoconducto | Distric C</title>
+  <link rel="icon" type="image/png" href="{% static 'icons/distric-favicon.png' %}">
+
+  
+
+<link rel="stylesheet" href="{% static 'css/base/branding.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/administrador/salvoconductos/validar_salvoconducto.css' %}">
+</head>
+
+<body>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:flex-start;gap:16px;margin-bottom:16px;">
+      <img src="{% static 'img/branding/distric-c-logo.png' %}" alt="Distri C" style="width:118px;max-height:58px;object-fit:contain;">
+    </div>
+
+    <div class="estado {{ estado_real }}">
+      {% if estado_real == 'VIGENTE' %}
+        ✔ SALVOCONDUCTO VÁLIDO
+      {% elif estado_real == 'VENCIDO' %}
+        ⚠ SALVOCONDUCTO VENCIDO
+      {% else %}
+        ❌ SALVOCONDUCTO ANULADO
+      {% endif %}
+    </div>
+
+    <hr>
+    <div class="dato">
+      <span class="label">Empresa:</span> DISTRIC
+    </div>
+
+    <div class="dato">
+      <span class="label">Conductor:</span>
+      {{ salvoconducto.usuario.nombre_usuario }}
+      {{ salvoconducto.usuario.apellido_usuario }}
+    </div>
+
+    <div class="dato">
+      <span class="label">Vehículo:</span>
+      {{ salvoconducto.vehiculo.matricula_vehiculo }}
+      ({{ salvoconducto.vehiculo.tipovehiculo_vehiculo }})
+    </div>
+
+
+    <div class="dato">
+      <span class="label">Destino:</span>
+      {% if salvoconducto.viaje.destino_final_nombre %}
+        {{ salvoconducto.viaje.destino_final_nombre }}
+      {% elif salvoconducto.viaje.destino %}
+        {{ salvoconducto.viaje.destino.nombre_Lugarguardado }}
+      {% else %}
+        Destino no especificado
+      {% endif %}
+    </div>
+
+    <div class="dato">
+      <span class="label">Vigencia:</span>
+      {{ salvoconducto.fecha_inicio }} → {{ salvoconducto.fecha_fin }}
+    </div>
+
+    <div class="dato">
+      <span class="label">Motivo:</span>
+      {{ salvoconducto.motivo }}
+    </div>
+
+    <hr>
+
+    <div class="footer">
+      Documento verificado mediante código QR • Sistema de Gestión de Rutas y Combustible
+    </div>
+
+  </div>
+
+</body>
+</html>

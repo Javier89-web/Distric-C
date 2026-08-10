@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#23262b">
+  <title>Pestaña en uso | Distri C</title>
+  <link rel="icon" type="image/png" href="{% static 'icons/distric-favicon.png' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/base/branding.css' %}">
+  <link rel="stylesheet" href="{% static 'css/pages/seguridad/tab_bloqueada.css' %}">
+</head>
+<body data-next-url="{{ next_url|escape }}">
+  <main class="tab-lock-page">
+    <section class="tab-lock-card" aria-labelledby="tabLockTitle">
+      <img class="tab-lock-logo" src="{% static 'img/branding/distric-c-logo.png' %}" alt="Distri C">
+      <h1 id="tabLockTitle">Hay otra pestaña activa</h1>
+      <p class="tab-lock-copy">Para evitar acciones duplicadas, Distri C trabaja con una pestaña a la vez.</p>
+      <div class="tab-lock-notice" id="tabLockNotice" aria-live="polite">Puedes comprobar si la otra pestaña sigue activa o continuar el trabajo desde esta.</div>
+      <div class="tab-lock-actions">
+        <button type="button" class="tab-lock-btn dark" id="btnRetryTab">Volver a intentar</button>
+        <button type="button" class="tab-lock-btn red" id="btnUseThisTab">Usar esta pestaña</button>
+      </div>
+    </section>
+  </main>
+  <script src="{% static 'js/pages/seguridad/tab_bloqueada.js' %}" defer></script>
+</body>
+</html>

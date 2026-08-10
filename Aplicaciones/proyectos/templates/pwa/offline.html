@@ -1,0 +1,56 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/pwa/offline.css' %}">
+{% endblock %}
+{% block contenido %}
+
+
+<div class="offline-wrapper">
+  <div class="offline-card">
+    <div class="offline-icon">
+      😕
+    </div>
+
+    <h2 class="offline-title">Estás sin conexión</h2>
+    <p class="offline-subtitle">
+      No pudimos comunicar con el servidor en internet
+    </p>
+
+    <ul class="offline-list">
+      <li>Revisa si tienes datos móviles o conexión Wi-Fi.</li>
+      <li>Si estás en ruta, vuelve a intentar cuando recuperes señal.</li>
+      <li>Las secciones guardadas en tu dispositivo seguirán disponibles.</li>
+    </ul>
+
+
+    <div class="offline-actions">
+
+      {% if request.session.usuario_tiporol == 'ADMINISTRADOR' %}
+      <button class="btn-offline-primary js-offline-link" data-url="/adminpanel/">
+        Panel Admin
+      </button>
+      {% endif %}
+
+      {% if request.session.usuario_tiporol == 'USUARIO' %}
+      <button class="btn-offline-secondary js-offline-link" data-url="/inicio/">
+        Menú Usuario
+      </button>
+      {% endif %}
+
+    </div>
+
+
+
+
+
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/pwa/offline.js' %}" defer></script>
+{% endblock %}

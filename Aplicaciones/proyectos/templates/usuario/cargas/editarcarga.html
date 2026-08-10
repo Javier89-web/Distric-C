@@ -1,0 +1,43 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/cargas/editarcarga.css' %}">
+{% endblock %}
+{% block contenido %}
+
+
+<div class="form-container">
+
+    <div class="barra"></div>
+
+    <h3>Editar Carga</h3>
+
+    <form action="/procesareditarcarga/" method="post">
+        {% csrf_token %}
+
+        <input type="hidden" name="id_carga" value="{{ carga.id_carga }}">
+
+        <input type="hidden" name="vehiculo" value="{{ carga.vehiculo.id_vehiculo }}">
+        <p class="form-note form-note-bottom">
+            Vehículo: <b>{{ carga.vehiculo.matricula_vehiculo }} - {{ carga.vehiculo.tipovehiculo_vehiculo }}</b>
+        </p>
+
+        <label>Nombre del producto / carga:</label>
+        <input type="text" name="txt_nombre_producto" value="{{ carga.nombre_producto }}" required>
+
+        <label>Peso adicional (kg):</label>
+        <input type="number" name="txt_peso_adicional" step="0.01" min="0" value="{{ carga.peso_adicional }}">
+
+        <div class="btn-container">
+            <button type="submit" class="btn-save">
+                Guardar cambios
+            </button>
+
+            <a href="/listadocarga/" class="btn-cancel">Cancelar</a>
+        </div>
+
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/productos_carga/listado_productos.css' %}">
+{% endblock %}
+
+{% block contener %}
+
+
+
+
+<div class="catalogo-page">
+    <div class="catalogo-container">
+
+        <div class="page-header">
+            <h2>Catálogo de Productos</h2>
+            <p>Administra productos, precios de referencia, observaciones y pesos usados en las cargas.</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span>Total de productos</span>
+                <strong>{{ total_productos }}</strong>
+            </div>
+
+            <div class="stat-card">
+                <span>Productos activos</span>
+                <strong>{{ total_activos }}</strong>
+            </div>
+
+            <div class="stat-card">
+                <span>Productos inactivos</span>
+                <strong>{{ total_inactivos }}</strong>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input
+                        type="text"
+                        id="buscarProducto"
+                        placeholder="Buscar por nombre, marca, observación o presentación..."
+                        autocomplete="off"
+                    >
+                </div>
+
+                <select id="filtroEstado" class="filter-select">
+                    <option value="">Todos los estados</option>
+                    <option value="ACTIVO">Activos</option>
+                    <option value="INACTIVO">Inactivos</option>
+                </select>
+            </div>
+
+            <a href="{% url 'nuevoproductocarga' %}" class="btn-primary-admin">
+                <i class="bi bi-plus-circle"></i>
+                Registrar producto
+            </a>
+        </div>
+
+        <div class="table-card">
+            <div class="table-tools">
+                <span class="table-tools-title">Exportar información</span>
+                <div id="botonesExportacionProductos"></div>
+            </div>
+
+            <div class="table-responsive-admin">
+                <table class="productos-table" id="tablaProductos">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th>Marca</th>
+                            <th>Precio ref.</th>
+                            <th>Presentación</th>
+                            <th>Peso unitario</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for producto in productos %}
+                            <tr data-estado="{% if producto.activo %}ACTIVO{% else %}INACTIVO{% endif %}">
+                                <td>
+                                    <span class="producto-codigo">{{ producto.codigo_catalogo|default:"LEGACY" }}</span>
+                                </td>
+                                <td>
+                                    <span class="producto-nombre">{{ producto.nombre_producto }}</span>
+                                    {% if producto.nota_producto %}
+                                        <span class="producto-nota">{{ producto.nota_producto }}</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>{{ producto.marca_producto|default:"—" }}</td>
+                                <td>{% if producto.precio_referencia != None %}${{ producto.precio_referencia|floatformat:2 }}{% else %}—{% endif %}</td>
+                                <td>{{ producto.get_presentacion_producto_display }}</td>
+                                <td>{{ producto.peso_unitario_kg|floatformat:2 }} kg</td>
+
+                                <td>
+                                    {% if producto.activo %}
+                                        <span class="status status-active">ACTIVO</span>
+                                    {% else %}
+                                        <span class="status status-inactive">INACTIVO</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <div class="actions">
+                                        <a
+                                            href="{% url 'editarproductocarga' producto.id_producto_carga %}"
+                                            class="btn-dark-admin"
+                                        >
+                                            <i class="bi bi-pencil"></i>
+                                            Editar
+                                        </a>
+
+                                        <form
+                                            action="{% url 'cambiarestadoproductocarga' producto.id_producto_carga %}"
+                                            method="post"
+                                            class="form-estado-producto"
+                                            data-producto="{{ producto.nombre_producto }}"
+                                            data-accion="{% if producto.activo %}inactivar{% else %}activar{% endif %}"
+                                        >
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn-outline-admin">
+                                                {% if producto.activo %}
+                                                    Inactivar
+                                                {% else %}
+                                                    Activar
+                                                {% endif %}
+                                            </button>
+                                        </form>
+
+                                        <form
+                                            action="{% url 'eliminarproductocarga' producto.id_producto_carga %}"
+                                            method="post"
+                                            class="form-eliminar-producto"
+                                            data-producto="{{ producto.nombre_producto|escape }}"
+                                        >
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn-delete-admin" title="Eliminar producto">
+                                                <i class="bi bi-trash"></i> Eliminar
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/productos_carga/listado_productos.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,139 @@
+body {
+    background: #ffffff;
+  }
+
+  .box {
+    width: 92%;
+    max-width: 1100px;
+    margin: 30px auto;
+    background: #06080D;
+    color: #F3F4F6;
+    padding: 22px;
+    border-radius: 18px;
+    margin-left: 380px;
+    border: 1px solid #1F2937;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  }
+
+  .box h3 {
+    margin-bottom: 20px;
+    font-weight: 700;
+    color: #F3F4F6;
+    text-align: center;
+  }
+
+  .factura-info p {
+    margin: 6px 0;
+    color: #E5E7EB;
+  }
+
+  .factura-info strong {
+    color: #A1A1AA;
+  }
+
+  .table-responsive {
+    margin-top: 20px;
+    border-radius: 14px;
+    border: 1px solid #1F2937;
+    background: #111827;
+    padding: 12px;
+    overflow: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  thead th {
+    background: #06080D;
+    color: #F3F4F6;
+    border-bottom: 1px solid #1F2937;
+    padding: 10px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    background: #111827;
+    color: #F3F4F6;
+    border-top: 1px solid #1F2937;
+    padding: 10px;
+    white-space: nowrap;
+  }
+
+  tbody tr:hover td {
+    background: #0B1220;
+  }
+
+  .totales {
+    margin-top: 20px;
+    text-align: right;
+  }
+
+  .totales p {
+    margin: 6px 0;
+    font-size: 15px;
+  }
+
+  .totales h4 {
+    margin-top: 10px;
+    font-size: 20px;
+    color: #3B82F6;
+  }
+
+  .acciones-factura {
+    margin-top: 25px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn-pago {
+    background: #3B82F6;
+    color: #ffffff;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: .2s;
+  }
+
+  .btn-pago:hover {
+    background: #2563EB;
+  }
+
+  .btn-pdf {
+    background: #10B981;
+    color: #ffffff;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: .2s;
+  }
+
+  .btn-pdf:hover {
+    background: #059669;
+  }
+
+
+  @media (max-width:1200px) {
+    .box {
+      margin-left: 0;
+      width: 96%;
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width:768px) {
+    .box {
+      padding: 14px;
+    }
+
+    .totales {
+      text-align: left;
+    }
+  }
+.cell-centered { text-align: center; }

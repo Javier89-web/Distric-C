@@ -1,0 +1,306 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/plan_cargas/gestionar_paradas.css' %}">
+{% endblock %}
+
+{% block contener %}
+
+
+<div class="route-page">
+    <div class="route-container">
+
+        <div class="page-header">
+            <h2>Paradas y Entregas</h2>
+            <p>
+                Organiza dónde se entregará cada producto del vehículo
+                {{ plan.vehiculo.matricula_vehiculo }}.
+            </p>
+        </div>
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <span>Peso efectivo</span>
+                <strong>{{ plan.peso_total_kg|floatformat:2 }} kg</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Peso distribuido</span>
+                <strong>{{ resumen_distribucion.peso_distribuido|floatformat:2 }} kg</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Peso pendiente</span>
+                <strong>{{ resumen_distribucion.peso_pendiente|floatformat:2 }} kg</strong>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="section-title">
+                <i class="bi bi-geo-alt"></i>
+                <h3>Agregar parada</h3>
+            </div>
+
+            <form action="{% url 'agregarparadaplancarga' plan.id_plan_carga %}" method="post">
+                {% csrf_token %}
+
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label class="form-label" for="lugarGuardado">
+                            Usar un lugar guardado del conductor
+                        </label>
+
+                        <select name="lugar_guardado" id="lugarGuardado" class="form-select">
+                            <option value="">Seleccionar manualmente</option>
+
+                            {% for lugar in lugares_guardados %}
+                                <option
+                                    value="{{ lugar.id_Lugarguardado }}"
+                                    data-nombre="{{ lugar.nombre_Lugarguardado }}"
+                                    data-latitud="{{ lugar.latitud_Lugarguardado|stringformat:'s' }}"
+                                    data-longitud="{{ lugar.longitud_Lugarguardado|stringformat:'s' }}"
+                                >
+                                    {{ lugar.nombre_Lugarguardado }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <p class="hint">
+                            El lugar seleccionado completa automáticamente nombre, dirección y coordenadas.
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="nombreParada">Nombre de la parada</label>
+                        <input type="text" name="nombre_parada" id="nombreParada" class="form-control" maxlength="150" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="direccionParada">Dirección</label>
+                        <input type="text" name="direccion_parada" id="direccionParada" class="form-control" maxlength="250" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="latitudParada">Latitud</label>
+                        <input type="text" name="latitud" id="latitudParada" class="form-control" placeholder="Ejemplo: -0.9352100" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="longitudParada">Longitud</label>
+                        <input type="text" name="longitud" id="longitudParada" class="form-control" placeholder="Ejemplo: -78.6155400" required>
+                    </div>
+
+                    <div class="form-group full">
+                        <label class="form-label" for="notaParada">Nota opcional</label>
+                        <input type="text" name="observaciones" id="notaParada" class="form-control" maxlength="250" placeholder="Referencia o indicación de entrega">
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" class="page-btn btn-red">
+                        <i class="bi bi-plus-circle"></i>
+                        Agregar parada
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="stops-list">
+            {% for parada in paradas %}
+                <article class="stop-card">
+                    <div class="stop-header">
+                        <div class="stop-name">
+                            <span class="stop-order">{{ parada.orden }}</span>
+
+                            <div>
+                                <strong>{{ parada.nombre_parada }}</strong>
+                                <span>{{ parada.direccion_parada }}</span>
+                                <span>{{ parada.latitud }}, {{ parada.longitud }}</span>
+                            </div>
+                        </div>
+
+                        <span class="stop-weight">
+                            {{ parada.peso_entrega_kg|floatformat:2 }} kg
+                        </span>
+                    </div>
+
+                    {% if parada.entregas.all %}
+                        <div class="table-scroll">
+                            <table class="delivery-table">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Peso</th>
+                                        <th>Actualizar</th>
+                                        <th>Quitar</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% for entrega in parada.entregas.all %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ entrega.detalle.producto.nombre_producto }}</strong>
+                                                {% if entrega.detalle.producto.marca_producto %}
+                                                    <br>
+                                                    <small>{{ entrega.detalle.producto.marca_producto }}</small>
+                                                {% endif %}
+                                            </td>
+
+                                            <td>
+                                                {{ entrega.cantidad_actual }}
+                                            </td>
+
+                                            <td>{{ entrega.peso_actual_kg|floatformat:2 }} kg</td>
+
+                                            <td>
+                                                <form action="{% url 'guardarentregaparada' parada.id_parada_plan_carga %}" method="post" class="d-flex gap-2">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="detalle" value="{{ entrega.detalle.id_detalle_plan_carga }}">
+                                                    <input
+                                                        type="number"
+                                                        name="cantidad"
+                                                        class="form-control"
+                                                        min="1"
+                                                        max="{{ entrega.detalle.cantidad_actual }}"
+                                                        value="{{ entrega.cantidad_actual }}"
+                                                        required
+                                                    >
+                                                    <button type="submit" class="page-btn">Guardar</button>
+                                                </form>
+                                            </td>
+
+                                            <td>
+                                                <form
+                                                    action="{% url 'eliminarentregaparada' entrega.id_entrega_plan_carga %}"
+                                                    method="post"
+                                                    class="js-confirm-form" data-confirm-message="¿Quitar este producto de la parada?"
+                                                >
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="page-btn btn-outline">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty mt-3">
+                            Esta parada todavía no tiene productos asignados.
+                        </div>
+                    {% endif %}
+
+                    <form action="{% url 'guardarentregaparada' parada.id_parada_plan_carga %}" method="post" class="inline-form">
+                        {% csrf_token %}
+
+                        <div class="grow">
+                            <label class="form-label">Producto pendiente</label>
+                            <select name="detalle" class="form-select" required>
+                                <option value="">Seleccione un producto</option>
+
+                                {% for detalle in detalles %}
+                                    {% if detalle.cantidad_pendiente > 0 %}
+                                        <option value="{{ detalle.id_detalle_plan_carga }}">
+                                            {{ detalle.producto.nombre_producto }}
+                                            {% if detalle.producto.marca_producto %}- {{ detalle.producto.marca_producto }}{% endif %}
+                                            · Pendiente: {{ detalle.cantidad_pendiente }}
+                                        </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="quantity">
+                            <label class="form-label">Cantidad</label>
+                            <input type="number" name="cantidad" class="form-control" min="1" required>
+                        </div>
+
+                        <button type="submit" class="page-btn btn-red">
+                            Asignar
+                        </button>
+                    </form>
+
+                    <details>
+                        <summary>Editar datos de la parada</summary>
+
+                        <div class="details-body">
+                            <form action="{% url 'editarparadaplancarga' parada.id_parada_plan_carga %}" method="post">
+                                {% csrf_token %}
+
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label">Orden</label>
+                                        <input type="number" name="orden" class="form-control" min="1" value="{{ parada.orden }}" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Nombre</label>
+                                        <input type="text" name="nombre_parada" class="form-control" maxlength="150" value="{{ parada.nombre_parada }}" required>
+                                    </div>
+
+                                    <div class="form-group full">
+                                        <label class="form-label">Dirección</label>
+                                        <input type="text" name="direccion_parada" class="form-control" maxlength="250" value="{{ parada.direccion_parada }}" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Latitud</label>
+                                        <input type="text" name="latitud" class="form-control" value="{{ parada.latitud }}" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Longitud</label>
+                                        <input type="text" name="longitud" class="form-control" value="{{ parada.longitud }}" required>
+                                    </div>
+
+                                    <div class="form-group full">
+                                        <label class="form-label">Nota</label>
+                                        <input type="text" name="observaciones" class="form-control" maxlength="250" value="{{ parada.observaciones }}">
+                                    </div>
+                                </div>
+
+                                <div class="actions">
+                                    <button type="submit" class="page-btn">Guardar cambios</button>
+                                </div>
+                            </form>
+
+                            <form
+                                action="{% url 'eliminarparadaplancarga' parada.id_parada_plan_carga %}"
+                                method="post"
+                                class="mt-2 js-confirm-form" data-confirm-message="¿Eliminar la parada y sus entregas?"
+                            >
+                                {% csrf_token %}
+                                <button type="submit" class="page-btn btn-outline">
+                                    Eliminar parada
+                                </button>
+                            </form>
+                        </div>
+                    </details>
+                </article>
+            {% empty %}
+                <div class="empty">
+                    Registra la primera parada para comenzar a distribuir los productos.
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="actions">
+            <a href="{% url 'detalleplancarga' plan.id_plan_carga %}" class="page-btn">
+                <i class="bi bi-arrow-left"></i>
+                Volver al plan
+            </a>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/plan_cargas/gestionar_paradas.js' %}" defer></script>
+{% endblock %}

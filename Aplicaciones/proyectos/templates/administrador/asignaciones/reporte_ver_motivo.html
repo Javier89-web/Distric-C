@@ -1,0 +1,68 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/asignaciones/reporte_ver_motivo.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box-motivo">
+  <h3>Motivo de {{ estado_label }}</h3>
+  <div class="subtitulo">
+    Detalle registrado por el usuario sobre este evento.
+  </div>
+
+  <div class="pill-estado">
+    <span>●</span> Estado: {{ estado_label }}
+  </div>
+
+  <p class="info-usuario">
+    <strong>Usuario:</strong>
+    {{ asign.usuario.nombre_usuario }} {{ asign.usuario.apellido_usuario }}
+  </p>
+  <div class="evento-card">
+    <div class="evento-titulo">
+      {{ asign.evento.titulo }}
+    </div>
+    <div class="evento-meta">
+      <div>
+        <span class="label">Inicio</span>
+        <span class="valor">
+          {{ asign.evento.inicio_fecha|date:"d-m-Y" }}
+          · {{ asign.evento.inicio_hora|time:"h:i A" }}
+        </span>
+      </div>
+
+      {% if asign.evento.fin_fecha and asign.evento.fin_hora %}
+      <div>
+        <span class="label">Fin</span>
+        <span class="valor">
+          {{ asign.evento.fin_fecha|date:"d-m-Y" }}
+          · {{ asign.evento.fin_hora|time:"h:i A" }}
+        </span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <hr>
+
+  <p class="motivo-titulo"><strong>Motivo registrado:</strong></p>
+
+  {% if motivo %}
+  <div class="motivo-box">
+    {{ motivo }}
+  </div>
+  {% else %}
+  <p class="motivo-vacio">Sin motivo registrado.</p>
+  {% endif %}
+
+  <div class="acciones">
+    <a href="{% url 'reporte_asignaciones' %}" class="btn-primary">
+      Volver al reporte
+    </a>
+  </div>
+</div>
+
+{% endblock %}

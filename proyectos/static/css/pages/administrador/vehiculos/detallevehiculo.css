@@ -1,0 +1,202 @@
+.detalle-page {
+        min-height: 100vh;
+        padding: 85px 15px 40px;
+        background: #f5f6fa;
+    }
+
+    .detalle-container {
+        width: 100%;
+        max-width: 850px;
+        margin: auto;
+    }
+
+    .page-header {
+        margin-bottom: 28px;
+    }
+
+    .page-header h2 {
+        margin: 0;
+        color: #111111;
+        font-size: 34px;
+        font-weight: 700;
+    }
+
+    .page-header p {
+        margin: 7px 0 0;
+        color: #6b7280;
+        font-size: 16px;
+    }
+
+    .page-header::after {
+        content: "";
+        display: block;
+        width: 57px;
+        height: 3px;
+        margin-top: 17px;
+        background: #d71920;
+        border-radius: 3px;
+    }
+
+    .detail-card {
+        padding: 30px 40px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-title {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        margin-bottom: 24px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .card-title i {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        color: #ffffff;
+        font-size: 20px;
+        background: #23262b;
+        border-radius: 10px;
+    }
+
+    .card-title strong {
+        color: #23262b;
+        font-size: 20px;
+    }
+
+    .card-title span {
+        display: block;
+        margin-top: 2px;
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+    }
+
+    .detail-item {
+        padding: 14px;
+        background: #f8f9fa;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+    }
+
+    .detail-item.full {
+        grid-column: 1 / -1;
+    }
+
+    .detail-item span {
+        display: block;
+        margin-bottom: 5px;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .detail-item strong {
+        color: #23262b;
+        font-size: 14px;
+        word-break: break-word;
+    }
+
+    .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 9px;
+        font-size: 11px;
+        font-weight: 700;
+        border-radius: 7px;
+    }
+
+    .status-assigned {
+        color: #166534;
+        background: #dcfce7;
+    }
+
+    .status-available {
+        color: #d71920;
+        background: rgba(215, 25, 32, 0.08);
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .form-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 42px;
+        padding: 10px 18px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        border-radius: 9px;
+        cursor: pointer;
+    }
+
+    .btn-dark {
+        color: #ffffff !important;
+        background: #23262b;
+        border: 1px solid #23262b;
+    }
+
+    .btn-red {
+        color: #ffffff !important;
+        background: #d71920;
+        border: 1px solid #d71920;
+    }
+
+    .btn-outline {
+        color: #d71920;
+        background: #ffffff;
+        border: 1px solid #d71920;
+    }
+
+    @media (max-width: 768px) {
+        .detalle-page {
+            padding: 75px 12px 30px;
+        }
+
+        .page-header h2 {
+            font-size: 28px;
+        }
+
+        .detail-card {
+            padding: 22px 18px;
+        }
+
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .detail-item.full {
+            grid-column: auto;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-btn {
+            width: 100%;
+        }
+    }

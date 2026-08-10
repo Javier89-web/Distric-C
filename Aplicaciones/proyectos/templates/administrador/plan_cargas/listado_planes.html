@@ -1,0 +1,151 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/plan_cargas/listado_planes.css' %}">
+{% endblock %}
+
+{% block contener %}
+<main class="planes-page">
+    <div class="planes-container">
+        <header class="page-header">
+            <h2>Planificación de Cargas</h2>
+            <p>Consulta el historial o prepara la carga de un vehículo para una fecha permitida.</p>
+        </header>
+
+        <section class="stats-grid">
+            <div class="stat-card"><span>Vehículos registrados</span><strong>{{ total_vehiculos }}</strong></div>
+            <div class="stat-card"><span>Planes de la fecha</span><strong>{{ total_planes }}</strong></div>
+            <div class="stat-card"><span>Planes listos</span><strong>{{ total_listos }}</strong></div>
+            <div class="stat-card"><span>Planes confirmados</span><strong>{{ total_confirmados }}</strong></div>
+        </section>
+
+        <section class="load-control-card">
+            <div class="load-control-heading">
+                <div>
+                    <h3>Consultar y crear cargas</h3>
+                    <p>La consulta admite fechas antiguas. Las nuevas cargas solo pueden programarse desde hoy hasta seis meses adelante.</p>
+                </div>
+            </div>
+
+            <div class="load-control-grid">
+                <form method="get" class="control-form" id="formFechaCarga" data-loading-text="Consultando fecha…" novalidate>
+                    <div class="control-label">
+                        <i class="bi bi-clock-history"></i>
+                        <div><strong>Consultar registros</strong><span>Selecciona cualquier fecha para ver los planes guardados.</span></div>
+                    </div>
+                    <div class="control-fields">
+                        <div class="date-field">
+                            <input type="date" name="fecha" id="fechaPlanCarga" class="date-input" value="{{ fecha_seleccionada|date:'Y-m-d' }}">
+                            <span class="date-error" id="errorFechaPlanCarga"></span>
+                        </div>
+                        <button type="submit" class="btn-dark"><i class="bi bi-calendar3"></i> Ver fecha</button>
+                    </div>
+                </form>
+
+                <form method="post" action="{% url 'crearplancargadesdeformulario' %}" class="control-form" id="formCrearCarga" data-loading-text="Generando carga…" novalidate>
+                    {% csrf_token %}
+                    <div class="control-label">
+                        <i class="bi bi-box-seam"></i>
+                        <div><strong>Preparar una nueva carga</strong><span>Elige primero el vehículo que transportará los productos.</span></div>
+                    </div>
+                    <div class="create-load-grid">
+                        <div class="control-field">
+                            <label for="vehiculoNuevaCarga">Vehículo</label>
+                            <select id="vehiculoNuevaCarga" name="vehiculo_id">
+                                <option value="">Seleccione un vehículo</option>
+                                {% for vehiculo in vehiculos_creacion %}
+                                <option value="{{ vehiculo.id_vehiculo }}">
+                                    {{ vehiculo.matricula_vehiculo }} · {{ vehiculo.modelo_vehiculo|default:"Sin modelo" }}{% if vehiculo.usuario %} · {{ vehiculo.usuario.nombre_usuario }} {{ vehiculo.usuario.apellido_usuario }}{% else %} · Sin conductor{% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <span class="date-error" id="errorVehiculoNuevaCarga"></span>
+                        </div>
+                        <div class="control-field">
+                            <label for="fechaNuevaCarga">Fecha</label>
+                            <input type="date" id="fechaNuevaCarga" name="fecha_planificada" value="{{ fecha_creacion_inicial|date:'Y-m-d' }}" min="{{ fecha_minima|date:'Y-m-d' }}" max="{{ fecha_maxima|date:'Y-m-d' }}">
+                            <span class="date-error" id="errorFechaNuevaCarga"></span>
+                        </div>
+                        <button type="submit" class="btn-red create-load-btn"><i class="bi bi-plus-circle"></i> Generar carga</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section class="toolbar compact-toolbar">
+            <div class="search-box"><i class="bi bi-search"></i><input type="text" id="buscarVehiculoCarga" placeholder="Buscar por placa, modelo o conductor..." autocomplete="off"></div>
+        </section>
+
+        <section class="selected-date-card{% if es_fecha_historica %} historical-date-card{% endif %}">
+            <div>
+                <strong>Cargas del {{ fecha_seleccionada|date:"d/m/Y" }}</strong>
+                {% if es_fecha_historica %}
+                <span>Registro histórico disponible únicamente para consulta.</span>
+                {% elif fecha_editable %}
+                <span>Puedes consultar y modificar los planes de esta fecha según su estado.</span>
+                {% else %}
+                <span>La fecha está fuera del rango de creación; permanece disponible para consulta.</span>
+                {% endif %}
+            </div>
+            {% if es_fecha_historica %}<span class="historical-label"><i class="bi bi-lock"></i> Solo lectura</span>{% else %}<span>Creación permitida: {{ fecha_minima|date:"d/m/Y" }} – {{ fecha_maxima|date:"d/m/Y" }}</span>{% endif %}
+        </section>
+
+        {% if vehiculos %}
+        <div class="vehicles-grid">
+            {% for vehiculo in vehiculos %}
+            {% if not es_fecha_historica or vehiculo.plan_actual %}
+            <article class="vehicle-card" data-busqueda="{{ vehiculo.matricula_vehiculo }} {{ vehiculo.modelo_vehiculo }} {% if vehiculo.usuario %}{{ vehiculo.usuario.nombre_usuario }} {{ vehiculo.usuario.apellido_usuario }} {{ vehiculo.usuario.correo_usuario }}{% endif %}">
+                <div class="vehicle-header">
+                    <div><strong>{{ vehiculo.matricula_vehiculo }}</strong><span>{{ vehiculo.modelo_vehiculo|default:"Sin modelo" }} · {{ vehiculo.get_tipovehiculo_vehiculo_display }}</span></div>
+                    {% if vehiculo.plan_actual %}
+                        {% if vehiculo.plan_actual.estado == "LISTO" %}<span class="status status-ready">LISTO</span>
+                        {% elif vehiculo.plan_actual.estado == "CONFIRMADO" %}<span class="status status-confirmed">CONFIRMADO</span>
+                        {% elif vehiculo.plan_actual.estado == "CANCELADO" %}<span class="status status-cancelled">CANCELADO</span>
+                        {% elif vehiculo.plan_actual.estado == "COMPLETADO" %}<span class="status status-confirmed">COMPLETADO</span>
+                        {% else %}<span class="status status-draft">BORRADOR</span>{% endif %}
+                    {% else %}<span class="status status-empty">SIN PLAN</span>{% endif %}
+                </div>
+
+                {% if vehiculo.plan_actual.ajustado_por_usuario %}<div class="capacity-text capacity-text-danger">AJUSTADA POR EL CONDUCTOR</div>{% endif %}
+                {% if vehiculo.plan_actual.revisado_por_usuario %}<div class="capacity-text capacity-text-success">REVISADA POR EL CONDUCTOR</div>{% endif %}
+
+                <div class="vehicle-data">
+                    <div><span>Conductor</span><strong>{% if vehiculo.usuario %}{{ vehiculo.usuario.nombre_usuario }} {{ vehiculo.usuario.apellido_usuario }}{% else %}Sin asignar{% endif %}</strong></div>
+                    <div><span>Capacidad</span><strong>{% if vehiculo.capacidad_carga_kg %}{{ vehiculo.capacidad_carga_kg|floatformat:2 }} kg{% else %}No configurada{% endif %}</strong></div>
+                    <div><span>Carga planificada</span><strong>{% if vehiculo.plan_actual %}{{ vehiculo.plan_actual.peso_calculado|floatformat:2 }} kg{% else %}0.00 kg{% endif %}</strong></div>
+                </div>
+
+                {% if vehiculo.capacidad_carga_kg %}
+                <div class="progress-track"><div class="progress-value js-progress-width{% if vehiculo.plan_actual.porcentaje_calculado >= 80 %} high{% endif %}" data-progress="{% if vehiculo.plan_actual %}{{ vehiculo.plan_actual.porcentaje_calculado|floatformat:0 }}{% else %}0{% endif %}"></div></div>
+                <div class="capacity-text">Disponible: {% if vehiculo.plan_actual %}{{ vehiculo.plan_actual.disponible_calculado|floatformat:2 }}{% else %}{{ vehiculo.capacidad_carga_kg|floatformat:2 }}{% endif %} kg</div>
+                {% endif %}
+
+                <div class="card-actions">
+                    {% if not vehiculo.capacidad_carga_kg %}
+                        {% if not es_fecha_historica %}<a href="{% url 'editarvehiculoadmin' vehiculo.id_vehiculo %}" class="btn-red">Configurar capacidad</a>{% endif %}
+                    {% elif vehiculo.plan_actual %}
+                        <a href="{% url 'detalleplancarga' vehiculo.plan_actual.id_plan_carga %}" class="btn-dark">Ver detalle</a>
+                        {% if not es_fecha_historica %}
+                            {% if vehiculo.plan_actual.estado == "CANCELADO" %}
+                            <form action="{% url 'reactivarplancarga' vehiculo.plan_actual.id_plan_carga %}" method="post">{% csrf_token %}<button type="submit" class="btn-outline">Reactivar</button></form>
+                            {% elif vehiculo.plan_actual.estado == "BORRADOR" %}
+                            <a href="{% url 'prepararplancarga' vehiculo.plan_actual.id_plan_carga %}" class="btn-red">Editar carga</a>
+                            {% endif %}
+                        {% endif %}
+                    {% elif fecha_editable %}
+                        <a href="{% url 'crearplancarga' vehiculo.id_vehiculo %}?fecha={{ fecha_seleccionada|date:'Y-m-d' }}" class="btn-red">Preparar en esta fecha</a>
+                    {% endif %}
+                </div>
+            </article>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% else %}<div class="empty">No existen vehículos registrados.</div>{% endif %}
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/plan_cargas/listado_planes.js' %}" defer></script>
+{% endblock %}

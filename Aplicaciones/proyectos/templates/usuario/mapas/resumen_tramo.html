@@ -1,0 +1,142 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block titulo %}Resumen del tramo | Distric C{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/rutas_base.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/resumen_tramo.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<div
+    id="segmentSummaryConfig"
+    hidden
+    data-test-url="{% url 'nueva_ruta_viaje_prueba' viaje.id_viaje %}"
+></div>
+
+<main class="segment-summary-page">
+    <div class="segment-summary-container">
+        <header class="route-page-header">
+            <span class="route-eyebrow">{% if modo_admin_rutas %}Prueba administrativa · {% endif %}Tramo {{ tramo.orden }} completado</span>
+            <h1>{{ tramo.origen_nombre }} → {{ tramo.destino_nombre }}</h1>
+            <p>{% if modo_admin_rutas %}La entrega quedó guardada únicamente en la simulación #{{ viaje.id_viaje }}.{% else %}La carga fue actualizada y el resultado quedó guardado dentro del viaje #{{ viaje.id_viaje }}.{% endif %}</p>
+        </header>
+
+        <section class="segment-summary-card">
+            <div class="completion-mark"><i class="bi bi-check2"></i></div>
+
+            <div class="segment-result-grid">
+                <div><span>Distancia estimada</span><strong>{{ tramo.distancia_estimada_km|floatformat:2 }} km</strong></div>
+                <div><span>Distancia GPS</span><strong>{{ tramo.distancia_real_km|floatformat:2 }} km</strong></div>
+                <div><span>Tiempo estimado</span><strong>{{ tramo.tiempo_estimado_min|floatformat:1 }} min</strong></div>
+                <div><span>Tiempo real</span><strong>{{ tramo.tiempo_real_min|floatformat:1 }} min</strong></div>
+                <div><span>Combustible IA</span><strong>{{ tramo.consumo_estimado_l|floatformat:2 }} L</strong></div>
+                <div><span>Peso entregado</span><strong>{{ tramo.peso_entregado_kg|floatformat:2 }} kg</strong></div>
+                <div><span>Carga restante</span><strong>{{ tramo.carga_restante_kg|floatformat:2 }} kg</strong></div>
+                <div><span>Costo estimado</span><strong>${{ tramo.costo_estimado|floatformat:2 }}</strong></div>
+            </div>
+
+            <div class="next-route-validation{% if puede_nueva_ruta_gps %} validation-ok{% else %} validation-pending{% endif %}">
+                <i class="bi {% if puede_nueva_ruta_gps %}bi-geo-alt-fill{% else %}bi-shield-exclamation{% endif %}"></i>
+                <div>
+                    <strong>{% if puede_nueva_ruta_gps %}Llegada validada por GPS{% else %}Siguiente tramo pendiente de validación GPS{% endif %}</strong>
+                    <span>
+                        {% if distancia_destino_m != None %}
+                            Último punto registrado a {{ distancia_destino_m|floatformat:0 }} m del destino. El límite es {{ radio_llegada_m }} m.
+                        {% else %}
+                            No existe un punto GPS final. En operación normal debes estar físicamente en el destino anterior.
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <section class="segment-deliveries">
+                <div class="section-heading">
+                    <h2>Entrega registrada</h2>
+                    <span>{{ entregas|length }} producto{{ entregas|length|pluralize }}</span>
+                </div>
+                {% if entregas %}
+                <div class="segment-delivery-list">
+                    {% for entrega in entregas %}
+                    <div>
+                        <strong>{{ entrega.producto_nombre }}</strong>
+                        <span>
+                            {% if entrega.marca_producto %}{{ entrega.marca_producto }} · {% endif %}
+                            {{ entrega.presentacion_descriptiva }} ·
+                            {{ entrega.cantidad_entregada }}
+                            {% if entrega.cantidad_entregada == 1 %}{{ entrega.unidad_carga }}{% else %}{{ entrega.unidad_carga_plural }}{% endif %}
+                            · {{ entrega.peso_entregado_kg|floatformat:2 }} kg
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-delivery">No se registraron productos entregados en este destino.</div>
+                {% endif %}
+            </section>
+
+            {% if tramo.nota_finalizacion %}
+            <div class="segment-note"><strong>Nota:</strong><p>{{ tramo.nota_finalizacion }}</p></div>
+            {% endif %}
+
+            {% if tramo.evidencia_entrega %}
+            <section class="segment-evidence">
+                <div class="section-heading">
+                    <h2>Evidencia fotográfica</h2>
+                    <span>Entrega registrada</span>
+                </div>
+                <a href="{{ tramo.evidencia_entrega.url }}" target="_blank" rel="noopener" class="segment-evidence-link">
+                    <img src="{{ tramo.evidencia_entrega.url }}" alt="Evidencia de la entrega del tramo {{ tramo.orden }}">
+                    <span><i class="bi bi-arrows-fullscreen"></i> Ver imagen completa</span>
+                </a>
+            </section>
+            {% endif %}
+
+            <div class="segment-next-actions">
+                {% if puede_nueva_ruta %}
+                <form method="post" action="{% url 'nueva_ruta_viaje' viaje.id_viaje %}" class="next-route-form">
+                    {% csrf_token %}
+                    <button type="submit" class="route-btn route-btn-dark" {% if not puede_nueva_ruta_gps %}disabled{% endif %}>
+                        <i class="bi bi-signpost-split"></i>
+                        Crear ruta desde la ubicación actual → siguiente destino
+                    </button>
+                </form>
+
+                {% if modo_prueba_habilitado %}
+                <button type="button" id="btnNuevaRutaPrueba" class="route-btn route-btn-test">
+                    <i class="bi bi-wrench-adjustable"></i>
+                    Probar siguiente tramo sin GPS
+                </button>
+                {% endif %}
+
+                <form method="post" action="{% url 'finalizar_viaje' viaje.id_viaje %}" class="finish-trip-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="notas_cierre" value="">
+                    <button type="submit" class="route-btn route-btn-red">
+                        Finalizar viaje completo
+                        <i class="bi bi-flag-fill"></i>
+                    </button>
+                </form>
+                {% endif %}
+
+                {% if modo_admin_rutas %}
+                <a href="{% url 'admin_reportes_viajes' %}?tipo=PRUEBA" class="route-btn route-btn-outline">
+                    <i class="bi bi-arrow-left"></i>
+                    Regresar
+                </a>
+                {% else %}
+                <a href="{% url 'historial' %}" class="route-btn route-btn-outline">
+                    <i class="bi bi-clock-history"></i>
+                    Ver historial
+                </a>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/usuario/mapas/resumen_tramo.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,191 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block titulo %}Alternativas de ruta | Distric C{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/rutas_base.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/rutas.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<div
+    id="routeOptionsConfig"
+    hidden
+    data-google-maps-key="{{ google_maps_api_key|escape }}"
+    data-origen="{{ origen_real|escape }}"
+    data-destino="{{ destino_real|escape }}"
+    data-rutas="{{ rutas_js|escape }}"
+    data-icon-origen="{% static 'img/punto.png' %}"
+    data-icon-destino="{% static 'img/puntorojo.png' %}"
+></div>
+
+<main class="route-options-page">
+    <div class="route-options-container">
+        <header class="route-page-header route-options-header">
+            <div>
+                <span class="route-eyebrow">Tramo {{ tramo.orden }} · Viaje #{{ viaje.id_viaje }}</span>
+                <h1>Rutas calculadas para {{ tramo.origen_nombre }} → {{ tramo.destino_nombre }}</h1>
+                <p>Dijkstra evaluó la red vial con pesos dinámicos generados por Random Forest.</p>
+            </div>
+            <div class="load-summary-chip">
+                <i class="bi bi-box-seam"></i>
+                <span>Carga del tramo</span>
+                <strong>{{ plan.peso_total_kg|floatformat:2 }} kg</strong>
+            </div>
+        </header>
+
+        <section class="route-map-card">
+            <div id="mapa"></div>
+            <div class="map-route-legend">
+                <span><i class="legend-dot legend-origin"></i> Inicio sobre la vía</span>
+                <span><i class="legend-dot legend-destination"></i> Destino sobre la vía</span>
+                <span><i class="legend-line"></i> Alternativa seleccionada</span>
+            </div>
+            <div class="road-snap-notice">
+                <i class="bi bi-signpost-2"></i>
+                <span>
+                    Los puntos fueron ajustados a la calzada vehicular más cercana para evitar líneas que atraviesen terrenos.
+                    Ajuste de inicio: <strong>{{ ajuste_origen_m|floatformat:0 }} m</strong> ·
+                    ajuste de destino: <strong>{{ ajuste_destino_m|floatformat:0 }} m</strong>.
+                </span>
+            </div>
+        </section>
+
+        <section class="route-comparison-card">
+            <aside class="route-selector-panel">
+                <div class="route-selector-heading">
+                    <h2>Alternativas</h2>
+                    <span>{{ opciones|length }} ruta{{ opciones|length|pluralize }}</span>
+                </div>
+
+                <label class="route-selector-search" for="routeSelectorSearch">
+                    <i class="bi bi-search"></i>
+                    <input type="search" id="routeSelectorSearch" placeholder="Buscar ruta..." autocomplete="off">
+                </label>
+
+                <div class="route-selector-list" id="routeSelectorList">
+                    {% for opcion in opciones %}
+                    <button
+                        type="button"
+                        class="route-selector-item{% if opcion.es_recomendada %} is-active{% endif %}"
+                        data-route-index="{{ opcion.indice }}"
+                        data-route-id="{{ opcion.objeto.id_ruta_opcion }}"
+                    >
+                        <i class="route-color-indicator" data-route-color="{{ opcion.color }}"></i>
+                        <span class="route-selector-main">
+                            <strong>
+                                Ruta {{ opcion.indice }}
+                                {% if opcion.es_recomendada %}<em>Recomendada</em>{% endif %}
+                            </strong>
+                            <small>{{ opcion.distancia_km|floatformat:2 }} km · {{ opcion.tiempo_min|floatformat:1 }} min</small>
+                        </span>
+                        <span class="route-selector-fuel">{{ opcion.consumo_predicho|floatformat:2 }} L</span>
+                    </button>
+                    {% endfor %}
+                </div>
+            </aside>
+
+            <div class="route-detail-panel">
+                {% for opcion in opciones %}
+                <article class="route-detail{% if opcion.es_recomendada %} is-active{% endif %}" data-route-detail="{{ opcion.indice }}">
+                    <div class="route-detail-heading">
+                        <div>
+                            <span>Resultado de la alternativa</span>
+                            <h2>Ruta {{ opcion.indice }}</h2>
+                        </div>
+                        {% if not opcion.es_recomendada %}
+                        <span class="alternative-badge">+{{ opcion.diferencia_score|floatformat:1 }} %</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="route-kpi-grid">
+                        <div><span>Distancia</span><strong>{{ opcion.distancia_km|floatformat:2 }} km</strong></div>
+                        <div><span>Tiempo estimado</span><strong>{{ opcion.tiempo_min|floatformat:1 }} min</strong></div>
+                        <div><span>Combustible IA</span><strong>{{ opcion.consumo_predicho|floatformat:2 }} L</strong></div>
+                        <div><span>Costo estimado</span><strong>${{ opcion.costo_estimado|floatformat:2 }}</strong></div>
+                    </div>
+
+                    <div class="route-explanation-grid">
+                        <div class="route-explanation-box">
+                            <h3><i class="bi bi-diagram-3"></i> Cálculo de ruta</h3>
+                            <dl>
+                                <div><dt>Algoritmo</dt><dd>Dijkstra</dd></div>
+                                <div><dt>Estructura</dt><dd>Teoría de grafos</dd></div>
+                                <div><dt>Tipo de vía dominante</dt><dd>{{ opcion.tipo_via }}</dd></div>
+                                <div><dt>Detenciones estimadas</dt><dd>{{ opcion.detenciones }}</dd></div>
+                                <div><dt>Velocidad promedio</dt><dd>{{ opcion.velocidad|floatformat:1 }} km/h</dd></div>
+                            </dl>
+                        </div>
+
+                        <div class="route-explanation-box">
+                            <h3><i class="bi bi-cpu"></i> Predicción de consumo</h3>
+                            <dl>
+                                <div><dt>Modelo</dt><dd>{{ opcion.modelo.modelo }}</dd></div>
+                                <div><dt>Consumo matemático</dt><dd>{{ opcion.consumo_base|floatformat:2 }} L</dd></div>
+                                <div><dt>Consumo Random Forest</dt><dd>{{ opcion.consumo_predicho|floatformat:2 }} L</dd></div>
+                                <div><dt>Carga considerada</dt><dd>{{ plan.peso_total_kg|floatformat:2 }} kg</dd></div>
+                                <div><dt>Fuente inicial</dt><dd>{{ opcion.modelo.fuente_datos }}</dd></div>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <div class="external-factors-row">
+                        <div>
+                            <i class="bi bi-car-front"></i>
+                            <span>Tráfico</span>
+                            <strong>{{ factores_google.trafico.descripcion_trafico }}</strong>
+                            <small>{{ factores_google.trafico.fuente }}{% if factores_google.trafico.desde_cache %} · caché{% endif %}</small>
+                        </div>
+                        <div>
+                            <i class="bi bi-cloud-sun"></i>
+                            <span>Clima</span>
+                            <strong>{{ factores_google.clima.descripcion_clima }}</strong>
+                            <small>{{ factores_google.clima.fuente }}{% if factores_google.clima.temperatura != None %} · {{ factores_google.clima.temperatura|floatformat:1 }} °C{% endif %}</small>
+                        </div>
+                        <div>
+                            <i class="bi bi-database-check"></i>
+                            <span>Evaluación IA</span>
+                            <strong>
+                                {% if opcion.modelo.metricas.r2 %}R² {{ opcion.modelo.metricas.r2 }}{% else %}Modo de respaldo{% endif %}
+                            </strong>
+                        </div>
+                    </div>
+
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+
+        <div class="route-options-actions">
+            <form method="post" action="{% url 'cancelar_generacion_ruta' tramo.id_tramo_viaje %}" id="cancelRouteForm">
+                {% csrf_token %}
+                <button type="submit" class="route-btn route-btn-outline">
+                    <i class="bi bi-arrow-left"></i>
+                    Cambiar puntos
+                </button>
+            </form>
+
+            {% for opcion in opciones %}
+            <form
+                method="post"
+                action="{% url 'iniciar_ruta_seleccionada' opcion.objeto.id_ruta_opcion %}"
+                class="start-route-form"
+                data-start-form="{{ opcion.indice }}"
+                {% if not opcion.es_recomendada %}hidden{% endif %}
+            >
+                {% csrf_token %}
+                <button type="submit" class="route-btn route-btn-red">
+                    Iniciar viaje por la ruta {{ opcion.indice }}
+                    <i class="bi bi-navigation"></i>
+                </button>
+            </form>
+            {% endfor %}
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/usuario/mapas/rutas.js' %}" defer></script>
+{% endblock %}

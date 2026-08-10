@@ -1,0 +1,47 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/facturas/nuevafactura.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+
+  <h3>Nueva Factura</h3>
+
+  <div class="top-actions">
+    <a href="{% url 'listado_facturas' %}">
+      Lista de Facturas
+    </a>
+  </div>
+
+  <form action="{% url 'crear_factura' %}" method="POST">
+    {% csrf_token %}
+
+    <label>Nombre del Cliente</label>
+    <input type="text" name="cliente_nombre" class="form-control" placeholder="Ej: Juan Pérez" required>
+
+    <label>Numero de cuenta</label>
+    <input type="text" name="numero_cuenta" class="form-control" required>
+
+
+    <label>Seleccionar Pedido</label>
+    <select name="pedido_id" class="form-control" required>
+      {% for p in pedidos %}
+      <option value="{{ p.id_pedido }}">
+        Pedido #{{ p.id_pedido }} - {{ p.descripcion_pedido|default:"Sin descripción" }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <button class="btn-save" type="submit">
+      Crear Factura
+    </button>
+
+  </form>
+
+</div>
+
+{% endblock %}

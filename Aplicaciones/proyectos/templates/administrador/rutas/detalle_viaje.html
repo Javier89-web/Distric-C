@@ -1,0 +1,92 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block titulo %}Detalle del reporte | Distric C{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/administrador/rutas/detalle_viaje.css' %}">{% endblock %}
+
+{% block contener %}
+<main class="admin-report-detail-page">
+    <div class="admin-report-detail-container">
+        <header class="admin-report-detail-header">
+            <div>
+                <span>{% if viaje.es_prueba_administrativa %}PRUEBA ADMINISTRATIVA{% else %}VIAJE OPERATIVO{% endif %} #{{ viaje.id_viaje }}</span>
+                <h1>{{ viaje.usuario.nombre_usuario }} {{ viaje.usuario.apellido_usuario }} · {{ viaje.vehiculo.matricula_vehiculo }}</h1>
+                <p>{{ viaje.fecha_creacion|date:"d/m/Y H:i" }} · Resumen del recorrido registrado.</p>
+            </div>
+            <span class="admin-report-kind {% if viaje.es_prueba_administrativa %}is-test{% endif %}">{% if viaje.es_prueba_administrativa %}PRUEBA{% else %}OPERATIVO{% endif %}</span>
+        </header>
+
+        <section class="admin-report-panel">
+            <div class="admin-report-summary" aria-label="Resumen general del viaje">
+                <article><span>Estado · tramos</span><strong>{{ viaje.get_estado_display }} · {{ viaje.numero_tramos }}</strong></article>
+                <article><span>Distancia</span><strong>{{ viaje.distancia_estimada_total_km|floatformat:2 }} km</strong><small>GPS {{ viaje.distancia_real_total_km|floatformat:2 }} km</small></article>
+                <article><span>Tiempo</span><strong>{{ viaje.tiempo_estimado_total_min|floatformat:1 }} min</strong><small>Real {{ viaje.tiempo_real_total_min|floatformat:1 }} min</small></article>
+                <article><span>Combustible · costo</span><strong>{{ viaje.consumo_estimado_total_l|floatformat:2 }} L</strong><small>${{ viaje.costo_estimado_total|floatformat:2 }}</small></article>
+            </div>
+
+            <div class="admin-report-identification">
+                <article><span>Conductor</span><strong>{{ viaje.usuario.nombre_usuario }} {{ viaje.usuario.apellido_usuario }}</strong><small>{{ viaje.usuario.correo_usuario }}</small></article>
+                <article><span>Vehículo</span><strong>{{ viaje.vehiculo.matricula_vehiculo }}</strong><small>{{ viaje.vehiculo.modelo_vehiculo|default:"Sin modelo" }}</small></article>
+                <article><span>Carga</span><strong>{{ viaje.carga_inicial_kg|floatformat:2 }} kg</strong><small>{{ viaje.carga_final_kg|floatformat:2 }} kg restantes</small></article>
+                <article><span>Recorrido</span><strong>{{ viaje.origen_nombre|default:"No definido" }}</strong><small>Hasta {{ viaje.destino_final_nombre|default:"No definido" }}</small></article>
+            </div>
+
+            <div class="admin-report-section-heading">
+                <div><h2>Detalle por tramos</h2><p>Toca o haz clic sobre un tramo para ver sus datos completos.</p></div>
+            </div>
+
+            <div class="admin-report-timeline">
+                {% for tramo in tramos %}
+                <details class="admin-report-segment" {% if forloop.first %}open{% endif %}>
+                    <summary class="admin-segment-summary">
+                        <span class="admin-segment-number">{{ tramo.orden }}</span>
+                        <span class="admin-segment-route">
+                            <small>TRAMO {{ tramo.orden }}</small>
+                            <strong>{{ tramo.origen_nombre }} → {{ tramo.destino_nombre }}</strong>
+                        </span>
+                        <span class="admin-segment-quick"><b>{{ tramo.distancia_estimada_km|floatformat:2 }} km</b><small>{{ tramo.consumo_estimado_l|floatformat:2 }} L</small></span>
+                        <span class="admin-segment-state admin-segment-state-{{ tramo.estado|lower }}">{{ tramo.get_estado_display }}</span>
+                        <i class="bi bi-chevron-down admin-segment-chevron"></i>
+                    </summary>
+
+                    <div class="admin-segment-body">
+                        <div class="admin-segment-metrics">
+                            <div><span>Distancia estimada</span><strong>{{ tramo.distancia_estimada_km|floatformat:2 }} km</strong></div>
+                            <div><span>Distancia GPS</span><strong>{{ tramo.distancia_real_km|floatformat:2 }} km</strong></div>
+                            <div><span>Tiempo estimado</span><strong>{{ tramo.tiempo_estimado_min|floatformat:1 }} min</strong></div>
+                            <div><span>Tiempo real</span><strong>{{ tramo.tiempo_real_min|floatformat:1 }} min</strong></div>
+                            <div><span>Consumo IA</span><strong>{{ tramo.consumo_estimado_l|floatformat:2 }} L</strong></div>
+                            <div><span>Carga restante</span><strong>{{ tramo.carga_restante_kg|floatformat:2 }} kg</strong></div>
+                        </div>
+
+                        <div class="admin-segment-deliveries">
+                            <strong>Entregas</strong>
+                            <div>
+                                {% for entrega in tramo.entregas_realizadas.all %}
+                                <span>{{ entrega.producto_nombre }} · {{ entrega.cantidad_entregada }} {% if entrega.cantidad_entregada == 1 %}{{ entrega.unidad_carga }}{% else %}{{ entrega.unidad_carga_plural }}{% endif %} · {{ entrega.peso_entregado_kg|floatformat:2 }} kg</span>
+                                {% empty %}<span>Sin productos entregados en este tramo.</span>{% endfor %}
+                            </div>
+                        </div>
+
+                        {% if tramo.evidencia_entrega %}
+                        <div class="admin-segment-evidence">
+                            <div><span>Evidencia</span><strong>Fotografía registrada en la entrega</strong></div>
+                            <a href="{{ tramo.evidencia_entrega.url }}" target="_blank" rel="noopener"><img src="{{ tramo.evidencia_entrega.url }}" alt="Evidencia del tramo {{ tramo.orden }}"></a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </details>
+                {% empty %}<div class="admin-report-empty">Este registro todavía no contiene tramos.</div>{% endfor %}
+            </div>
+
+            <div class="admin-report-actions">
+                <a href="{% url 'admin_reportes_viajes' %}{% if viaje.es_prueba_administrativa %}?tipo=PRUEBA{% endif %}" class="admin-report-btn admin-report-btn-outline"><i class="bi bi-arrow-left"></i> Regresar a reportes</a>
+                <form method="get" action="{% url 'admin_reporte_pdf_viaje' viaje.id_viaje %}" class="pdf-unit-form">
+                    <select name="unidad" aria-label="Unidad de combustible del PDF"><option value="LITROS">Litros</option><option value="GALONES">Galones</option></select>
+                    <button type="submit" class="admin-report-btn admin-report-btn-red"><i class="bi bi-file-earmark-pdf"></i> Descargar informe PDF</button>
+                </form>
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}

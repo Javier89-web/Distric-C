@@ -1,0 +1,72 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/asignaciones/usuario_motivo_atrasado.css' %}">
+{% endblock %}
+{% block contenido %}
+
+
+<div class="box-justificar">
+  <h3>Motivo de Atrasado</h3>
+  <div class="subtitulo">
+    Completa el motivo para registrar el atraso de este evento.
+  </div>
+
+  <div class="pill-estado">
+    <span>●</span> Estado actual: ATRASADO
+  </div>
+
+  <!-- Tarjeta con info del evento -->
+  <div class="evento-card">
+    <div class="evento-titulo">
+      {{ asign.evento.titulo }}
+    </div>
+    <div class="evento-meta">
+      <div>
+        <span class="label">Inicio</span>
+        <span class="valor">
+          {{ asign.evento.inicio_fecha|date:"d-m-Y" }}
+          · {{ asign.evento.inicio_hora|time:"h:i A" }}
+        </span>
+      </div>
+      {% if asign.evento.fin_fecha and asign.evento.fin_hora %}
+      <div>
+        <span class="label">Fin</span>
+        <span class="valor">
+          {{ asign.evento.fin_fecha|date:"d-m-Y" }}
+          · {{ asign.evento.fin_hora|time:"h:i A" }}
+        </span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <form method="POST">
+    {% csrf_token %}
+
+    <label for="motivo" class="campo-motivo-label">
+      Escribe el motivo por el que el evento quedó ATRASADO:
+    </label>
+    <div class="campo-motivo-help">
+      Sé lo más claro posible (ej. fallas mecánicas, tráfico, retraso en carga, etc.).
+    </div>
+
+    <textarea id="motivo" name="motivo" required
+      placeholder="Ejemplo: Se pinchó una llanta durante el trayecto y fue necesario llamar al mecánico.">
+      {{ motivo_actual }}
+    </textarea>
+
+    <div class="acciones">
+      <button type="submit" class="btn-primary">
+        Guardar motivo y actualizar estado
+      </button>
+
+      <a href="{% url 'pedidosusuario' %}" class="btn-secondary">
+        Cancelar
+      </a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

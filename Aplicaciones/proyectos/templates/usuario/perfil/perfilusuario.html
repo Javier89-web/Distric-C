@@ -1,0 +1,122 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/perfil/perfilusuario.css' %}">
+{% endblock %}
+
+{% block contenido %}
+
+
+<div class="perfil-page">
+
+    <div class="perfil-container">
+
+        <div class="perfil-header">
+            <h2>Mi Perfil</h2>
+
+            <p>
+                Consulta y administra tu información personal registrada en el sistema.
+            </p>
+        </div>
+
+        <div class="perfil-card">
+
+            <div class="perfil-resumen">
+
+                {% if usuario.foto_usuario %}
+
+                    <a
+                        href="{{ usuario.foto_usuario.url }}"
+                        target="_blank"
+                        title="Ver foto de perfil"
+                    >
+                        <img
+                            src="{{ usuario.foto_usuario.url }}"
+                            alt="Foto de {{ usuario.nombre_usuario }}"
+                            class="perfil-avatar"
+                        >
+                    </a>
+
+                {% else %}
+
+                    <div class="perfil-avatar-vacio">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+
+                {% endif %}
+
+                <div class="perfil-identidad">
+                    <h3>
+                        {{ usuario.nombre_usuario }}
+                        {{ usuario.apellido_usuario }}
+                    </h3>
+
+                    <p>{{ usuario.correo_usuario }}</p>
+                </div>
+
+            </div>
+
+            <div class="perfil-grid">
+
+                <div class="perfil-dato">
+                    <span>Nombres</span>
+                    <strong>{{ usuario.nombre_usuario }}</strong>
+                </div>
+
+                <div class="perfil-dato">
+                    <span>Apellidos</span>
+                    <strong>{{ usuario.apellido_usuario }}</strong>
+                </div>
+
+                <div class="perfil-dato">
+                    <span>Cédula</span>
+                    <strong>{{ usuario.cedula_usuario|default:"Pendiente de registrar" }}</strong>
+                </div>
+
+                <div class="perfil-dato">
+                    <span>Teléfono</span>
+                    <strong>{{ usuario.telefono_usuario|default:"Pendiente de registrar" }}</strong>
+                </div>
+
+                <div class="perfil-dato full">
+                    <span>Correo electrónico</span>
+                    <strong>{{ usuario.correo_usuario }}</strong>
+                </div>
+
+                <div class="perfil-dato full">
+                    <span>Rol dentro del sistema</span>
+                    <strong class="perfil-rol">
+                        {{ usuario.get_tiporol_display|default:usuario.tiporol }}
+                    </strong>
+                </div>
+
+            </div>
+
+            <div class="perfil-actions">
+
+                <a
+                    href="/inicio/"
+                    class="perfil-btn btn-menu"
+                >
+                    <i class="bi bi-arrow-left"></i>
+                    Regresar al menú
+                </a>
+
+                <a
+                    href="/editarusuario/{{ usuario.id_usuario }}/"
+                    class="perfil-btn btn-edit"
+                >
+                    <i class="bi bi-pencil"></i>
+                    Editar perfil
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

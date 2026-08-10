@@ -1,0 +1,92 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+{% block titulo %}Planificaciones de Prueba | Distri C{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/administrador/rutas/planificacion_rutas.css' %}">{% endblock %}
+
+{% block contener %}
+<main class="admin-route-page">
+    <div class="admin-route-container">
+        <header class="admin-route-header">
+            <div><h1>Planificaciones de prueba</h1><p>Selecciona el vehículo con su conductor y una carga para simular el recorrido.</p></div>
+            <a href="{% url 'admin_reportes_viajes' %}?tipo=PRUEBA" class="route-admin-btn dark"><i class="bi bi-file-earmark-bar-graph"></i> Reportes</a>
+        </header>
+
+        <section class="admin-route-stats">
+            <article><span>Conductores disponibles</span><strong>{{ total_conductores }}</strong></article>
+            <article><span>Vehículos asignados</span><strong>{{ total_vehiculos }}</strong></article>
+            <article><span>Cargas listas</span><strong>{{ total_combinaciones }}</strong></article>
+            <article><span>Pruebas realizadas</span><strong>{{ total_pruebas }}</strong></article>
+        </section>
+
+        {% if modo_activo %}
+        <section class="active-test-card">
+            <div><span>Prueba activa</span><strong>{{ seleccion.vehiculo.matricula_vehiculo }} · {{ seleccion.usuario.nombre_usuario }} {{ seleccion.usuario.apellido_usuario }}</strong></div>
+            <div class="active-test-actions">
+                <a href="{% url 'buscarlugares' %}" class="route-admin-btn red">Continuar</a>
+                <form method="post" action="{% url 'admin_salir_prueba_rutas' %}">{% csrf_token %}<button type="submit" class="route-admin-btn outline">Finalizar prueba</button></form>
+            </div>
+        </section>
+        {% endif %}
+
+        <section class="route-planning-card">
+            <div class="card-heading">
+                <div><h2>Nueva prueba</h2><p>La carga real no se descuenta durante la simulación.</p></div>
+                <span class="safe-badge"><i class="bi bi-lock"></i> Simulación</span>
+            </div>
+
+            <form method="post" action="{% url 'admin_iniciar_prueba_rutas' %}" id="adminRoutePlanningForm" data-loading-text="Preparando prueba…" novalidate>
+                {% csrf_token %}
+                <div class="planning-form-grid">
+                    <div class="planning-field">
+                        <label for="routeVehicleSelect">Vehículo · conductor</label>
+                        <select id="routeVehicleSelect" name="vehiculo_id">
+                            <option value="">Seleccione un vehículo</option>
+                            {% for vehiculo in vehiculos %}
+                            <option value="{{ vehiculo.id_vehiculo }}">
+                                {{ vehiculo.matricula_vehiculo }} · {{ vehiculo.modelo_vehiculo|default:"Sin modelo" }} · {{ vehiculo.usuario.nombre_usuario }} {{ vehiculo.usuario.apellido_usuario }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <small id="routeVehicleError"></small>
+                    </div>
+
+                    <div class="planning-field">
+                        <label for="routeLoadSelect">Carga</label>
+                        <select id="routeLoadSelect" name="plan_id" disabled>
+                            <option value="">Seleccione primero el vehículo</option>
+                            {% for fila in planes_disponibles %}
+                            <option value="{{ fila.plan.id_plan_carga }}"
+                                data-vehicle="{{ fila.vehiculo.id_vehiculo }}"
+                                data-date="{{ fila.plan.fecha_planificada|date:'d/m/Y' }}"
+                                data-weight="{{ fila.peso|floatformat:2 }}"
+                                data-products="{{ fila.productos }}"
+                                data-status="{{ fila.plan.get_estado_display }}"
+                                data-today="{% if fila.es_hoy %}1{% else %}0{% endif %}"
+                                hidden>
+                                {% if fila.es_hoy %}HOY · {% endif %}Plan #{{ fila.plan.id_plan_carga }} · {{ fila.plan.fecha_planificada|date:"d/m/Y" }} · {{ fila.peso|floatformat:2 }} kg
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <small id="routeLoadError"></small>
+                    </div>
+                </div>
+
+                <div class="planning-preview" id="planningPreview" hidden>
+                    <div class="today-marker" id="previewToday" hidden><i class="bi bi-calendar-check"></i> Carga de hoy</div>
+                    <div><span>Fecha</span><strong id="previewDate">—</strong></div>
+                    <div><span>Peso</span><strong id="previewWeight">—</strong></div>
+                    <div><span>Productos</span><strong id="previewProducts">—</strong></div>
+                    <div><span>Estado</span><strong id="previewStatus">—</strong></div>
+                </div>
+
+                <div class="planning-actions">
+                    <span><i class="bi bi-info-circle"></i> El resultado se guarda en Reportes.</span>
+                    <button type="submit" class="route-admin-btn red">Iniciar prueba <i class="bi bi-arrow-right"></i></button>
+                </div>
+            </form>
+        </section>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/pages/administrador/rutas/planificacion_rutas.js' %}" defer></script>{% endblock %}

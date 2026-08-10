@@ -1,0 +1,128 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block titulo %}Seleccionar destino | Distric C{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/rutas_base.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/buscarlugares.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<div
+    id="selectorRutaConfig"
+    hidden
+    data-google-maps-key="{{ google_maps_api_key|escape }}"
+    data-search-url="{% url 'api_buscar_destinos' %}"
+    data-ver-lugar-base="/lugar/0/0/"
+    data-viaje-id="{{ viaje_activo.id_viaje|default:'' }}"
+    data-origen-lat="{{ origen_lat }}"
+    data-origen-lon="{{ origen_lon }}"
+    data-origen-nombre="{{ origen_nombre|escape }}"
+    data-admin-mode="{{ modo_admin_rutas|yesno:'true,false' }}"
+></div>
+
+<main class="route-search-page">
+    <div class="route-search-container">
+        <header class="route-page-header route-search-header">
+            <div>
+                <span class="route-eyebrow">{% if modo_admin_rutas %}Planificaciones de prueba{% else %}Optimización de rutas{% endif %}</span>
+                <h1>{% if modo_admin_rutas %}Selecciona el destino de la prueba{% else %}Selecciona tu siguiente destino{% endif %}</h1>
+                <p>Busca un lugar y ajusta los puntos directamente sobre el mapa.</p>
+            </div>
+            {% if viaje_activo %}
+            <div class="active-trip-badge">
+                <i class="bi bi-signpost-split"></i>
+                Viaje #{{ viaje_activo.id_viaje }} · siguiente tramo
+            </div>
+            {% endif %}
+        </header>
+
+        <section class="route-search-card">
+            <div class="destination-search-block">
+                <label for="buscarDestinoTexto">Buscar destino</label>
+                <div class="destination-search-row">
+                    <div class="destination-search-input-wrap">
+                        <i class="bi bi-search"></i>
+                        <input
+                            id="buscarDestinoTexto"
+                            type="search"
+                            autocomplete="off"
+                            placeholder="Ejemplo: Maltería Mall, Hospital IESS o una dirección"
+                        >
+                        <button type="button" id="limpiarBusquedaDestino" class="clear-search-btn" hidden aria-label="Limpiar búsqueda">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                        <div id="resultadosDestino" class="destination-results" hidden></div>
+                    </div>
+                    <button type="button" id="btnBuscarDestino" class="route-btn route-btn-dark">
+                        <i class="bi bi-search"></i>
+                        Buscar
+                    </button>
+                    <button type="button" id="btnMiUbicacion" class="route-btn route-btn-outline">
+                        <i class="bi bi-crosshair"></i>
+                        Mi ubicación
+                    </button>
+                    <button type="button" id="btnSeleccionarDestino" class="route-btn route-btn-outline">
+                        <i class="bi bi-cursor"></i>
+                        Marcar en mapa
+                    </button>
+                </div>
+                <small id="estadoBusquedaDestino">Los resultados se priorizan alrededor de Latacunga. Después podrás ajustar el acceso exacto.</small>
+            </div>
+
+            <div class="route-map-wrap">
+                <div id="map"></div>
+                <div id="mapModeNotice" class="map-mode-notice" hidden>
+                    <i class="bi bi-cursor"></i>
+                    Haz clic en el mapa para colocar el destino rojo.
+                </div>
+            </div>
+
+            <div class="selected-points-grid">
+                <article class="point-summary point-origin">
+                    <div class="point-icon"><i class="bi bi-navigation"></i></div>
+                    <div>
+                        <span>Punto de inicio</span>
+                        <strong id="origenResumen">Obteniendo tu ubicación…</strong>
+                        <small id="origenCoordenadas">{% if modo_admin_rutas %}Puedes arrastrar el marcador azul para ajustar el inicio de la prueba.{% else %}Permite el acceso al GPS o usa el punto guardado del tramo anterior.{% endif %}</small>
+                    </div>
+                </article>
+
+                <article class="point-summary point-destination">
+                    <div class="point-icon"><i class="bi bi-geo-alt-fill"></i></div>
+                    <div>
+                        <span>Destino</span>
+                        <strong id="destinoResumen">Todavía no seleccionado</strong>
+                        <small id="destinoCoordenadas">Busca un lugar o selecciónalo directamente en el mapa.</small>
+                    </div>
+                </article>
+            </div>
+
+            <div id="routeSearchError" class="route-search-error" hidden></div>
+
+            <div class="route-search-footer">
+                {% if modo_admin_rutas %}
+                <a href="{% url 'admin_planificacion_rutas' %}" class="route-btn route-btn-outline">
+                    <i class="bi bi-arrow-left"></i>
+                    Volver a planificación
+                </a>
+                {% else %}
+                <a href="{% url 'inicio' %}" class="route-btn route-btn-outline">
+                    <i class="bi bi-arrow-left"></i>
+                    Regresar al menú
+                </a>
+                {% endif %}
+                <button type="button" id="btnContinuarDestino" class="route-btn route-btn-red" disabled>
+                    Revisar puntos
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/usuario/mapas/buscarlugares.js' %}" defer></script>
+{% endblock %}

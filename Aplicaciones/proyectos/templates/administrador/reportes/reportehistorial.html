@@ -1,0 +1,56 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/reportes/reportehistorial.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+  <h3>Reporte de historial de viajes por usuario</h3>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped" id="tbl_viajes">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Usuario</th>
+          <th>Fecha</th>
+          <th>Destino</th>
+          <th>Vehículo</th>
+          <th>Ruta</th>
+          <th>Tiempo (min)</th>
+          <th>Distancia (km)</th>
+          <th>Consumo (L)</th>
+          <th>Costo</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for v in viajes %}
+        <tr>
+          <td data-order="{{ v.id }}">{{ v.id }}</td>
+          <td>{{ v.usuario }}</td>
+          <td>{{ v.fecha }}</td>
+          <td>{{ v.destino }}</td>
+          <td>{{ v.vehiculo }}</td>
+          <td>{{ v.ruta }}</td>
+          <td>{{ v.tiempo }}</td>
+          <td>{{ v.distancia }}</td>
+          <td>{{ v.consumo }}</td>
+          <td>{{ v.costo }}</td>
+
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/reportes/reportehistorial.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/vehiculos/listadovehiculo.css' %}">
+{% endblock %}
+
+{% block contenido %}
+
+
+<div class="vehiculo-page">
+    <div class="vehiculo-container">
+
+        <div class="page-header">
+            <h2>Mi Vehículo</h2>
+            <p>Información del vehículo que tienes asignado actualmente.</p>
+        </div>
+
+        {% if vehiculo %}
+
+            <div class="vehicle-card">
+
+                <div class="vehicle-title">
+
+                    {% if vehiculo.foto_vehiculo %}
+                        <a href="{{ vehiculo.foto_vehiculo.url }}" target="_blank">
+                            <img
+                                src="{{ vehiculo.foto_vehiculo.url }}"
+                                alt="Vehículo {{ vehiculo.matricula_vehiculo }}"
+                                class="vehicle-photo"
+                            >
+                        </a>
+                    {% else %}
+                        <div class="vehicle-photo-empty">
+                            <i class="bi bi-car-front-fill"></i>
+                        </div>
+                    {% endif %}
+
+                    <div>
+                        <strong>{{ vehiculo.matricula_vehiculo }}</strong>
+                        <span>
+                            {{ vehiculo.modelo_vehiculo|default:"Sin modelo registrado" }}
+                            · {{ vehiculo.get_tipovehiculo_vehiculo_display }}
+                        </span>
+                    </div>
+
+                </div>
+
+                <div class="detail-grid">
+
+                    <div class="detail-item">
+                        <span>Usuario</span>
+                        <strong>{{ vehiculo.usuario.correo_usuario }}</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Tipo</span>
+                        <strong>{{ vehiculo.get_tipovehiculo_vehiculo_display }}</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Combustible</span>
+                        <strong>{{ vehiculo.get_tipocombustible_vehiculo_display }}</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Capacidad máxima de carga</span>
+                        <strong>
+                            {% if vehiculo.capacidad_carga_kg %}
+                                {{ vehiculo.capacidad_carga_kg|floatformat:2 }} kg
+                            {% else %}
+                                No configurada
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Peso del vehículo</span>
+                        <strong>{{ vehiculo.peso_auto|default:"—" }} toneladas</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Cilindraje</span>
+                        <strong>{{ vehiculo.cilindraje|default:"—" }}</strong>
+                    </div>
+
+                    <div class="detail-item full">
+                        <span>Número de chasis</span>
+                        <strong>{{ vehiculo.numero_chasis|default:"—" }}</strong>
+                    </div>
+
+                </div>
+
+                <div class="actions">
+                    <a href="/inicio/" class="page-btn btn-dark">
+                        <i class="bi bi-arrow-left"></i>
+                        Menú
+                    </a>
+
+                    <a href="{% url 'listadocarga' %}" class="page-btn btn-red">
+                        <i class="bi bi-box-seam"></i>
+                        Mi carga asignada
+                    </a>
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-card">
+                No tienes un vehículo asignado.
+            </div>
+
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

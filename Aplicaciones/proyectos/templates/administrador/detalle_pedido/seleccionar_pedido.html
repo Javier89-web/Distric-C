@@ -1,0 +1,31 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/detalle_pedido/seleccionar_pedido.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+
+    <h3>Seleccione un Pedido</h3>
+
+    <form action="{% url 'redirigir_detalle_lista' %}" method="POST">
+        {% csrf_token %}
+
+        <label>Pedido</label>
+        <select name="id_pedido" class="form-control" required>
+            {% for ped in pedidos %}
+            <option value="{{ ped.id_pedido }}">
+                Pedido #{{ ped.id_pedido }} - {{ ped.descripcion_pedido }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <button class="btn-save" type="submit">Continuar</button>
+    </form>
+
+</div>
+
+{% endblock %}

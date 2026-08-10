@@ -1,0 +1,235 @@
+.tracking-page {
+    min-height: 100vh;
+    padding: 82px 18px 40px;
+    background: #f4f5f7;
+}
+
+.tracking-container {
+    width: min(1220px, 100%);
+    margin: auto;
+}
+
+.tracking-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 16px;
+}
+
+.tracking-header h1 {
+    margin: 4px 0 5px;
+    color: #111827;
+    font-size: clamp(25px, 3vw, 34px);
+}
+
+.tracking-header p {
+    margin: 0;
+    color: #667085;
+    font-size: 13px;
+}
+
+.tracking-status {
+    padding: 7px 10px;
+    color: #475569;
+    font-size: 10px;
+    font-weight: 800;
+    background: #e2e8f0;
+    border-radius: 7px;
+}
+
+.tracking-status-active { color: #1d4ed8; background: #dbeafe; }
+.tracking-status-paused { color: #92400e; background: #fef3c7; }
+.tracking-status-arrived { color: #991b1b; background: #fee2e2; }
+
+.tracking-map-card,
+.tracking-live-card,
+.tracking-estimate-card {
+    background: #fff;
+    border: 1px solid #e2e5e9;
+    border-radius: 13px;
+    box-shadow: 0 7px 20px rgba(16, 24, 40, .045);
+}
+
+.tracking-map-card {
+    position: relative;
+    overflow: hidden;
+}
+
+#mapa {
+    width: 100%;
+    height: 540px;
+}
+
+.center-map-btn {
+    position: absolute;
+    z-index: 3;
+    right: 14px;
+    bottom: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    color: #23262b;
+    font-size: 10px;
+    font-weight: 700;
+    background: #fff;
+    border: 1px solid #d2d7dd;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, .12);
+}
+
+.tracking-information-grid {
+    display: grid;
+    grid-template-columns: 1.25fr .75fr;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.tracking-live-card,
+.tracking-estimate-card {
+    padding: 15px;
+}
+
+.tracking-card-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 11px;
+}
+
+.tracking-card-heading h2 {
+    margin: 0;
+    color: #111827;
+    font-size: 15px;
+}
+
+.tracking-card-heading span {
+    color: #667085;
+    font-size: 9px;
+}
+
+.tracking-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.tracking-kpi-grid div {
+    padding: 10px;
+    background: #f8f9fb;
+    border: 1px solid #e7eaee;
+    border-radius: 8px;
+}
+
+.tracking-kpi-grid span,
+.tracking-kpi-grid strong {
+    display: block;
+}
+
+.tracking-kpi-grid span {
+    color: #667085;
+    font-size: 8px;
+    text-transform: uppercase;
+}
+
+.tracking-kpi-grid strong {
+    margin-top: 3px;
+    color: #111827;
+    font-size: 14px;
+}
+
+.tracking-message {
+    margin-top: 9px;
+    padding: 9px 10px;
+    color: #475569;
+    font-size: 10px;
+    background: #f8f9fb;
+    border-left: 3px solid #23262b;
+    border-radius: 6px;
+}
+
+.tracking-estimate-card dl {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px 14px;
+    margin: 0;
+}
+
+.tracking-estimate-card dl div {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 5px;
+    font-size: 9px;
+    border-bottom: 1px solid #eceff3;
+}
+
+.tracking-estimate-card dt { color: #667085; font-weight: 500; }
+.tracking-estimate-card dd { margin: 0; color: #111827; font-weight: 700; text-align: right; }
+
+.tracking-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 12px;
+}
+
+@media (max-width: 900px) {
+    .tracking-information-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .tracking-page {
+        padding: 72px 10px 28px;
+    }
+
+    .tracking-header,
+    .tracking-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    #mapa {
+        height: 430px;
+    }
+
+    .tracking-kpi-grid,
+    .tracking-estimate-card dl {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .tracking-kpi-grid,
+    .tracking-estimate-card dl {
+        grid-template-columns: 1fr;
+    }
+}
+
+.tracking-status-ready { color: #475569; background: #e2e8f0; }
+.tracking-status-active { color: #1d4ed8; background: #dbeafe; }
+.tracking-status-paused { color: #92400e; background: #fef3c7; }
+.tracking-status-completed { color: #166534; background: #dcfce7; }
+
+.tracking-message.is-success {
+    color: #166534;
+    background: #f0fdf4;
+    border-left-color: #166534;
+}
+
+.tracking-message.is-warning {
+    color: #92400e;
+    background: #fffbeb;
+    border-left-color: #d97706;
+}
+
+.tracking-message.is-error {
+    color: #991b1b;
+    background: #fff1f2;
+    border-left-color: #d71920;
+}
+.tracking-estimate-card dd small{display:block;margin-top:2px;color:#6b7280;font-size:9px;font-weight:400}

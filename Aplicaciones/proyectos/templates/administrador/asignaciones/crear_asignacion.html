@@ -1,0 +1,52 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/asignaciones/crear_asignacion.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+  <h3>Asignar Evento a Usuario</h3>
+
+  <div class="contenedor-ver-eventos">
+    <a href="{% url 'lista_asignaciones' %}">
+      Ver lista de asignaciones
+    </a>
+  </div>
+
+  <form method="POST">
+    {% csrf_token %}
+
+    <label>Usuario</label>
+    <select name="usuario" class="form-control" required>
+      <option value="">Seleccione</option>
+      {% for u in usuarios %}
+      <option value="{{ u.id_usuario }}">
+        {{ u.nombre_usuario }} {{ u.apellido_usuario }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <label>Evento</label>
+    <select name="evento" class="form-control" required>
+      <option value="">Seleccione</option>
+      {% for ev in eventos %}
+      <option value="{{ ev.id_evento }}">{{ ev.titulo }}</option>
+      {% endfor %}
+    </select>
+    <label>Fecha de asignación</label>
+    <input type="datetime-local" name="fecha_asignacion" class="form-control">
+    <label>Descripción</label>
+    <textarea name="descripcion" class="form-control" rows="3"></textarea>
+
+    <div class="form-actions-top">
+      <button class="btn-save" type="submit">
+        Guardar asignación
+      </button>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

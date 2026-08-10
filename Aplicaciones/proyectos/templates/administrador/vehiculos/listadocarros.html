@@ -1,0 +1,446 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/vehiculos/listadocarros.css' %}">
+{% endblock %}
+
+{% block contener %}
+
+
+
+
+<div class="vehiculos-page">
+
+    <div class="vehiculos-container">
+
+        <div class="page-header">
+
+            <h2>Administración de Vehículos</h2>
+
+            <p>
+                Registro, asignación y control de los vehículos del sistema.
+            </p>
+
+        </div>
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+                <span>Total de vehículos</span>
+                <strong>{{ total_vehiculos }}</strong>
+            </div>
+
+            <div class="stat-card">
+                <span>Vehículos asignados</span>
+                <strong>{{ total_asignados }}</strong>
+            </div>
+
+            <div class="stat-card">
+                <span>Vehículos disponibles</span>
+                <strong>{{ total_disponibles }}</strong>
+            </div>
+
+        </div>
+
+        <div class="toolbar">
+
+            <div class="toolbar-left">
+
+                <div class="search-box">
+
+                    <i class="bi bi-search"></i>
+
+                    <input
+                        type="text"
+                        id="buscarVehiculo"
+                        placeholder="Buscar por placa, modelo o usuario..."
+                        autocomplete="off"
+                    >
+
+                </div>
+
+                <select
+                    id="filtroEstado"
+                    class="filter-select"
+                >
+                    <option value="">
+                        Todos los estados
+                    </option>
+
+                    <option value="ASIGNADO">
+                        Asignados
+                    </option>
+
+                    <option value="DISPONIBLE">
+                        Disponibles
+                    </option>
+                </select>
+
+            </div>
+
+            <a
+                href="{% url 'nuevovehiculoadmin' %}"
+                class="btn-register"
+            >
+                <i class="bi bi-plus-circle"></i>
+                Registrar vehículo
+            </a>
+
+        </div>
+
+        <div class="table-card">
+
+            <div class="table-tools">
+
+                <span>
+                    Exportar información
+                </span>
+
+                <div id="botonesExportacion"></div>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table
+                    class="vehiculos-table"
+                    id="tablaVehiculos"
+                >
+
+                    <thead>
+
+                        <tr>
+                            <th>Placa</th>
+                            <th>Vehículo</th>
+                            <th>Combustible</th>
+                            <th>Usuario asignado</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for v in vehiculos %}
+
+                            <tr
+                                data-estado="{% if v.usuario %}ASIGNADO{% else %}DISPONIBLE{% endif %}"
+                            >
+
+                                <td>
+                                    <span class="placa">
+                                        {{ v.matricula_vehiculo }}
+                                    </span>
+                                </td>
+
+                                <td>
+
+                                    <div class="vehiculo-info">
+
+                                        <strong>
+                                            {{ v.modelo_vehiculo|default:"Sin modelo" }}
+                                        </strong>
+
+                                        <span>
+                                            {{ v.get_tipovehiculo_vehiculo_display }}
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+                                <td>
+                                    {{ v.get_tipocombustible_vehiculo_display }}
+                                </td>
+
+                                <td>
+
+                                    {% if v.usuario %}
+
+                                        <div class="usuario-info">
+
+                                            <strong>
+                                                {{ v.usuario.nombre_usuario }}
+                                                {{ v.usuario.apellido_usuario }}
+                                            </strong>
+
+                                            <span>
+                                                {{ v.usuario.correo_usuario }}
+                                            </span>
+
+                                        </div>
+
+                                    {% else %}
+
+                                        <span class="sin-asignar">
+                                            Sin asignar
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+
+                                    {% if v.usuario %}
+
+                                        <span class="status-badge status-asignado">
+
+                                            <i class="bi bi-check-circle"></i>
+
+                                            ASIGNADO
+
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="status-badge status-disponible">
+
+                                            <i class="bi bi-dash-circle"></i>
+
+                                            DISPONIBLE
+
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+
+                                    <div class="actions">
+
+                                        <a
+                                            href="{% url 'detallevehiculoadmin' v.id_vehiculo %}"
+                                            class="action-btn"
+                                            title="Ver vehículo"
+                                        >
+                                            <i class="bi bi-eye"></i>
+                                            Ver
+                                        </a>
+
+                                        <a
+                                            href="{% url 'editarvehiculoadmin' v.id_vehiculo %}"
+                                            class="action-btn"
+                                            title="Editar vehículo"
+                                        >
+                                            <i class="bi bi-pencil"></i>
+                                            Editar
+                                        </a>
+
+                                        {% if v.usuario %}
+
+                                            <form
+                                                action="{% url 'desasignarvehiculoadmin' v.id_vehiculo %}"
+                                                method="post"
+                                                class="form-confirmar"
+                                                data-titulo="¿Desasignar vehículo?"
+                                                data-texto="El vehículo quedará disponible para otra persona."
+                                                data-confirmar="Sí, desasignar"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="action-btn action-outline"
+                                                >
+                                                    <i class="bi bi-person-dash"></i>
+                                                    Desasignar
+                                                </button>
+
+                                            </form>
+
+                                        {% else %}
+
+                                            <button
+                                                type="button"
+                                                class="action-btn action-red abrir-asignacion"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalAsignar"
+                                                data-url="{% url 'asignarvehiculoadmin' v.id_vehiculo %}"
+                                                data-placa="{{ v.matricula_vehiculo }}"
+                                            >
+                                                <i class="bi bi-person-plus"></i>
+                                                Asignar
+                                            </button>
+
+                                        {% endif %}
+
+                                        <form
+                                            action="{% url 'eliminarvehiculoadmin' v.id_vehiculo %}"
+                                            method="post"
+                                            class="form-confirmar"
+                                            data-titulo="¿Eliminar vehículo?"
+                                            data-texto="Se eliminará definitivamente el vehículo {{ v.matricula_vehiculo }}."
+                                            data-confirmar="Sí, eliminar"
+                                        >
+
+                                            {% csrf_token %}
+
+                                            <button
+                                                type="submit"
+                                                class="action-btn action-outline"
+                                                title="Eliminar vehículo"
+                                            >
+                                                Eliminar
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div
+    class="modal fade"
+    id="modalAsignar"
+    tabindex="-1"
+    aria-hidden="true"
+>
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <form
+                id="formAsignarVehiculo"
+                method="post"
+                novalidate
+            >
+
+                {% csrf_token %}
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Asignar vehículo
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="modal-vehicle mb-3">
+
+                        <strong>
+                            Vehículo:
+                        </strong>
+
+                        <span id="placaAsignacion"></span>
+
+                    </div>
+
+                    <label
+                        for="usuarioAsignacion"
+                        class="form-label fw-bold"
+                    >
+                        Usuario disponible
+                    </label>
+
+                    <select
+                        name="usuario"
+                        id="usuarioAsignacion"
+                        class="form-select modal-select"
+                    >
+
+                        <option value="">
+                            Seleccione una opción
+                        </option>
+
+                        {% for usuario in usuarios_disponibles %}
+
+                            <option value="{{ usuario.id_usuario }}">
+
+                                {{ usuario.nombre_usuario }}
+                                {{ usuario.apellido_usuario }}
+                                — {{ usuario.correo_usuario }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                    <small
+                        id="errorUsuarioAsignacion"
+                        class="d-none mt-2 assignment-error"
+                    >
+                        Selecciona el usuario que recibirá el vehículo.
+                    </small>
+
+                    {% if not usuarios_disponibles %}
+
+                        <p class="text-danger mt-2 mb-0">
+                            No existen usuarios disponibles.
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="action-btn"
+                        data-bs-dismiss="modal"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="action-btn action-red"
+                        {% if not usuarios_disponibles %}disabled{% endif %}
+                    >
+                        Confirmar asignación
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/vehiculos/listadocarros.js' %}" defer></script>
+{% endblock %}

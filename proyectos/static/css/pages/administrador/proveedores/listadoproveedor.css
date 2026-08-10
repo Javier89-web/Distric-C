@@ -1,0 +1,180 @@
+body {
+    background: #ffffff;
+  }
+
+  .box {
+    width: 92%;
+    max-width: 1100px;
+    margin: 30px auto;
+    background: #06080D;
+    color: #F3F4F6;
+    padding: 22px;
+    border-radius: 18px;
+    margin-left: 380px;
+    border: 1px solid #1F2937;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  }
+
+  .box h3 {
+    margin-bottom: 18px;
+    font-weight: 700;
+    color: #F3F4F6;
+    text-align: center;
+  }
+
+  .table-responsive {
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid #1F2937;
+    background: #111827;
+    padding: 12px;
+    overflow: auto;
+  }
+
+  .dt-buttons {
+    text-align: right;
+    margin-bottom: 12px;
+  }
+
+  .dt-buttons .dt-button {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #1F2937;
+    background: #3B82F6;
+    color: #ffffff;
+    font-weight: 700;
+    margin-left: 8px;
+  }
+
+  .dt-buttons .dt-button:hover {
+    background: #2563EB;
+    color: #ffffff;
+  }
+
+  .dataTables_filter label {
+    color: #A1A1AA;
+    font-weight: 600;
+  }
+
+  .dataTables_filter input {
+    background: #06080D;
+    color: #F3F4F6;
+    border: 1px solid #1F2937;
+    border-radius: 10px;
+    padding: 8px 10px;
+    outline: none;
+  }
+
+  .dataTables_filter input:focus {
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+  }
+
+  /* SELECT MOSTRAR */
+  .dataTables_length label {
+    color: #A1A1AA;
+    font-weight: 600;
+  }
+
+  .dataTables_length select {
+    background: #06080D;
+    color: #F3F4F6;
+    border: 1px solid #1F2937;
+    border-radius: 10px;
+    padding: 6px 10px;
+    outline: none;
+  }
+
+  .dataTables_length select:focus {
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+  }
+
+  .dataTables_info {
+    color: #A1A1AA;
+    margin-top: 10px;
+  }
+
+  .dataTables_paginate {
+    margin-top: 10px;
+  }
+
+  .dataTables_paginate .paginate_button {
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #1F2937;
+    background: #06080D;
+    color: #F3F4F6;
+    margin-left: 6px;
+  }
+
+  .dataTables_paginate .paginate_button:hover {
+    background: #111827;
+    border-color: #3B82F6;
+    color: #F3F4F6;
+  }
+
+  .dataTables_paginate .paginate_button.current {
+    background: #3B82F6;
+    color: #ffffff;
+    border-color: #3B82F6;
+  }
+
+  #tbl_proveedores {
+    width: 100%;
+    font-size: 13px;
+    color: #F3F4F6;
+    margin: 0;
+  }
+
+  #tbl_proveedores thead th {
+    background: #06080D;
+    color: #F3F4F6;
+    border-bottom: 1px solid #1F2937;
+    padding: 10px;
+    white-space: nowrap;
+  }
+
+  #tbl_proveedores tbody td {
+    background: #111827;
+    color: #F3F4F6;
+    border-top: 1px solid #1F2937;
+    padding: 10px;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  #tbl_proveedores tbody tr:hover td {
+    background: #0B1220;
+  }
+
+  .btn-sm {
+    padding: 7px 10px;
+    border-radius: 10px;
+    font-weight: 700;
+    border: none;
+  }
+
+  .btn-warning {
+    background: #F59E0B;
+    color: #000;
+  }
+
+  .btn-danger {
+    background: #EF4444;
+    color: #fff;
+  }
+
+  @media (max-width:1200px) {
+    .box {
+      margin-left: 0;
+      width: 96%;
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width:768px) {
+    .box {
+      padding: 14px;
+    }
+  }

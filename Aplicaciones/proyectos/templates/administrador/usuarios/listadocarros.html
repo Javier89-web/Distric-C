@@ -1,0 +1,235 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/usuarios/listadocarros.css' %}">
+{% endblock %}
+
+{% block contener %}
+
+
+<div class="vehiculos-wrapper">
+
+    <div class="vehiculos-container">
+
+        <!-- =====================================================
+             ENCABEZADO
+        ====================================================== -->
+        <div class="vehiculos-header">
+
+            <h2>Administración de Vehículos</h2>
+
+            <p>
+                Asignación, consulta y eliminación de vehículos registrados por usuario.
+            </p>
+
+        </div>
+
+        <!-- =====================================================
+             BUSCADOR
+        ====================================================== -->
+        <div class="search-container">
+
+            <div class="search-box">
+
+                <i class="bi bi-search"></i>
+
+                <input
+                    type="text"
+                    id="buscarUsuario"
+                    placeholder="Buscar por nombre del usuario..."
+                    autocomplete="off"
+                >
+
+            </div>
+
+        </div>
+
+        <!-- =====================================================
+             TABLA
+        ====================================================== -->
+        <div class="table-container">
+
+            <table class="vehiculos-table" id="tablaVehiculos">
+
+                <thead>
+
+                    <tr>
+                        <th>Nombres</th>
+                        <th>Correo</th>
+                        <th>Foto</th>
+                        <th>Rol</th>
+                        <th>Vehículo asignado</th>
+                        <th>Eliminar vehículo</th>
+                        <th>Ver vehículo</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for u in usuarios %}
+
+                        <tr>
+
+                            <!-- NOMBRES -->
+                            <td class="usuario-nombre">
+                                {{ u.nombre_usuario }}
+                                {{ u.apellido_usuario }}
+                            </td>
+
+                            <!-- CORREO -->
+                            <td>
+                                {{ u.correo_usuario }}
+                            </td>
+
+                            <!-- FOTO -->
+                            <td>
+
+                                {% if u.foto_usuario %}
+
+                                    <a
+                                        href="{{ u.foto_usuario.url }}"
+                                        target="_blank"
+                                        class="usuario-foto-link"
+                                        title="Ver foto"
+                                    >
+                                        <img
+                                            src="{{ u.foto_usuario.url }}"
+                                            alt="Foto de {{ u.nombre_usuario }}"
+                                            class="usuario-foto"
+                                        >
+                                    </a>
+
+                                {% else %}
+
+                                    <span class="sin-dato">—</span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <!-- ROL -->
+                            <td>
+
+                                {% if u.tiporol == "ADMINISTRADOR" %}
+
+                                    <span class="rol-badge rol-admin">
+                                        {{ u.tiporol }}
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="rol-badge rol-user">
+                                        {{ u.tiporol }}
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <!-- AGREGAR VEHÍCULO -->
+                            <td>
+
+                                {% if u.tiporol == "ADMINISTRADOR" %}
+
+                                    <span class="no-aplica">
+                                        <i class="bi bi-dash-circle"></i>
+                                        No aplica
+                                    </span>
+
+                                {% else %}
+
+                                    <a
+                                        href="{% url 'nuevovehiculo' u.id_usuario %}"
+                                        class="btn-vehiculo btn-agregar"
+                                    >
+                                        <i class="bi bi-plus-circle"></i>
+                                        Agregar
+                                    </a>
+
+                                {% endif %}
+
+                            </td>
+
+                            <!-- ELIMINAR VEHÍCULO -->
+                            <td>
+
+                                {% if u.tiporol == "ADMINISTRADOR" %}
+
+                                    <span class="no-aplica">
+                                        <i class="bi bi-dash-circle"></i>
+                                        No aplica
+                                    </span>
+
+                                {% else %}
+
+                                    <a
+                                        href="/eliminarvehiculo/{{ u.vehiculo.id_vehiculo }}/"
+                                        class="btn-vehiculo btn-eliminar"
+                                    >
+                                        <i class="bi bi-trash"></i>
+                                        Eliminar
+                                    </a>
+
+                                {% endif %}
+
+                            </td>
+
+                            <!-- VER VEHÍCULO -->
+                            <td>
+
+                                {% if u.tiporol == "ADMINISTRADOR" %}
+
+                                    <span class="no-aplica">
+                                        <i class="bi bi-dash-circle"></i>
+                                        No aplica
+                                    </span>
+
+                                {% else %}
+
+                                    <a
+                                        href="{% url 'listadovista' u.id_usuario %}"
+                                        class="btn-vehiculo btn-ver"
+                                    >
+                                        <i class="bi bi-eye"></i>
+                                        Ver vehículo
+                                    </a>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr class="fila-vacia">
+
+                            <td
+                                colspan="7"
+                                class="tabla-vacia"
+                            >
+                                No existen usuarios registrados.
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/usuarios/listadocarros.js' %}" defer></script>
+{% endblock %}

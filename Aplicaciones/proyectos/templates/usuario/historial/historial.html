@@ -1,0 +1,122 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block titulo %}Historial de viajes | Distric C{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/rutas_base.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/usuario/historial/historial.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<main class="trip-history-page">
+    <div class="trip-history-container">
+        <div class="history-top-actions">
+            {% if continuacion_url %}
+            <a href="{{ continuacion_url }}" class="route-btn route-btn-outline">
+                <i class="bi bi-arrow-left"></i>
+                {{ continuacion_texto }}
+            </a>
+            {% else %}
+            <a href="{% url 'inicio' %}" class="route-btn route-btn-outline">
+                <i class="bi bi-arrow-left"></i>
+                Regresar al menú
+            </a>
+            {% endif %}
+        </div>
+        <header class="route-page-header">
+            <span class="route-eyebrow">Seguimiento acumulado</span>
+            <h1>Mi historial de viajes</h1>
+            <p>Cada jornada agrupa sus tramos A → B, B → C y los resultados totales.</p>
+        </header>
+
+        <section class="history-summary-grid">
+            <div><span>Viajes registrados</span><strong>{{ viajes|length }}</strong></div>
+            <div><span>Distancia real</span><strong>{{ resumen.distancia|default:0|floatformat:2 }} km</strong></div>
+            <div><span>Tiempo real</span><strong>{{ resumen.tiempo|default:0|floatformat:1 }} min</strong></div>
+            <div><span>Combustible estimado</span><strong>{{ resumen.combustible|default:0|floatformat:2 }} L</strong></div>
+        </section>
+
+        {% if viajes %}
+        <div class="trip-history-list">
+            {% for viaje in viajes %}
+            <article class="trip-history-card">
+                <div class="trip-history-heading">
+                    <div>
+                        <span>Viaje #{{ viaje.id_viaje }}</span>
+                        <h2>{{ viaje.fecha_creacion|date:"d/m/Y" }} · {{ viaje.vehiculo.matricula_vehiculo }}</h2>
+                        <p>{{ viaje.tramos_completados }} tramo{{ viaje.tramos_completados|pluralize }} completado{{ viaje.tramos_completados|pluralize }}</p>
+                    </div>
+                    <span class="trip-state trip-state-{{ viaje.estado|lower }}">{{ viaje.get_estado_display }}</span>
+                </div>
+
+                <div class="trip-history-totals">
+                    <div><span>Distancia</span><strong>{{ viaje.distancia_real_total_km|floatformat:2 }} km</strong></div>
+                    <div><span>Tiempo</span><strong>{{ viaje.tiempo_real_total_min|floatformat:1 }} min</strong></div>
+                    <div><span>Consumo IA</span><strong>{{ viaje.consumo_estimado_total_l|floatformat:2 }} L</strong></div>
+                    <div><span>Costo</span><strong>${{ viaje.costo_estimado_total|floatformat:2 }}</strong></div>
+                    <div><span>Carga inicial</span><strong>{{ viaje.carga_inicial_kg|floatformat:2 }} kg</strong></div>
+                    <div><span>Carga final</span><strong>{{ viaje.carga_final_kg|floatformat:2 }} kg</strong></div>
+                </div>
+
+                <div class="trip-segment-preview">
+                    {% for tramo in viaje.tramos.all %}
+                    <div class="trip-segment-item">
+                        <span>{{ tramo.orden }}</span>
+                        <div>
+                            <strong>{{ tramo.origen_nombre }} → {{ tramo.destino_nombre }}</strong>
+                            <small>{{ tramo.distancia_real_km|floatformat:2 }} km · {{ tramo.peso_entregado_kg|floatformat:2 }} kg entregados</small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p>No existen tramos registrados.</p>
+                    {% endfor %}
+                </div>
+
+                <div class="trip-history-actions">
+                    {% if continuacion_url and viaje_continuable and viaje.id_viaje == viaje_continuable.id_viaje %}
+                    <a href="{{ continuacion_url }}" class="route-btn route-btn-outline">
+                        <i class="bi bi-play-circle"></i>
+                        {{ continuacion_texto }}
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'detalle_historial_viaje' viaje.id_viaje %}" class="route-btn route-btn-dark">
+                        <i class="bi bi-eye"></i> Ver detalle
+                    </a>
+                    <form method="get" action="{% url 'reporte_pdf_viaje' viaje.id_viaje %}" class="pdf-unit-form">
+                        <select name="unidad" aria-label="Unidad de combustible del PDF">
+                            <option value="LITROS">Litros</option>
+                            <option value="GALONES">Galones</option>
+                        </select>
+                        <button type="submit" class="route-btn route-btn-red">
+                            <i class="bi bi-file-earmark-pdf"></i> Informe PDF
+                        </button>
+                    </form>
+                    {% if viaje.estado != 'EN_RUTA' %}
+                    <form method="post" action="{% url 'eliminar_viaje_historial' viaje.id_viaje %}" class="delete-trip-form">
+                        {% csrf_token %}
+                        <button type="submit" class="route-btn route-btn-outline">
+                            <i class="bi bi-trash3"></i>
+                            Eliminar
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="history-empty">
+            <i class="bi bi-signpost"></i>
+            <h2>Todavía no existen viajes</h2>
+            <p>Los tramos aparecerán aquí después de finalizar la primera ruta.</p>
+            <a href="{% url 'buscarlugares' %}" class="route-btn route-btn-red">Generar primera ruta</a>
+        </div>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/usuario/historial/historial.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/reportes/reporteviaje.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+  <h3>Reporte de viajes realizados por usuario</h3>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped" id="tbl_viajes">
+      <thead>
+        <tr>
+          <th>Viaje</th>
+          <th>Usuario</th>
+          <th>Vehículo</th>
+          <th>Combustible</th>
+          <th>Destino</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for v in viajes %}
+        <tr>
+          <td>{{ v.id_viaje }}</td>
+          <td>{{ v.usuario }}</td>
+          <td>{{ v.vehiculo }}</td>
+          <td>{{ v.tipo_combustible }}</td>
+          <td>{{ v.destino }}</td>
+          <td>{{ v.fecha }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/reportes/reporteviaje.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,275 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/usuarios/editarusuarioadministrador.css' %}">
+{% endblock %}
+
+{% block contener %}
+
+
+
+
+
+<div class="editar-usuario-page">
+
+    <div class="editar-usuario-container">
+
+        <!-- Título fuera de la tarjeta -->
+        <div class="editar-usuario-header">
+
+            <h2>Editar Usuario</h2>
+
+            <p>
+                Actualiza la información personal y los datos de acceso del usuario.
+            </p>
+
+        </div>
+
+        <!-- Tarjeta del formulario -->
+        <div class="form-card">
+
+            <div class="form-card-title">
+
+                <i class="bi bi-person-gear"></i>
+
+                <h3>Información del usuario</h3>
+
+            </div>
+
+            <form
+                id="frm_editar_usuario_admin"
+                action="/procesareditarusuarioadministrador/"
+                method="post"
+                enctype="multipart/form-data"
+                novalidate
+            >
+
+                {% csrf_token %}
+
+                <input
+                    type="hidden"
+                    name="id_usuario"
+                    value="{{ usuario.id_usuario }}"
+                >
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="txt_cedula" class="form-label">Cédula</label>
+                        <input
+                            type="text"
+                            name="txt_cedula"
+                            id="txt_cedula"
+                            class="form-control"
+                            value="{{ usuario.cedula_usuario|default:'' }}"
+                            placeholder="Ingrese los 10 dígitos"
+                            minlength="10"
+                            maxlength="10"
+                            inputmode="numeric"
+                        >
+                        <p class="form-hint">La cédula debe ser válida y no puede repetirse.</p>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="txt_telefono" class="form-label">Teléfono</label>
+                        <input
+                            type="text"
+                            name="txt_telefono"
+                            id="txt_telefono"
+                            class="form-control"
+                            value="{{ usuario.telefono_usuario|default:'' }}"
+                            placeholder="Ejemplo: 0987654321"
+                            minlength="7"
+                            maxlength="15"
+                            inputmode="tel"
+                            autocomplete="tel"
+                        >
+                    </div>
+                </div>
+
+                <div class="row">
+
+                    <!-- NOMBRES -->
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_nombre" class="form-label">
+                            Nombres
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_nombre"
+                            id="txt_nombre"
+                            class="form-control"
+                            value="{{ usuario.nombre_usuario }}"
+                            placeholder="Ingrese los nombres"
+                            maxlength="50"
+                            autocomplete="given-name"
+                        >
+
+                    </div>
+
+                    <!-- APELLIDOS -->
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_apellido" class="form-label">
+                            Apellidos
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_apellido"
+                            id="txt_apellido"
+                            class="form-control"
+                            value="{{ usuario.apellido_usuario }}"
+                            placeholder="Ingrese los apellidos"
+                            maxlength="50"
+                            autocomplete="family-name"
+                        >
+
+                    </div>
+
+                </div>
+
+                <!-- CORREO -->
+                <div class="mb-3">
+
+                    <label for="txt_correo" class="form-label">
+                        Correo electrónico
+                    </label>
+
+                    <input
+                        type="email"
+                        name="txt_correo"
+                        id="txt_correo"
+                        class="form-control"
+                        value="{{ usuario.correo_usuario }}"
+                        placeholder="ejemplo@correo.com"
+                        maxlength="100"
+                        autocomplete="email"
+                    >
+
+                </div>
+
+                <!-- CONTRASEÑA -->
+                <div class="mb-3">
+
+                    <label for="txt_contrasena" class="form-label">
+                        Nueva contraseña
+                        <span class="optional">(opcional)</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        name="txt_contrasena"
+                        id="txt_contrasena"
+                        class="form-control"
+                        placeholder="Deja este campo vacío para conservar la contraseña actual"
+                        maxlength="12"
+                        autocomplete="new-password"
+                    >
+
+                    <p class="form-hint">
+                        Deja este campo vacío para conservarla. Si la cambias, usa entre 6 y 12 caracteres.
+                    </p>
+
+                </div>
+
+                <!-- FOTO -->
+                <div class="mb-3">
+
+                    <label for="foto_usuario" class="form-label">
+                        Foto del usuario
+                        <span class="optional">(opcional)</span>
+                    </label>
+
+                    {% if usuario.foto_usuario %}
+
+                        <div class="foto-actual">
+
+                            <a
+                                href="{{ usuario.foto_usuario.url }}"
+                                target="_blank"
+                                title="Abrir foto actual"
+                            >
+                                <img
+                                    src="{{ usuario.foto_usuario.url }}"
+                                    alt="Foto actual de {{ usuario.nombre_usuario }}"
+                                >
+                            </a>
+
+                            <div>
+
+                                <strong>Foto actual</strong>
+
+                                <span>
+                                    Selecciona otra imagen solamente cuando quieras reemplazarla.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+                    <input
+                        type="file"
+                        name="foto_usuario"
+                        id="foto_usuario"
+                        class="form-control"
+                        accept="image/png, image/jpeg"
+                    >
+
+                    <p class="form-hint">
+                        Formatos permitidos: PNG, JPG y JPEG. Tamaño máximo: 5 MB.
+                    </p>
+
+                    <div id="errorFotoUsuario"></div>
+
+                </div>
+
+                <!-- BOTONES -->
+                <div class="form-actions">
+
+                    <a
+                        href="/listadousuario/"
+                        class="form-btn btn-back"
+                    >
+                        <i class="bi bi-arrow-left"></i>
+                        Regresar
+                    </a>
+
+                    <button
+                        type="reset"
+                        class="form-btn btn-clear"
+                        id="btnLimpiar"
+                    >
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                        Cancelar cambios
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="form-btn btn-save"
+                        id="btnGuardar"
+                    >
+                        <i class="bi bi-check-circle"></i>
+                        Guardar cambios
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/usuarios/editarusuarioadministrador.js' %}" defer></script>
+{% endblock %}

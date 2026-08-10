@@ -1,0 +1,62 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/pedidos/editarpedido.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+
+  <h3>Editar Pedido</h3>
+
+  <form action="/procesareditarpedido/" method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="id" value="{{ pedido.id_pedido }}">
+
+    <label>Proveedor:</label>
+    <select name="txt_proveedor" class="form-control">
+      <option value="">Sin provedor</option>
+      {% for p in proveedores %}
+      <option value="{{ p.id_proveedor }}" {% if p.id_proveedor==pedido.proveedor.id_proveedor %}selected{% endif %}>
+        {{ p.nombre_proveedor }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <label>Evento</label>
+    <select name="txt_evento" class="form-control">
+      <option value="">Sin evento</option>
+      {% for ev in eventos %}
+      <option value="{{ ev.id_evento }}" {% if pedido.evento and ev.id_evento==pedido.evento.id_evento %}selected{%
+        endif %}>
+        {{ ev.titulo }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <label>Descripción del pedido:</label>
+    <textarea name="txt_descripcion" class="form-control" rows="3">{{ pedido.descripcion_pedido }}</textarea>
+
+    <label>Fecha del pedido:</label>
+    <input type="date" name="txt_fecha" class="form-control" value="{{ pedido.fecha_pedido|date:'Y-m-d'  }}" required>
+
+    <label>Estado:</label>
+    <select name="txt_estado" class="form-control">
+      <option value="PENDIENTE" {% if pedido.estado_pedido=="PENDIENTE" %}selected{% endif %}>PENDIENTE</option>
+      <option value="EN PROCESO" {% if pedido.estado_pedido=="EN PROCESO" %}selected{% endif %}>EN PROCESO</option>
+      <option value="ENTREGADO" {% if pedido.estado_pedido=="ENTREGADO" %}selected{% endif %}>ENTREGADO</option>
+      <option value="CANCELADO" {% if pedido.estado_pedido=="CANCELADO" %}selected{% endif %}>CANCELADO</option>
+    </select>
+
+    <div class="acciones">
+      <button class="btn-save" type="submit">Actualizar</button>
+      <a href="/listadopedido/" class="btn-save">Cancelar</a>
+    </div>
+
+  </form>
+
+</div>
+
+{% endblock %}

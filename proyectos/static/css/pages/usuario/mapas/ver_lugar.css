@@ -1,0 +1,166 @@
+.points-review-page {
+    min-height: 100vh;
+    padding: 84px 18px 42px;
+    background: #f4f5f7;
+}
+
+.points-review-container {
+    width: min(1220px, 100%);
+    margin: auto;
+}
+
+.points-review-card {
+    padding: 18px;
+    background: #fff;
+    border: 1px solid #e2e5e9;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(16, 24, 40, .05);
+}
+
+.maps-split-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.point-map-panel {
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #e2e5e9;
+    border-radius: 11px;
+}
+
+.point-map-heading {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 13px;
+}
+
+.point-number {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    place-items: center;
+    background: #2563eb;
+    border-radius: 9px;
+}
+
+.point-number-destination {
+    background: #d71920;
+}
+
+.point-map-heading span {
+    display: block;
+    color: #667085;
+    font-size: 9px;
+    text-transform: uppercase;
+}
+
+.point-map-heading h2 {
+    overflow: hidden;
+    margin: 2px 0 0;
+    color: #111827;
+    font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mini-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 9px;
+    color: #23262b;
+    font-size: 10px;
+    font-weight: 700;
+    background: #fff;
+    border: 1px solid #cfd4da;
+    border-radius: 7px;
+}
+
+.point-map {
+    width: 100%;
+    height: 390px;
+    border-top: 1px solid #e2e5e9;
+    border-bottom: 1px solid #e2e5e9;
+}
+
+.point-map-data {
+    padding: 11px 13px;
+}
+
+.point-map-data strong,
+.point-map-data span,
+.point-map-data small {
+    display: block;
+}
+
+.point-map-data strong {
+    overflow: hidden;
+    color: #111827;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.point-map-data span,
+.point-map-data small {
+    margin-top: 3px;
+    color: #667085;
+    font-size: 9px;
+}
+
+.points-error-box {
+    margin-top: 13px;
+    padding: 10px 12px;
+    color: #991b1b;
+    font-size: 11px;
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    border-radius: 8px;
+}
+
+.points-review-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 15px;
+}
+
+@media (max-width: 900px) {
+    .maps-split-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 620px) {
+    .points-review-page {
+        padding: 74px 11px 30px;
+    }
+
+    .points-review-card {
+        padding: 11px;
+    }
+
+    .point-map-heading {
+        grid-template-columns: auto 1fr;
+    }
+
+    .mini-action-btn {
+        grid-column: 1 / -1;
+        justify-content: center;
+    }
+
+    .point-map {
+        height: 330px;
+    }
+
+    .points-review-actions {
+        flex-direction: column-reverse;
+    }
+}

@@ -1,0 +1,54 @@
+body{
+      margin:0;
+      background:#0f172a;
+      color:#e5e7eb;
+      font-family: Arial, sans-serif;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:100vh;
+    }
+
+    .card{
+      width:90%;
+      max-width:520px;
+      background:#020617;
+      border-radius:16px;
+      padding:28px;
+      box-shadow:0 20px 40px rgba(0,0,0,.6);
+      border:1px solid #1f2937;
+      text-align:center;
+    }
+
+    .estado{
+      font-size:22px;
+      font-weight:800;
+      margin-bottom:14px;
+    }
+
+    .VIGENTE{ color:#22c55e; }
+    .VENCIDO{ color:#facc15; }
+    .ANULADO{ color:#ef4444; }
+
+    .dato{
+      margin:8px 0;
+      font-size:15px;
+      text-align:left;
+    }
+
+    .label{
+      color:#94a3b8;
+      font-weight:600;
+    }
+
+    hr{
+      border:none;
+      border-top:1px solid #1f2937;
+      margin:16px 0;
+    }
+
+    .footer{
+      font-size:12px;
+      color:#64748b;
+      margin-top:14px;
+    }

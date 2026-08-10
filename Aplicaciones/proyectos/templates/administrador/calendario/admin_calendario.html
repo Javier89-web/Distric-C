@@ -1,0 +1,58 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/calendario/admin_calendario.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+
+
+<div class="box">
+
+  <div class="contenedor-ver-eventos">
+    <a href="{% url 'lista_eventos_admin' %}" class="btn btn-primary">
+      Ver lista de eventos
+    </a>
+  </div>
+
+  <div id="calendar"></div>
+
+  <div class="form-box">
+    <h3>Crear evento</h3>
+    <form method="post" action="{% url 'admin_evento_crear' %}">
+      {% csrf_token %}
+
+      <label>Título</label>
+      <input type="text" name="titulo" required>
+
+      <label>fecha de inicio</label>
+      <input type="text" id="inicio_fecha" name="inicio_fecha" required>
+
+      <label>hora iniciada</label>
+      <input type="time" id="inicio_hora" name="inicio_hora" required>
+
+      <label>fecha final</label>
+      <input type="text" id="fin_fecha" name="fin_fecha">
+
+      <label>hora finalizada</label>
+      <input type="time" id="fin_hora" name="fin_hora">
+
+      <label>Descripción (opcional)</label>
+      <textarea name="descripcion" rows="3"></textarea>
+
+      <button class="btn btn-primary" type="submit">Guardar evento</button>
+    </form>
+  </div>
+</div>
+
+
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/calendario/admin_calendario.js' %}" defer></script>
+{% endblock %}

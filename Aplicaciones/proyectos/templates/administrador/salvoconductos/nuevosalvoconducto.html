@@ -1,0 +1,125 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/salvoconductos/nuevosalvoconducto.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+  <h3>Nuevo Salvoconducto</h3>
+
+  <div class="contenedor-ver-eventos">
+    <a href="{% url 'salvoconductos' %}">Listado de salvoconductos</a>
+  </div>
+
+  <!-- ================= TABLA ================= -->
+  <div class="section-card">
+    <div class="section-title">
+      <span></span> Viajes registrados
+    </div>
+
+    <div class="table-responsive">
+      <table id="tbl_viajes" class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>Viaje</th>
+            <th>Usuario</th>
+            <th>Vehículo</th>
+            <th>Combustible</th>
+            <th>Destino</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in viajes %}
+          <tr>
+            <td>{{ v.id_viaje }}</td>
+            <td>{{ v.usuario }}</td>
+            <td>{{ v.vehiculo }}</td>
+            <td>{{ v.tipo_combustible }}</td>
+            <td>{{ v.destino }}</td>
+            <td>{{ v.fecha }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ================= FORMULARIO ================= -->
+  <div class="section-card">
+    <div class="section-title">
+      <span></span> Datos del salvoconducto
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="form-grid">
+        <div>
+          <label>Usuario</label>
+          <select name="usuario" class="form-control" required>
+            {% for u in usuarios %}
+            <option value="{{ u.id_usuario }}">{{ u.nombre_usuario }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label>Vehículo</label>
+          <select name="vehiculo" class="form-control" required>
+            {% for v in vehiculos %}
+            <option value="{{ v.id_vehiculo }}">{{ v.matricula_vehiculo }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-grid-full">
+          <label>Viaje</label>
+          <select name="viaje" class="form-control" required>
+            {% for v in viajes %}
+            <option value="{{ v.id_viaje }}">Viaje #{{ v.id_viaje }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-grid-full">
+          <label>Motivo</label>
+          <textarea name="motivo" class="form-control" rows="3" required></textarea>
+        </div>
+
+        <div>
+          <label>Fecha inicio</label>
+          <input type="date" name="fecha_inicio" class="form-control" required>
+        </div>
+
+        <div>
+          <label>Fecha fin</label>
+          <input type="date" name="fecha_fin" class="form-control" required>
+        </div>
+
+        <div class="form-grid-full">
+          <label>Estado</label>
+          <select name="estado" class="form-control">
+            <option value="VIGENTE">VIGENTE</option>
+            <option value="VENCIDO">VENCIDO</option>
+            <option value="ANULADO">ANULADO</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-save">Guardar salvoconducto</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/salvoconductos/nuevosalvoconducto.js' %}" defer></script>
+{% endblock %}

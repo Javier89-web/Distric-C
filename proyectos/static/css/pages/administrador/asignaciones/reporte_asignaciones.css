@@ -1,0 +1,128 @@
+body {
+    background: #ffffff;
+  }
+
+  .box {
+    width: 92%;
+    max-width: 1150px;
+    margin: 30px auto;
+    background: #06080D;
+    color: #F3F4F6;
+    padding: 24px;
+    border-radius: 18px;
+    border: 1px solid #1F2937;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  }
+
+  .box h3 {
+    color: #F3F4F6;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 800;
+  }
+
+  .resumen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+    font-size: 14px;
+  }
+
+  .resumen .badge {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-weight: 700;
+  }
+
+  .filtros {
+    margin-bottom: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .filtros .btn {
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    border: none;
+  }
+
+  .table-responsive {
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid #1F2937;
+    background: #111827;
+    padding: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin-top: 5px;
+  }
+
+  .dt-buttons {
+    text-align: right;
+    margin-bottom: 12px;
+  }
+
+  .dt-buttons .dt-button {
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid #1F2937;
+    background: #3B82F6;
+    color: #ffffff;
+    font-weight: 700;
+    margin-left: 8px;
+  }
+
+  .dt-buttons .dt-button:hover {
+    background: #2563EB;
+  }
+
+
+  #tabla_reporte {
+    width: 100%;
+    font-size: 13px;
+    color: #F3F4F6;
+    margin: 0;
+  }
+
+  #tabla_reporte thead th {
+    background: #06080D;
+    color: #F3F4F6;
+    border-bottom: 1px solid #1F2937;
+    padding: 10px;
+    white-space: nowrap;
+  }
+
+  #tabla_reporte tbody td {
+    background: #111827;
+    color: #F3F4F6;
+    border-top: 1px solid #1F2937;
+    padding: 10px;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  #tabla_reporte tbody tr:hover td {
+    background: #0B1220;
+  }
+
+  @media (min-width:1200px) {
+    .box {
+      margin-left: 380px;
+    }
+  }
+
+  @media (max-width:1200px) {
+    .box {
+      margin-left: 0;
+      width: 96%;
+      max-width: 100%;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+  }

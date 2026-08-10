@@ -1,0 +1,47 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/asignaciones/editar_asignacion.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+  <h3>Editar Asignación</h3>
+
+  <form method="POST">
+    {% csrf_token %}
+
+    <label>Usuario</label>
+    <select name="usuario" class="form-control" required>
+      {% for u in usuarios %}
+      <option value="{{ u.id_usuario }}" {% if u.id_usuario==asignacion.usuario.id_usuario %}selected{% endif %}>
+        {{ u.nombre_usuario }} {{ u.apellido_usuario }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <label>Evento</label>
+    <select name="evento" class="form-control" required>
+      {% for ev in eventos %}
+      <option value="{{ ev.id_evento }}" {% if ev.id_evento==asignacion.evento.id_evento %}selected{% endif %}>
+        {{ ev.titulo }}
+      </option>
+      {% endfor %}
+    </select>
+    <label>Fecha de asignación</label>
+    <input type="datetime-local" name="fecha_asignacion" class="form-control"
+      value="{{ asignacion.fecha_asignacion|date:'Y-m-d\\TH:i' }}">
+    <label>Descripción</label>
+    <textarea name="descripcion" class="form-control" rows="3">{{ asignacion.descripcion_evento }}</textarea>
+
+    <div class="acciones">
+      <button type="submit" class="btn-save">Actualizar</button>
+      <a href="{% url 'lista_asignaciones' %}" class="btn-save">Cancelar</a>
+    </div>
+
+  </form>
+</div>
+
+{% endblock %}

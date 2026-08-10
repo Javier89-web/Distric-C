@@ -1,0 +1,70 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/pagos/listado_pagos.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+  <h3>Listado de Pagos</h3>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped" id="tabla_pagos">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>"N° Cuenta</th>
+          <th>Factura</th>
+          <th>Método</th>
+          <th>Monto</th>
+          <th>Banco</th>
+          <th>Estado</th>
+          <th>Fecha</th>
+          <th>Comprobante</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for p in pagos %}
+        <tr>
+          <td>{{ p.id_pago }}</td>
+          <td>{{ p.factura.numero_cuenta }}</td>
+          <td>{{ p.factura.numero_factura }}</td>
+          <td>{{ p.metodo_pago }}</td>
+          <td>$ {{ p.monto_pagado }}</td>
+          <td>{{ p.banco|default:"-" }}</td>
+          <td>{{ p.estado_pago }}</td>
+          <td>{{ p.fecha_pago|date:"Y-m-d H:i" }}</td>
+          <td>
+            {% if p.comprobante %}
+            <a href="{{ p.comprobante.url }}" target="_blank">
+              <img src="{{ p.comprobante.url }}" class="payment-thumb">
+            </a>
+            {% else %}
+            -
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'ver_pago' p.id_pago %}" class="btn-ver">Ver</a>
+            <a href="{% url 'editar_pago' p.id_pago %}" class="btn-editar">Editar</a>
+            <a href="{% url 'eliminar_pago' p.id_pago %}" class="btn-eliminar">
+              Eliminar
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+
+    </table>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/pagos/listado_pagos.js' %}" defer></script>
+{% endblock %}

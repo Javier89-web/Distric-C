@@ -1,0 +1,301 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/cargas/detalle_carga.css' %}">
+{% endblock %}
+
+{% block contenido %}
+
+
+<div class="load-page">
+    <div class="load-container">
+        <div class="page-header">
+            <h2>Detalle de mi Carga</h2>
+            <p>Revisa y ajusta los productos que transportará tu vehículo antes de iniciar el recorrido.</p>
+        </div>
+
+        <div class="card-panel">
+            <div class="info-grid">
+                <div class="info-box">
+                    <span>Vehículo</span>
+                    <strong>{{ plan.vehiculo.matricula_vehiculo }}</strong>
+                </div>
+                <div class="info-box">
+                    <span>Fecha</span>
+                    <strong>{{ plan.fecha_planificada|date:"d/m/Y" }}</strong>
+                </div>
+                <div class="info-box">
+                    <span>Estado</span>
+                    <strong>{{ plan.get_estado_display }}</strong>
+                </div>
+                <div class="info-box">
+                    <span>Revisión</span>
+                    <strong>{% if plan.revisado_por_usuario %}REVISADA{% else %}PENDIENTE{% endif %}</strong>
+                </div>
+            </div>
+
+            <div class="stats-grid stats-grid-spaced">
+                <div class="stat-box">
+                    <span>Peso asignado</span>
+                    <strong>{{ peso_programado|floatformat:2 }} kg</strong>
+                </div>
+                <div class="stat-box">
+                    <span>Peso efectivo</span>
+                    <strong>{{ peso_total|floatformat:2 }} kg</strong>
+                </div>
+                <div class="stat-box">
+                    <span>Peso descartado</span>
+                    <strong>{{ peso_descartado|floatformat:2 }} kg</strong>
+                </div>
+                <div class="stat-box">
+                    <span>Capacidad disponible</span>
+                    <strong>{{ disponible|floatformat:2 }} kg</strong>
+                </div>
+            </div>
+
+            <div class="progress-track">
+                <div class="progress-value js-progress-width" data-progress="{{ porcentaje|floatformat:0 }}"></div>
+            </div>
+            <div class="progress-text">
+                <span>Uso de capacidad: {{ porcentaje|floatformat:1 }} %</span>
+                <span>Máximo: {{ capacidad|floatformat:2 }} kg</span>
+            </div>
+
+            {% if plan.notas %}
+                <div class="notes-box">
+                    <strong>Notas del administrador:</strong> {{ plan.notas }}
+                </div>
+            {% endif %}
+        </div>
+
+        {% if permite_cambios and productos_disponibles %}
+            <div class="card-panel">
+                <h3 class="section-title">Agregar un producto adicional</h3>
+
+                <form action="{% url 'agregarproductocargausuario' plan.id_plan_carga %}" method="post" class="add-form-grid" id="formAgregarProducto" data-disponible="{{ disponible|stringformat:'f' }}" novalidate>
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="producto">Producto</label>
+                        <select name="producto" id="producto" class="form-select">
+                            <option value="">Seleccione un producto</option>
+                            {% for producto in productos_disponibles %}
+                                <option value="{{ producto.id_producto_carga }}" data-peso="{{ producto.peso_unitario_kg|stringformat:'f' }}">
+                                    {{ producto.nombre_producto }}{% if producto.marca_producto %} - {{ producto.marca_producto }}{% endif %} · {{ producto.peso_unitario_kg|floatformat:2 }} kg
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <span class="field-error" id="errorProducto"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cantidad">Cantidad</label>
+                        <input type="number" name="cantidad" id="cantidad" class="form-control" min="1" max="9999" step="1" value="1">
+                        <span class="field-error" id="errorCantidad"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="motivo">Nota del cambio</label>
+                        <input type="text" name="motivo" id="motivo" class="form-control" minlength="5" maxlength="250" placeholder="Motivo por el que se agrega">
+                        <span class="field-error" id="errorMotivo"></span>
+                    </div>
+
+                    <button type="submit" class="btn-action btn-red">
+                        <i class="bi bi-plus-circle"></i>
+                        Agregar
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+
+        {% if not permite_cambios %}
+            <div class="locked-box">
+                Esta carga ya no permite modificaciones. Los productos se muestran únicamente para consulta.
+            </div>
+        {% endif %}
+
+        <div class="card-panel">
+            <h3 class="section-title">Productos de la carga</h3>
+
+            {% if detalles %}
+                <div class="table-section-tools">
+                    <div class="table-search">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="buscarProductosCarga" placeholder="Buscar producto, marca o estado...">
+                    </div>
+                    <div id="botonesProductosCarga" class="export-area"></div>
+                </div>
+
+                <div class="table-scroll">
+                    <table class="data-table" id="tablaProductosCarga">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Asignado</th>
+                                <th>Actual</th>
+                                <th>Peso unitario</th>
+                                <th>Peso efectivo</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detalle in detalles %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ detalle.producto.nombre_producto }}</strong>
+                                        {% if detalle.producto.marca_producto %}
+                                            <br><small>{{ detalle.producto.marca_producto }} · {{ detalle.producto.get_presentacion_producto_display }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ detalle.cantidad }}</td>
+                                    <td>{{ detalle.cantidad_actual }}</td>
+                                    <td>{{ detalle.peso_unitario_kg|floatformat:2 }} kg</td>
+                                    <td>{{ detalle.peso_actual_kg|floatformat:2 }} kg</td>
+                                    <td>
+                                        {% if detalle.cantidad_actual == 0 %}
+                                            <span class="badge badge-discarded">DESCARTADO</span>
+                                        {% elif detalle.cantidad_actual != detalle.cantidad %}
+                                            <span class="badge badge-adjusted">AJUSTADO</span>
+                                        {% elif detalle.origen == 'USUARIO' %}
+                                            <span class="badge badge-user">AGREGADO</span>
+                                        {% else %}
+                                            <span class="badge badge-active">ACTIVO</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if permite_cambios %}
+                                            <div class="actions">
+                                                <button
+                                                    type="button"
+                                                    class="btn-action abrir-ajuste"
+                                                    data-url="{% url 'ajustardetallecargausuario' detalle.id_detalle_plan_carga %}"
+                                                    data-producto="{{ detalle.producto.nombre_producto }}"
+                                                    data-maximo="{{ detalle.max_cantidad_permitida }}"
+                                                    data-asignado="{{ detalle.cantidad }}"
+                                                    data-actual="{{ detalle.cantidad_actual }}"
+                                                >
+                                                    Ajustar
+                                                </button>
+
+                                                {% if detalle.cantidad_actual != detalle.cantidad %}
+                                                    <form action="{% url 'restaurardetallecargausuario' detalle.id_detalle_plan_carga %}" method="post" class="confirmar-restauracion">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn-action btn-outline">Restaurar</button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-box">No existen productos asignados.</div>
+            {% endif %}
+        </div>
+
+        <div class="card-panel">
+            <h3 class="section-title">Historial de ajustes</h3>
+
+            {% if ajustes %}
+                <div class="table-section-tools">
+                    <div class="table-search">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="buscarHistorialCarga" placeholder="Buscar por producto, acción o nota...">
+                    </div>
+                    <div id="botonesHistorialCarga" class="export-area"></div>
+                </div>
+
+                <div class="table-scroll">
+                    <table class="data-table" id="tablaHistorialCarga">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Producto</th>
+                                <th>Acción</th>
+                                <th>Cambio</th>
+                                <th>Nota</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ajuste in ajustes %}
+                                <tr>
+                                    <td>{{ ajuste.fecha_ajuste|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ ajuste.producto_nombre }}</td>
+                                    <td>{{ ajuste.get_tipo_ajuste_display }}</td>
+                                    <td>{{ ajuste.cantidad_anterior }} → {{ ajuste.cantidad_nueva }}</td>
+                                    <td>{{ ajuste.motivo }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-box">Todavía no se han realizado ajustes.</div>
+            {% endif %}
+        </div>
+
+        <div class="card-panel">
+            <div class="footer-actions">
+                <a href="{% url 'listadocarga' %}" class="btn-action">
+                    <i class="bi bi-arrow-left"></i>
+                    Regresar
+                </a>
+
+                {% if plan.estado == 'LISTO' and not plan.revisado_por_usuario %}
+                    <form action="{% url 'confirmarcargausuario' plan.id_plan_carga %}" method="post" class="confirmar-revision">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-action btn-red">
+                            <i class="bi bi-check-circle"></i>
+                            Confirmar revisión
+                        </button>
+                    </form>
+                {% elif plan.revisado_por_usuario %}
+                    <span class="badge badge-ready reviewed-badge">CARGA REVISADA</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-backdrop-custom" id="modalAjuste">
+    <div class="modal-card-custom">
+        <h3>Ajustar producto</h3>
+        <p id="productoAjuste"></p>
+
+        <form method="post" id="formAjuste" novalidate>
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="cantidadNueva">Cantidad que permanece en el vehículo</label>
+                <input type="number" name="cantidad_nueva" id="cantidadNueva" class="form-control" min="0" max="9999" step="1">
+                <span class="field-error" id="errorCantidadNueva"></span>
+            </div>
+
+            <div class="form-group form-group-spaced">
+                <label for="motivoAjuste">Nota obligatoria</label>
+                <textarea name="motivo" id="motivoAjuste" class="form-control" minlength="5" maxlength="250" placeholder="Explica el motivo del ajuste"></textarea>
+                <span class="field-error" id="errorMotivoAjuste"></span>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-action" id="cerrarModal">Cancelar</button>
+                <button type="submit" class="btn-action btn-red">Guardar ajuste</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/usuario/cargas/detalle_carga.js' %}" defer></script>
+{% endblock %}

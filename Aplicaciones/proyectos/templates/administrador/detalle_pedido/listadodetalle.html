@@ -1,0 +1,52 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/detalle_pedido/listadodetalle.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+  <h3>Detalles del Pedido #{{ pedido.id_pedido }}</h3>
+  <a href="{% url 'nuevodetalle' pedido.id_pedido %}" class="btn-save">Agregar Producto</a>
+  <br>
+  <br>
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped" id="tabla_detalles">
+
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th>Cantidad</th>
+          <th>Precio Unitario</th>
+          <th>Subtotal</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for det in detalles %}
+        <tr>
+          <td>{{ det.descripcion_item }}</td>
+          <td>{{ det.cantidad }}</td>
+          <td>$ {{ det.precio_unitario }}</td>
+          <td>$ {{ det.subtotal }}</td>
+          <td>
+            <a href="{% url 'editardetalle' det.id_detalle_pedido %}" class="btn btn-warning btn-sm">Editar</a>
+            <a href="{% url 'eliminardetalle' det.id_detalle_pedido %}" class="btn btn-danger btn-sm">Eliminar</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+
+    </table>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/detalle_pedido/listadodetalle.js' %}" defer></script>
+{% endblock %}

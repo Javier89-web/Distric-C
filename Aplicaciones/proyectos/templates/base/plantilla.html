@@ -1,0 +1,210 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>{% block titulo %}Distric C{% endblock %}</title>
+
+  <link rel="manifest" href="{% url 'manifest' %}">
+  <meta name="theme-color" content="#23262b">
+  <meta name="background-color" content="#23262b">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" type="image/png" href="{% static 'icons/distric-favicon.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'icons/distric-favicon.png' %}">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-fileinput@5.5.3/css/fileinput.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/base/usuario.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base/branding.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body data-service-worker-url="{% url 'service-worker' %}" data-event-toast-url="{% url 'usuario_toast_evento' %}">
+
+
+    {% if request.session.usuario_id %}
+    <nav class="navbar navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+
+            <a class="navbar-brand branding-navbar-logo" href="{% if request.session.ruta_admin_modo %}/adminpanel/{% else %}/inicio/{% endif %}" aria-label="Distri C - Inicio">
+                <img src="{% static 'img/branding/distric-c-logo.png' %}" alt="Distri C">
+            </a>
+
+            <button
+                class="navbar-toggler"
+                type="button"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#offcanvasUsuario"
+                aria-controls="offcanvasUsuario"
+                aria-label="Abrir menú"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div
+                class="offcanvas offcanvas-end text-bg-dark"
+                tabindex="-1"
+                id="offcanvasUsuario"
+                aria-labelledby="offcanvasUsuarioLabel"
+            >
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="offcanvasUsuarioLabel">Menú</h5>
+                    <button
+                        type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="offcanvas"
+                        aria-label="Cerrar"
+                    ></button>
+                </div>
+
+                <div class="offcanvas-body">
+                    {% if request.session.ruta_admin_modo %}
+                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/adminpanel/">
+                                <i class="bi bi-house-door"></i>
+                                Inicio
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/listadousuario/">
+                                <i class="bi bi-people"></i>
+                                Control de Usuarios
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/listadocarros/">
+                                <i class="bi bi-car-front-fill"></i>
+                                Administración de Vehículos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/productos-carga/">
+                                <i class="bi bi-grid"></i>
+                                Catálogo de Productos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/plan-cargas/">
+                                <i class="bi bi-box-seam"></i>
+                                Planificación de Cargas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'precioscombustibleadmin' %}">
+                                <i class="bi bi-fuel-pump-fill"></i>
+                                Precios de Combustible
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'admin_planificacion_rutas' %}">
+                                <i class="bi bi-signpost-split"></i>
+                                Planificaciones de Prueba
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'admin_reportes_viajes' %}?tipo=PRUEBA">
+                                <i class="bi bi-file-earmark-bar-graph"></i>
+                                Reportes de Pruebas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/logout/">
+                                <i class="bi bi-box-arrow-right"></i>
+                                Cerrar Sesión
+                            </a>
+                        </li>
+                    </ul>
+                    {% else %}
+                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/perfilusuario/">
+                                <i class="bi bi-person-circle"></i>
+                                Mi Perfil
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/listadovehiculo/">
+                                <i class="bi bi-car-front-fill"></i>
+                                Mi vehículo
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'listadocarga' %}">
+                                <i class="bi bi-box-seam"></i>
+                                Mi carga asignada
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/buscarlugares/">
+                                <i class="bi bi-pin-map"></i>
+                                Optimización de rutas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/historial/">
+                                <i class="bi bi-card-text"></i>
+                                Mi historial de rutas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/logout/">
+                                <i class="bi bi-x-circle"></i>
+                                Cerrar Sesión
+                            </a>
+                        </li>
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    {% block contenido %}
+
+    {% endblock %}
+
+<!-- Mensajes de Django disponibles para el JavaScript global -->
+<div id="django-messages" hidden>
+{% if messages %}
+    {% for msg in messages %}
+        <span data-tags="{{ msg.tags|escape }}" data-message="{{ msg|escape }}"></span>
+    {% endfor %}
+{% endif %}
+</div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/additional-methods.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+  <script src="{% static 'js/base/pdf_branding.js' %}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap-fileinput@5.5.3/js/fileinput.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap-fileinput@5.5.3/js/locales/es.js"></script>
+  <script src="{% static 'js/base/single_submit.js' %}"></script>
+  <script src="{% static 'js/base/tab_lock.js' %}"></script>
+  <script src="{% static 'js/base/usuario.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

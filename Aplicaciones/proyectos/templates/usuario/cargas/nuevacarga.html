@@ -1,0 +1,43 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/cargas/nuevacarga.css' %}">
+{% endblock %}
+{% block contenido %}
+
+
+<div class="form-container">
+
+    <div class="barra"></div>
+
+    <h3>Agregar Carga</h3>
+
+    <form action="/guardarcarga/" method="post">
+        {% csrf_token %}
+
+        {# 👇 AQUÍ VA LO DEL VEHÍCULO #}
+        <input type="hidden" name="vehiculo" value="{{ vehiculo.id_vehiculo }}">
+        <p class="form-note form-note-top">
+            Vehículo:
+            <b>{{ vehiculo.matricula_vehiculo }} - {{ vehiculo.tipovehiculo_vehiculo }}</b>
+        </p>
+
+        <label>Nombre del producto / carga:</label>
+        <input type="text" name="txt_nombre_producto" placeholder="Ej: Agua, Cajas, Equipos" required>
+
+        <label>Peso adicional (lb):</label>
+        <input type="number" name="txt_peso_adicional" step="0.01" min="0" placeholder="Ej: 15.50">
+
+        <div class="btn-container">
+            <button type="submit" class="btn-save">
+                Guardar
+            </button>
+
+            <a href="/listadocarga/" class="btn-cancel">Cancelar</a>
+        </div>
+
+    </form>
+</div>
+
+{% endblock %}

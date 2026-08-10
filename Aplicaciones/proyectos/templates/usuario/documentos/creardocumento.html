@@ -1,0 +1,563 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/documentos/creardocumento.css' %}">
+{% endblock %}
+{% block contenido %}
+
+
+<div class="check-container">
+
+    <div class="barra"></div>
+
+    <h3>Checklist de Vehículo</h3>
+    <p class="subtitulo">
+        Usuario: {{ usuario.correo_usuario }}
+    </p>
+
+    <div class="legend">
+        <span>
+            <div class="legend-box"></div> Sí
+        </span>
+        <span>
+            <div class="legend-box legend-box-muted"></div> No
+        </span>
+    </div>
+
+    <form action="{% url 'creardocumento' %}" method="post">
+        {% csrf_token %}
+        <div class="section-title">Documentos indispensables</div>
+        <table class="check-table">
+            <thead>
+                <tr>
+                    <th class="descripcion">Ítem</th>
+                    <th class="si-no">Sí</th>
+                    <th class="si-no">No</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="descripcion">Licencia de conducir vigente</td>
+                    <td class="si-no"><input type="radio" class="check-radio" name="licencia_conducir" value="SI" {% if
+                            checklist and checklist.licencia_conducir=='SI' %}checked{% endif %} {% if bloqueado
+                            %}disabled{% endif %}>
+                    </td>
+
+                    <td class="si-no"><input type="radio" class="check-radio" name="licencia_conducir" value="NO" {% if
+                            checklist and checklist.licencia_conducir=='NO' %}checked{% endif %} {% if bloqueado
+                            %}disabled{% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Tarjeta de circulación y placas al corriente</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="tarjeta_circulacion" value="SI" {% if checklist
+                            and checklist.tarjeta_circulacion=='SI' %}checked{% endif %} {% if bloqueado %}disabled{%
+                            endif %}>
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="tarjeta_circulacion" value="NO" {% if checklist
+                            and checklist.tarjeta_circulacion=='NO' %}checked{% endif %} {% if bloqueado %}disabled{%
+                            endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Póliza de seguro de auto - impresa</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="poliza_impresa" value="SI" {% if checklist and
+                            checklist.poliza_impresa=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="poliza_impresa" value="NO" {% if checklist and
+                            checklist.poliza_impresa=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Póliza de seguro de auto - digital</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="poliza_digital" value="SI" {% if checklist and
+                            checklist.poliza_digital=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="poliza_digital" value="NO" {% if checklist and
+                            checklist.poliza_digital=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Verificación vehicular (si aplica en tu zona)</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="verificacion_vehicular" value="SI" {% if checklist
+                            and checklist.verificacion_vehicular=='SI' %}checked{% endif %} {% if bloqueado %}disabled{%
+                            endif %}>
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="verificacion_vehicular" value="NO" {% if checklist
+                            and checklist.verificacion_vehicular=='NO' %}checked{% endif %} {% if bloqueado %}disabled{%
+                            endif %}>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Factura o comprobante de propiedad (viajes largos / cruces fronterizos)
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="factura_propiedad" value="SI" {% if checklist and
+                            checklist.factura_propiedad=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif
+                            %}>
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="factura_propiedad" value="NO" {% if checklist and
+                            checklist.factura_propiedad=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif
+                            %}>
+
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="section-title">Chequeo mecánico esencial</div>
+        <div class="section-sub">Revisa antes de salir con un mecánico:</div>
+        <table class="check-table">
+            <thead>
+                <tr>
+                    <th class="descripcion">Ítem</th>
+                    <th class="si-no">Sí</th>
+                    <th class="si-no">No</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="descripcion">Llantas (incluyendo refacción con presión adecuada)</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="llantas" value="SI" {% if checklist and
+                            checklist.llantas=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="llantas" value="NO" {% if checklist and
+                            checklist.llantas=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Frenos</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="frenos" value="SI" {% if checklist and
+                            checklist.frenos=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="frenos" value="NO" {% if checklist and
+                            checklist.frenos=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Luces</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="luces" value="SI" {% if checklist and
+                            checklist.luces=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="luces" value="NO" {% if checklist and
+                            checklist.luces=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Fluidos de aceite</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="fluidos_aceite" value="SI" {% if checklist and
+                            checklist.fluidos_aceite=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="fluidos_aceite" value="NO" {% if checklist and
+                            checklist.fluidos_aceite=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Fluido de agua</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="fluido_agua" value="SI" {% if checklist and
+                            checklist.fluido_agua=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="fluido_agua" value="NO" {% if checklist and
+                            checklist.fluido_agua=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Batería</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="bateria_general" value="SI" {% if checklist and
+                            checklist.bateria_general=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="bateria_general" value="NO" {% if checklist and
+                            checklist.bateria_general=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Cinturones</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="cinturones" value="SI" {% if checklist and
+                            checklist.cinturones=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="cinturones" value="NO" {% if checklist and
+                            checklist.cinturones=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Limpiaparabrisas en buen estado</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="limpiaparabrisas" value="SI" {% if checklist and
+                            checklist.limpiaparabrisas=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="limpiaparabrisas" value="NO" {% if checklist and
+                            checklist.limpiaparabrisas=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="section-title">Estado general del motor</div>
+        <table class="check-table">
+            <thead>
+                <tr>
+                    <th class="descripcion">Ítem</th>
+                    <th class="si-no">Sí</th>
+                    <th class="si-no">No</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="descripcion">Aceite de motor (nivel correcto, sin fugas, cambio al día)</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="motor_aceite" value="SI" {% if checklist and
+                            checklist.motor_aceite=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="motor_aceite" value="NO" {% if checklist and
+                            checklist.motor_aceite=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Refrigerante (anticongelante)</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="motor_refrigerante" value="SI" {% if checklist and
+                            checklist.motor_refrigerante=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif
+                            %}>
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="motor_refrigerante" value="NO" {% if checklist and
+                            checklist.motor_refrigerante=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif
+                            %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Temperatura (no se recalienta)</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="motor_temperatura" value="SI" {% if checklist and
+                            checklist.motor_temperatura=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif
+                            %}>
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="motor_temperatura" value="NO" {% if checklist and
+                            checklist.motor_temperatura=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif
+                            %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Batería (bornes limpios y firmes)</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="motor_bateria" value="SI" {% if checklist and
+                            checklist.motor_bateria=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="motor_bateria" value="NO" {% if checklist and
+                            checklist.motor_bateria=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Filtro de aire limpio</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="motor_filtro_aire" value="SI" {% if checklist and
+                            checklist.motor_filtro_aire=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif
+                            %}>
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="motor_filtro_aire" value="NO" {% if checklist and
+                            checklist.motor_filtro_aire=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif
+                            %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Fugas (revisar debajo del auto)</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="motor_fugas" value="SI" {% if checklist and
+                            checklist.motor_fugas=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="motor_fugas" value="NO" {% if checklist and
+                            checklist.motor_fugas=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Combustible (sin olor fuerte ni goteos)</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="motor_combustible" value="SI" {% if checklist and
+                            checklist.motor_combustible=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif
+                            %}>
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="motor_combustible" value="NO" {% if checklist and
+                            checklist.motor_combustible=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif
+                            %}>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="section-title">Suspensión / transmisión</div>
+        <table class="check-table">
+            <thead>
+                <tr>
+                    <th class="descripcion">Ítem</th>
+                    <th class="si-no">Sí</th>
+                    <th class="si-no">No</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="descripcion">Amortiguadores</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="amortiguadores" value="SI" {% if checklist and
+                            checklist.amortiguadores=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="amortiguadores" value="NO" {% if checklist and
+                            checklist.amortiguadores=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Alineación (el auto no se va a un lado)</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="alineacion" value="SI" {% if checklist and
+                            checklist.alineacion=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="alineacion" value="NO" {% if checklist and
+                            checklist.alineacion=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Soportes de motor (sin vibración excesiva)</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="soportes_motor" value="SI" {% if checklist and
+                            checklist.soportes_motor=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="soportes_motor" value="NO" {% if checklist and
+                            checklist.soportes_motor=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Caja (manual / automática) cambios suaves</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="caja" value="SI" {% if checklist and
+                            checklist.caja=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="caja" value="NO" {% if checklist and
+                            checklist.caja=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Embrague (si es manual)</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="embrague" value="SI" {% if checklist and
+                            checklist.embrague=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="embrague" value="NO" {% if checklist and
+                            checklist.embrague=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="section-title">Equipo de seguridad requerido</div>
+        <div class="section-sub">Lleva siempre por ley:</div>
+        <table class="check-table">
+            <thead>
+                <tr>
+                    <th class="descripcion">Ítem</th>
+                    <th class="si-no">Sí</th>
+                    <th class="si-no">No</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="descripcion">Triángulo de seguridad</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="triangulo" value="SI" {% if checklist and
+                            checklist.triangulo=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="triangulo" value="NO" {% if checklist and
+                            checklist.triangulo=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Chaleco reflectivo</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="chaleco" value="SI" {% if checklist and
+                            checklist.chaleco=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="chaleco" value="NO" {% if checklist and
+                            checklist.chaleco=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Extintor</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="extintor" value="SI" {% if checklist and
+                            checklist.extintor=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="extintor" value="NO" {% if checklist and
+                            checklist.extintor=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Gato con llave para llantas</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="gato_llave" value="SI" {% if checklist and
+                            checklist.gato_llave=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="gato_llave" value="NO" {% if checklist and
+                            checklist.gato_llave=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Botiquín</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="botiquin" value="SI" {% if checklist and
+                            checklist.botiquin=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="botiquin" value="NO" {% if checklist and
+                            checklist.botiquin=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Linterna</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="linterna" value="SI" {% if checklist and
+                            checklist.linterna=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="linterna" value="NO" {% if checklist and
+                            checklist.linterna=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Cables para corriente</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="cables_corriente" value="SI" {% if checklist and
+                            checklist.cables_corriente=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="cables_corriente" value="NO" {% if checklist and
+                            checklist.cables_corriente=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Tacos para ruedas</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="tacos_ruedas" value="SI" {% if checklist and
+                            checklist.tacos_ruedas=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="tacos_ruedas" value="NO" {% if checklist and
+                            checklist.tacos_ruedas=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif %}>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="descripcion">Llanta de reparación en buen estado</td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="llanta_reparacion" value="SI" {% if checklist and
+                            checklist.llanta_reparacion=='SI' %}checked{% endif %} {% if bloqueado %}disabled{% endif
+                            %}>
+                    </td>
+                    <td class="si-no">
+                        <input type="radio" class="check-radio" name="llanta_reparacion" value="NO" {% if checklist and
+                            checklist.llanta_reparacion=='NO' %}checked{% endif %} {% if bloqueado %}disabled{% endif
+                            %}>
+
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="btn-container">
+            {% if checklist %}
+            {% if edit_mode %}
+            <button type="submit" class="btn-save">
+                Guardar cambios
+            </button>
+            {% else %}
+            <a href="{% url 'creardocumento' %}?edit=1" class="btn-save document-link">
+                Editar checklist
+            </a>
+            {% endif %}
+            {% else %}
+            <button type="submit" class="btn-save">
+                Guardar checklist
+            </button>
+            {% endif %}
+
+            <a href="/inicio/" class="btn-cancel">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

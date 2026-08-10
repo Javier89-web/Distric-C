@@ -1,0 +1,117 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static l10n %}
+
+{% block titulo %}Precios de combustible | Distri C{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/administrador/combustible/precios_combustible.css' %}">{% endblock %}
+
+{% block contener %}
+<main class="fuel-page">
+    <div class="fuel-container">
+        <header class="fuel-header">
+            <div>
+                <h1>Precios de combustible</h1>
+                <p>Actualiza el valor que utilizarán los nuevos cálculos de costo de ruta.</p>
+            </div>
+            <a href="/adminpanel/" class="fuel-back"><i class="bi bi-arrow-left"></i> Panel</a>
+        </header>
+
+        <form method="post" id="frmPreciosCombustible" class="fuel-panel" novalidate>
+            {% csrf_token %}
+            <div class="fuel-toolbar">
+                <div>
+                    <strong>Unidad de trabajo</strong>
+                    <span>En Ecuador puedes ingresar el precio por galón o por litro. El sistema convierte el valor automáticamente.</span>
+                </div>
+                <div class="unit-switch" role="radiogroup" aria-label="Unidad del precio">
+                    <label><input type="radio" name="unidad_precio" value="GALON" checked><span>Por galón</span></label>
+                    <label><input type="radio" name="unidad_precio" value="LITRO"><span>Por litro</span></label>
+                </div>
+            </div>
+
+            <div class="fuel-board" aria-label="Precios vigentes de combustible">
+                {% for precio in precios %}
+                <article class="fuel-card" data-fuel-card>
+                    <div class="fuel-card-head">
+                        <span class="fuel-type"><i class="bi bi-fuel-pump-fill"></i> {{ precio.etiqueta }}</span>
+                        <span class="fuel-status">{% if precio.configurado %}Vigente{% else %}Sin configurar{% endif %}</span>
+                    </div>
+
+                    <div class="fuel-current">
+                        <span>Precio actual</span>
+                        {% if precio.configurado %}
+                        <strong class="fuel-current-value"
+                                data-liter="{{ precio.precio_litro|unlocalize }}"
+                                data-gallon="{{ precio.precio_galon|unlocalize }}">
+                            ${{ precio.precio_galon|floatformat:3 }}
+                        </strong>
+                        <small class="fuel-current-unit">USD por galón</small>
+                        {% else %}
+                        <strong class="fuel-current-value" data-liter="0" data-gallon="0">—</strong>
+                        <small class="fuel-current-unit">Aún no configurado</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="fuel-edit">
+                        <label for="precio_{{ precio.tipo }}">Nuevo precio</label>
+                        <div class="fuel-input-wrap">
+                            <span>$</span>
+                            <input type="number" step="0.0001" min="0.0001" max="1000"
+                                   id="precio_{{ precio.tipo }}" name="precio_{{ precio.tipo }}"
+                                   value="{% if precio.configurado %}{{ precio.precio_galon|floatformat:4|unlocalize }}{% endif %}"
+                                   data-liter="{{ precio.precio_litro|unlocalize }}"
+                                   data-gallon="{{ precio.precio_galon|unlocalize }}"
+                                   inputmode="decimal" placeholder="0.0000" required>
+                            <small data-unit-suffix>USD/gal</small>
+                        </div>
+                        <small class="fuel-preview" data-equivalent-for="precio_{{ precio.tipo }}">—</small>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+
+            <div class="fuel-actions">
+                <span id="fuelUnitHelp"><i class="bi bi-info-circle"></i> Ejemplo: 3.260 significa USD 3,260 por cada galón.</span>
+                <button type="submit" class="fuel-save" id="btnGuardarPrecios"><i class="bi bi-check-circle"></i> Guardar cambios</button>
+            </div>
+        </form>
+
+        <section class="history-card">
+            <div class="history-heading">
+                <div>
+                    <h2>Historial de ajustes</h2>
+                    <p>Consulta quién cambió cada precio y cuándo se realizó el ajuste.</p>
+                </div>
+                <div class="history-actions">
+                    <label class="history-search"><i class="bi bi-search"></i><input type="search" id="buscarHistorialPrecios" placeholder="Buscar ajuste..."></label>
+                    <a href="{% url 'historialprecioscombustiblepdf' %}" class="history-pdf"><i class="bi bi-file-earmark-pdf"></i> PDF de ajustes</a>
+                </div>
+            </div>
+
+            <div class="history-table-wrap">
+                <table class="history-table" id="tablaHistorialPrecios">
+                    <thead>
+                        <tr><th>Fecha</th><th>Combustible</th><th>Cambio por litro</th><th>Valor ingresado</th><th>Administrador</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for ajuste in historial %}
+                        <tr>
+                            <td>{{ ajuste.fecha_ajuste|date:"d/m/Y H:i" }}</td>
+                            <td><strong>{{ ajuste.get_tipo_display }}</strong></td>
+                            <td>
+                                {% if ajuste.precio_anterior_litro != None %}${{ ajuste.precio_anterior_litro|floatformat:4 }}{% else %}—{% endif %}
+                                <span>→</span> ${{ ajuste.precio_nuevo_litro|floatformat:4 }} / L
+                            </td>
+                            <td>${{ ajuste.valor_ingresado|floatformat:4 }} / {% if ajuste.unidad_ingresada == 'GALON' %}gal{% else %}L{% endif %}</td>
+                            <td>{% if ajuste.administrador %}{{ ajuste.administrador.nombre_usuario }} {{ ajuste.administrador.apellido_usuario }}{% else %}Sistema{% endif %}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% if not historial %}<div class="empty-history">Todavía no existen ajustes registrados.</div>{% endif %}
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/pages/administrador/combustible/precios_combustible.js' %}" defer></script>{% endblock %}

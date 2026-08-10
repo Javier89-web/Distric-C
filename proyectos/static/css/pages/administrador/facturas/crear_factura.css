@@ -1,0 +1,33 @@
+.box {
+    width: 90%;
+    max-width: 700px;
+    margin: 40px auto;
+    background: #06080D;
+    color: #F3F4F6;
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid #1F2937;
+  }
+
+  label {
+    font-weight: 700;
+    margin-top: 12px;
+    display: block;
+  }
+
+  select,
+  button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border-radius: 10px;
+    border: none;
+  }
+
+  button {
+    background: #3B82F6;
+    color: white;
+    font-weight: 700;
+    margin-top: 20px;
+  }
+.page-title-centered { text-align: center; }

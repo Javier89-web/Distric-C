@@ -1,0 +1,113 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/asignaciones/reporte_asignaciones.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+  <h3>Reporte de estado de asignaciones</h3>
+
+  <div class="resumen">
+    <span class="badge bg-secondary">Total: {{ total }}</span>
+    <span class="badge bg-success">Completados: {{ total_completados }}</span>
+    <span class="badge bg-danger">Atrasados: {{ total_atrasados }}</span>
+    <span class="badge bg-info text-dark">No completados: {{ total_nocomp }}</span>
+    <span class="badge bg-warning text-dark">Pendientes: {{ total_pendientes }}</span>
+  </div>
+
+  <div class="filtros">
+    <a href="{% url 'reporte_asignaciones' %}" class="btn btn-dark">Todos</a>
+    <a href="?estado=COMPLETADO" class="btn btn-success">Completados</a>
+    <a href="?estado=ATRASADO" class="btn btn-danger">Atrasados</a>
+    <a href="?estado=NO_COMPLETADO" class="btn btn-info">No completados</a>
+    <a href="?estado=PENDIENTE" class="btn btn-warning">Pendientes</a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered" id="tabla_reporte">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Evento</th>
+          <th>Inicio</th>
+          <th>Fin</th>
+          <th>Asignado</th>
+          <th>Estado</th>
+          <th>Fecha cambio estado</th>
+          <th>Motivo</th>
+          <th>Creado por</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in asignaciones %}
+        <tr>
+          <td>{{ a.usuario.nombre_usuario }} {{ a.usuario.apellido_usuario }}</td>
+          <td>{{ a.evento.titulo }}</td>
+          <td>
+            {{ a.evento.inicio_fecha }} {{ a.evento.inicio_hora|time:"h:i A" }}
+          </td>
+          <td>
+            {% if a.evento.fin_fecha and a.evento.fin_hora %}
+            {{ a.evento.fin_fecha }} {{ a.evento.fin_hora|time:"h:i A" }}
+            {% else %}
+            <span class="text-muted">Sin final</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if a.fecha_asignacion %}
+            {{ a.fecha_asignacion|date:"d-m-Y h:i A" }}
+            {% else %}
+            <span class="text-muted">-</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if a.estado == "COMPLETADO" %}
+            <span class="badge bg-success">Completado</span>
+            {% elif a.estado == "ATRASADO" %}
+            <span class="badge bg-danger">Atrasado</span>
+            {% elif a.estado == "NO_COMPLETADO" %}
+            <span class="badge bg-info text-dark">No completado</span>
+            {% else %}
+            <span class="badge bg-warning text-dark">Pendiente</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if a.estado_fecha %}
+            {{ a.estado_fecha|date:"d-m-Y h:i A" }}
+            {% else %}
+            <span class="text-muted">-</span>
+            {% endif %}
+          </td>
+          <td class="col-motivo">
+            {% if a.estado == "ATRASADO" and a.motivo_atrasado %}
+            <a href="{% url 'reporte_ver_motivo' a.id_usuario_evento %}" class="btn btn-sm btn-primary">
+              Ver
+            </a>
+            {% elif a.estado == "NO_COMPLETADO" and a.motivo_no_completado %}
+            <a href="{% url 'reporte_ver_motivo' a.id_usuario_evento %}" class="btn btn-sm btn-info">
+              Ver
+            </a>
+            {% else %}
+            <span class="text-muted">-</span>
+            {% endif %}
+          </td>
+          <td>
+            {{ a.evento.creado_por.usuario.nombre_usuario }}
+            {{ a.evento.creado_por.usuario.apellido_usuario }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/asignaciones/reporte_asignaciones.js' %}" defer></script>
+{% endblock %}

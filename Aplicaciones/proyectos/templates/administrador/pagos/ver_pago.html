@@ -1,0 +1,30 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/pagos/ver_pago.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+  <h3>Detalle del Pago</h3>
+
+  <div class="info">
+    <p><strong>Factura:</strong> {{ pago.factura.numero_factura }}</p>
+    <p><strong>Cliente:</strong> {{ pago.factura.cliente_nombre }}</p>
+    <p><strong>Numero de Cuenta:</strong> {{ pago.factura.numero_cuenta }}</p>
+    <p><strong>Método:</strong> {{ pago.metodo_pago }}</p>
+    <p><strong>Monto:</strong> $ {{ pago.monto_pagado }}</p>
+    <p><strong>Banco:</strong> {{ pago.banco|default:"-" }}</p>
+    <p><strong>Referencia:</strong> {{ pago.referencia|default:"-" }}</p>
+    <p><strong>Estado:</strong> {{ pago.estado_pago }}</p>
+    <p><strong>Fecha:</strong> {{ pago.fecha_pago }}</p>
+  </div>
+
+  <a href="{% url 'listado_pagos' %}" class="btn-save">
+    Volver al listado
+  </a>
+</div>
+
+{% endblock %}

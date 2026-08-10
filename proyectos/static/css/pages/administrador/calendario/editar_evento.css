@@ -1,0 +1,121 @@
+body {
+    background: #ffffff;
+  }
+
+  .box {
+    width: 92%;
+    max-width: 1000px;
+    margin: 30px auto;
+    background: #06080D;
+    color: #F3F4F6;
+    padding: 22px;
+    border-radius: 18px;
+    margin-left: 380px;
+    border: 1px solid #1F2937;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  }
+
+  .box h3 {
+    color: #F3F4F6;
+    margin: 0 0 18px 0;
+    text-align: center;
+  }
+
+  .card-form {
+    max-width: 700px;
+    margin: 0 auto;
+    background: #111827;
+    border: 1px solid #1F2937;
+    border-radius: 14px;
+    padding: 18px;
+  }
+
+  .card-form label {
+    color: #A1A1AA;
+    font-weight: 600;
+    display: block;
+    margin-top: 12px;
+  }
+
+  .card-form .form-control {
+    margin-top: 6px;
+    background: #06080D;
+    color: #F3F4F6;
+    border: 1px solid #1F2937;
+    border-radius: 10px;
+    padding: 10px;
+    outline: none;
+  }
+
+  .card-form .form-control:focus {
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+  }
+
+  .acciones {
+    margin-top: 18px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .acciones .btn {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .acciones .btn-success {
+    background: #3B82F6;
+    color: #ffffff;
+  }
+
+  .acciones .btn-success:hover {
+    background: #2563EB;
+  }
+
+  .acciones .btn-secondary {
+    background: #111827;
+    color: #F3F4F6;
+    border: 1px solid #1F2937;
+  }
+
+  .acciones .btn-secondary:hover {
+    background: #0B1220;
+    border-color: #3B82F6;
+  }
+
+
+  @media (max-width: 1200px) {
+    .box {
+      margin-left: 0;
+      width: 96%;
+      max-width: 100%;
+    }
+  }
+
+
+  @media (max-width: 768px) {
+    .box {
+      padding: 14px;
+    }
+
+    .card-form {
+      padding: 14px;
+    }
+
+    .acciones {
+      justify-content: stretch;
+    }
+
+    .acciones .btn {
+      width: 100%;
+    }
+  }

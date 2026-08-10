@@ -1,0 +1,541 @@
+/* =========================================================
+       CONTENEDOR GENERAL
+       ========================================================= */
+    .carga-detalle-page {
+        min-height: 100vh;
+        padding: 85px 18px 40px;
+        background: #f4f5f7;
+    }
+
+    .carga-detalle-container {
+        width: 100%;
+        max-width: 1250px;
+        margin: 0 auto;
+    }
+
+    .carga-page-header {
+        margin-bottom: 24px;
+    }
+
+    .carga-page-header h2 {
+        margin: 0;
+        color: #111111;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .carga-page-header p {
+        margin: 7px 0 0;
+        color: #6b7280;
+        font-size: 15px;
+    }
+
+    .carga-page-header::after {
+        content: "";
+        display: block;
+        width: 55px;
+        height: 3px;
+        margin-top: 15px;
+        background: #d71920;
+        border-radius: 3px;
+    }
+
+    /* =========================================================
+       TARJETAS
+       ========================================================= */
+    .carga-card {
+        margin-bottom: 18px;
+        padding: 18px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    }
+
+    .carga-card:last-child {
+        margin-bottom: 0;
+    }
+
+    .carga-summary-grid,
+    .carga-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .carga-summary-grid {
+        margin-bottom: 12px;
+    }
+
+    .carga-info-box,
+    .carga-stat-box {
+        min-width: 0;
+        padding: 14px;
+        background: #f8f9fa;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+    }
+
+    .carga-info-box span,
+    .carga-stat-box span {
+        display: block;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .carga-info-box strong,
+    .carga-stat-box strong {
+        display: block;
+        margin-top: 5px;
+        overflow-wrap: anywhere;
+        color: #23262b;
+        font-size: 14px;
+    }
+
+    .carga-stat-box strong {
+        font-size: 22px;
+    }
+
+    .carga-notes-box {
+        margin-top: 13px;
+        padding: 13px 14px;
+        color: #374151;
+        font-size: 13px;
+        background: #fafafa;
+        border-left: 3px solid #d71920;
+        border-radius: 7px;
+    }
+
+    .carga-progress-wrap {
+        margin-top: 14px;
+    }
+
+    .carga-progress-track {
+        height: 9px;
+        overflow: hidden;
+        background: #e5e7eb;
+        border-radius: 999px;
+    }
+
+    .carga-progress-value {
+        height: 100%;
+        background: #d71920;
+        border-radius: 999px;
+    }
+
+    .carga-progress-text {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 7px;
+        color: #6b7280;
+        font-size: 11px;
+    }
+
+    .carga-alert-box {
+        margin-bottom: 14px;
+        padding: 13px 15px;
+        color: #92400e;
+        font-size: 12px;
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        border-radius: 9px;
+    }
+
+    .carga-alert-box ul {
+        margin: 7px 0 0;
+        padding-left: 18px;
+    }
+
+    /* =========================================================
+       ENCABEZADO Y HERRAMIENTAS DE TABLAS
+       ========================================================= */
+    .carga-table-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    .carga-table-heading h3 {
+        margin: 0;
+        color: #23262b;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .carga-table-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .carga-search-box {
+        position: relative;
+        width: min(100%, 390px);
+    }
+
+    .carga-search-box i {
+        position: absolute;
+        top: 50%;
+        left: 13px;
+        color: #6b7280;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .carga-search-box input {
+        width: 100%;
+        min-height: 42px;
+        padding: 9px 12px 9px 38px;
+        color: #23262b;
+        font-size: 13px;
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 9px;
+        outline: none;
+    }
+
+    .carga-search-box input:focus {
+        border-color: #d71920;
+        box-shadow: 0 0 0 3px rgba(215, 25, 32, 0.08);
+    }
+
+    .carga-export-area,
+    .carga-export-area div.dt-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        float: none !important;
+        margin: 0 !important;
+    }
+
+    .carga-export-area div.dt-buttons .dt-button,
+    .carga-export-area div.dt-buttons .dt-button span,
+    .carga-export-area div.dt-buttons .dt-button i {
+        color: #ffffff !important;
+    }
+
+    .carga-export-area div.dt-buttons .dt-button {
+        min-height: 36px;
+        margin: 0 !important;
+        padding: 7px 12px !important;
+        font-family: inherit !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        background: #23262b !important;
+        border: 1px solid #23262b !important;
+        border-radius: 8px !important;
+        box-shadow: none !important;
+    }
+
+    .carga-export-area div.dt-buttons .btn-excel {
+        background: #166534 !important;
+        border-color: #166534 !important;
+    }
+
+    .carga-export-area div.dt-buttons .btn-pdf {
+        background: #d71920 !important;
+        border-color: #d71920 !important;
+    }
+
+    /* =========================================================
+       TABLAS
+       ========================================================= */
+    .carga-table-responsive {
+        width: 100%;
+        margin: 0;
+        overflow-x: auto;
+    }
+
+    .carga-data-table {
+        width: 100% !important;
+        min-width: 900px;
+        margin: 0 !important;
+        border-collapse: collapse !important;
+    }
+
+    .carga-data-table th {
+        padding: 13px 12px !important;
+        color: #ffffff !important;
+        font-size: 12px;
+        font-weight: 700;
+        text-align: left;
+        white-space: nowrap;
+        background: #23262b !important;
+        border: none !important;
+    }
+
+    .carga-data-table th:first-child {
+        border-radius: 8px 0 0 8px;
+    }
+
+    .carga-data-table th:last-child {
+        border-radius: 0 8px 8px 0;
+    }
+
+    .carga-data-table td {
+        padding: 13px 12px !important;
+        color: #27272a;
+        font-size: 13px;
+        vertical-align: middle;
+        border-bottom: 1px solid #eceff3 !important;
+    }
+
+    .carga-data-table tbody tr:nth-child(even) {
+        background: #f8f9fa;
+    }
+
+    .carga-data-table tbody tr:hover {
+        background: #f1f2f4;
+    }
+
+    .carga-product-name strong {
+        display: block;
+        color: #23262b;
+    }
+
+    .carga-product-name small {
+        display: block;
+        margin-top: 3px;
+        color: #6b7280;
+        font-size: 11px;
+    }
+
+    table.dataTable.no-footer {
+        border-bottom: none !important;
+    }
+
+    /* Se eliminan espacios agregados por DataTables o estilos globales. */
+    .carga-card .dataTables_wrapper,
+    .carga-card .dataTables_wrapper .dataTables_scroll,
+    .carga-card .dataTables_wrapper .dataTables_scrollBody,
+    .carga-card .dataTables_wrapper .dataTables_scrollHead {
+        min-height: 0 !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .carga-card .dataTables_wrapper::before,
+    .carga-card .dataTables_wrapper::after {
+        display: none !important;
+        content: none !important;
+    }
+
+    /* =========================================================
+       PIE DE TABLA / PAGINACIÓN
+       ========================================================= */
+    .carga-table-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .carga-table-bottom .dataTables_length,
+    .carga-table-bottom .dataTables_info,
+    .carga-table-bottom .dataTables_paginate {
+        float: none !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        color: #6b7280 !important;
+        font-size: 12px;
+    }
+
+    .carga-table-bottom .dataTables_length select {
+        min-height: 33px;
+        padding: 4px 25px 4px 7px;
+        border: 1px solid #d1d5db;
+        border-radius: 7px;
+    }
+
+    .carga-table-bottom .dataTables_paginate .paginate_button {
+        margin-left: 3px !important;
+        padding: 6px 9px !important;
+        color: #374151 !important;
+        background: #ffffff !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 7px !important;
+    }
+
+    .carga-table-bottom .dataTables_paginate .paginate_button.current {
+        color: #ffffff !important;
+        background: #d71920 !important;
+        border-color: #d71920 !important;
+    }
+
+    /* =========================================================
+       ESTADOS Y MENSAJES
+       ========================================================= */
+    .carga-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 8px;
+        font-size: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+        border-radius: 7px;
+    }
+
+    .carga-badge-active,
+    .carga-badge-ready {
+        color: #166534;
+        background: #dcfce7;
+    }
+
+    .carga-badge-draft,
+    .carga-badge-adjusted {
+        color: #92400e;
+        background: #fef3c7;
+    }
+
+    .carga-badge-cancelled,
+    .carga-badge-discarded {
+        color: #991b1b;
+        background: #fee2e2;
+    }
+
+    .carga-badge-confirmed,
+    .carga-badge-user {
+        color: #1d4ed8;
+        background: #dbeafe;
+    }
+
+    .carga-empty-box {
+        margin: 0;
+        padding: 16px;
+        color: #6b7280;
+        font-size: 13px;
+        text-align: center;
+        background: #f8f9fa;
+        border: 1px solid #eceff3;
+        border-radius: 9px;
+    }
+
+    /* =========================================================
+       BOTONES FINALES
+       ========================================================= */
+    .carga-actions-bar {
+        display: flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .carga-actions-bar form {
+        margin: 0;
+    }
+
+    .carga-action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 40px;
+        padding: 9px 14px;
+        color: #ffffff !important;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1;
+        text-decoration: none;
+        background: #23262b;
+        border: 1px solid #23262b;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .carga-action-btn:hover {
+        color: #ffffff !important;
+        background: #34383e;
+        text-decoration: none;
+    }
+
+    .carga-action-red {
+        background: #d71920;
+        border-color: #d71920;
+    }
+
+    .carga-action-red:hover {
+        background: #b9151b;
+    }
+
+    .carga-action-outline {
+        color: #d71920 !important;
+        background: #ffffff;
+        border-color: #d71920;
+    }
+
+    .carga-action-outline:hover {
+        color: #ffffff !important;
+        background: #d71920;
+    }
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+    @media (max-width: 900px) {
+        .carga-summary-grid,
+        .carga-stats-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .carga-table-bottom {
+            align-items: stretch;
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .carga-detalle-page {
+            padding: 75px 12px 30px;
+        }
+
+        .carga-page-header h2 {
+            font-size: 27px;
+        }
+
+        .carga-card {
+            padding: 13px;
+        }
+
+        .carga-summary-grid,
+        .carga-stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .carga-table-heading,
+        .carga-table-toolbar,
+        .carga-progress-text,
+        .carga-actions-bar {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .carga-search-box,
+        .carga-action-btn,
+        .carga-actions-bar form {
+            width: 100%;
+        }
+
+        .carga-export-area,
+        .carga-export-area div.dt-buttons {
+            width: 100%;
+        }
+
+        .carga-export-area div.dt-buttons .dt-button {
+            flex: 1;
+        }
+    }
+.plan-history-notice{display:flex;align-items:flex-start;gap:10px;margin-bottom:15px;padding:12px 14px;color:#23262b;background:#f8f9fa;border:1px solid #d1d5db;border-radius:9px}.plan-history-notice>i{font-size:17px}.plan-history-notice strong,.plan-history-notice span{display:block}.plan-history-notice strong{font-size:12px}.plan-history-notice span{margin-top:3px;color:#6b7280;font-size:10px}

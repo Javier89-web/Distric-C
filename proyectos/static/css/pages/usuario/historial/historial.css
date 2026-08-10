@@ -1,0 +1,154 @@
+.trip-history-page {
+    min-height: 100vh;
+    padding: 84px 18px 42px;
+    background: #f4f5f7;
+}
+
+.trip-history-container {
+    width: min(1120px, 100%);
+    margin: auto;
+}
+
+.history-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.history-summary-grid > div {
+    padding: 14px;
+    background: #fff;
+    border: 1px solid #e2e5e9;
+    border-radius: 10px;
+}
+
+.history-summary-grid span,
+.history-summary-grid strong { display: block; }
+.history-summary-grid span { color: #667085; font-size: 9px; text-transform: uppercase; }
+.history-summary-grid strong { margin-top: 4px; color: #111827; font-size: 20px; }
+
+.trip-history-list {
+    display: grid;
+    gap: 12px;
+}
+
+.trip-history-card {
+    padding: 17px;
+    background: #fff;
+    border: 1px solid #e2e5e9;
+    border-radius: 13px;
+    box-shadow: 0 7px 20px rgba(16, 24, 40, .04);
+}
+
+.trip-history-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 11px;
+    border-bottom: 1px solid #e7eaee;
+}
+
+.trip-history-heading span:first-child { color: #d71920; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+.trip-history-heading h2 { margin: 3px 0; color: #111827; font-size: 17px; }
+.trip-history-heading p { margin: 0; color: #667085; font-size: 9px; }
+
+.trip-state {
+    padding: 6px 8px;
+    color: #475569;
+    font-size: 8px;
+    font-weight: 800;
+    background: #e2e8f0;
+    border-radius: 6px;
+}
+
+.trip-state-completado { color: #1d4ed8; background: #dbeafe; }
+.trip-state-en_ruta { color: #92400e; background: #fef3c7; }
+.trip-state-cancelado { color: #991b1b; background: #fee2e2; }
+
+.trip-history-totals {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 7px;
+    margin-top: 11px;
+}
+
+.trip-history-totals > div {
+    padding: 9px;
+    background: #f8f9fb;
+    border-radius: 7px;
+}
+
+.trip-history-totals span,
+.trip-history-totals strong { display: block; }
+.trip-history-totals span { color: #667085; font-size: 7px; text-transform: uppercase; }
+.trip-history-totals strong { margin-top: 3px; color: #111827; font-size: 11px; }
+
+.trip-segment-preview {
+    display: grid;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.trip-segment-item {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 10px;
+    border: 1px solid #e7eaee;
+    border-radius: 7px;
+}
+
+.trip-segment-item > span {
+    display: grid;
+    width: 26px;
+    height: 26px;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    place-items: center;
+    background: #23262b;
+    border-radius: 50%;
+}
+
+.trip-segment-item strong,
+.trip-segment-item small { display: block; }
+.trip-segment-item strong { color: #111827; font-size: 10px; }
+.trip-segment-item small { margin-top: 2px; color: #667085; font-size: 8px; }
+
+.trip-history-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 11px;
+}
+
+.trip-history-actions form { margin: 0; }
+
+.history-empty {
+    padding: 50px 20px;
+    color: #667085;
+    text-align: center;
+    background: #fff;
+    border: 1px solid #e2e5e9;
+    border-radius: 13px;
+}
+
+.history-empty i { color: #d71920; font-size: 34px; }
+.history-empty h2 { margin: 9px 0 5px; color: #111827; font-size: 19px; }
+.history-empty p { margin: 0 0 15px; font-size: 11px; }
+
+@media (max-width: 900px) {
+    .history-summary-grid { grid-template-columns: 1fr 1fr; }
+    .trip-history-totals { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 620px) {
+    .trip-history-page { padding: 74px 10px 30px; }
+    .trip-history-heading, .trip-history-actions { align-items: stretch; flex-direction: column; }
+    .trip-history-totals { grid-template-columns: 1fr 1fr; }
+    .trip-history-actions form { width: 100%; }
+}
+.history-top-actions{display:flex;justify-content:flex-end;margin-bottom:12px}

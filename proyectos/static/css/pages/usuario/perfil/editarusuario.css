@@ -1,0 +1,311 @@
+.editar-perfil-page {
+        min-height: 100vh;
+        padding: 85px 15px 40px;
+        background: #f5f6fa;
+    }
+
+    .editar-perfil-container {
+        width: 100%;
+        max-width: 720px;
+        margin: auto;
+    }
+
+    .editar-perfil-header {
+        margin-bottom: 28px;
+    }
+
+    .editar-perfil-header h2 {
+        margin: 0;
+        color: #111111;
+        font-size: 34px;
+        font-weight: 700;
+    }
+
+    .editar-perfil-header p {
+        margin: 7px 0 0;
+        color: #6b7280;
+        font-size: 16px;
+    }
+
+    .editar-perfil-header::after {
+        content: "";
+        display: block;
+        width: 57px;
+        height: 3px;
+        margin-top: 17px;
+        background: #d71920;
+        border-radius: 3px;
+    }
+
+    .form-card {
+        padding: 30px 40px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    .form-card-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 24px;
+        padding-bottom: 17px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .form-card-title i {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        color: #ffffff;
+        font-size: 18px;
+        background: #23262b;
+        border-radius: 9px;
+    }
+
+    .form-card-title h3 {
+        margin: 0;
+        color: #23262b;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .form-label {
+        color: #374151;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .optional {
+        color: #9ca3af;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    .form-control {
+        min-height: 43px;
+        border: 1px solid #d1d5db;
+        border-radius: 9px;
+        box-shadow: none !important;
+    }
+
+    .form-control:focus {
+        border-color: #d71920;
+        box-shadow: 0 0 0 3px rgba(215, 25, 32, 0.08) !important;
+    }
+
+    .form-control::placeholder {
+        color: #9ca3af;
+    }
+
+    .form-hint {
+        margin: 6px 0 0;
+        color: #9ca3af;
+        font-size: 12px;
+    }
+
+    label.error {
+        display: block;
+        margin-top: 5px;
+        color: #d71920;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .server-error {
+        display: block;
+        margin-top: 5px;
+        color: #d71920;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .form-general-error {
+        margin-bottom: 18px;
+        padding: 11px 13px;
+        color: #991b1b;
+        font-size: 12px;
+        font-weight: 600;
+        background: #fff5f5;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+    }
+
+    .form-control.error {
+        border-color: #d71920 !important;
+    }
+
+    .form-control.valid {
+        border-color: #23262b !important;
+    }
+
+    .foto-actual {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        margin-bottom: 12px;
+        padding: 12px;
+        background: #f8f9fa;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+    }
+
+    .foto-actual img {
+        width: 78px;
+        height: 78px;
+        flex-shrink: 0;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+    }
+
+    .foto-actual strong,
+    .foto-actual span {
+        display: block;
+    }
+
+    .foto-actual strong {
+        color: #23262b;
+        font-size: 13px;
+    }
+
+    .foto-actual span {
+        margin-top: 4px;
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .file-preview {
+        margin-top: 8px;
+        padding: 10px;
+        background: #f8f9fa;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+    }
+
+    .file-drop-zone {
+        min-height: 140px;
+        margin: 0;
+        background: #ffffff;
+        border: 1px dashed #cbd0d7;
+        border-radius: 8px;
+    }
+
+    .file-drop-zone-title {
+        padding: 42px 10px;
+        color: #9ca3af;
+        font-size: 14px;
+    }
+
+    .btn-file {
+        color: #ffffff !important;
+        font-weight: 700;
+        background: #23262b !important;
+        border-color: #23262b !important;
+        border-radius: 9px !important;
+    }
+
+    .fileinput-remove {
+        color: #d71920 !important;
+        font-weight: 700;
+        background: #ffffff !important;
+        border-color: #d71920 !important;
+        border-radius: 9px !important;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .form-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 42px;
+        padding: 10px 18px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        border-radius: 9px;
+        cursor: pointer;
+    }
+
+    .btn-back {
+        color: #ffffff !important;
+        background: #23262b;
+        border: 1px solid #23262b;
+    }
+
+    .btn-back:hover {
+        color: #ffffff !important;
+        background: #34383e;
+        text-decoration: none;
+    }
+
+    .btn-clear {
+        color: #23262b;
+        background: #ffffff;
+        border: 1px solid #9ca3af;
+    }
+
+    .btn-clear:hover {
+        background: #f3f4f6;
+    }
+
+    .btn-save {
+        color: #ffffff;
+        background: #d71920;
+        border: 1px solid #d71920;
+    }
+
+    .btn-save:hover {
+        color: #ffffff;
+        background: #b9151b;
+    }
+
+    .form-btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.75;
+    }
+
+    @media (max-width: 768px) {
+        .editar-perfil-page {
+            padding: 75px 12px 30px;
+        }
+
+        .editar-perfil-header h2 {
+            font-size: 28px;
+        }
+
+        .editar-perfil-header p {
+            font-size: 14px;
+        }
+
+        .form-card {
+            padding: 22px 18px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-btn {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .foto-actual {
+            align-items: flex-start;
+        }
+    }

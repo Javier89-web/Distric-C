@@ -1,0 +1,344 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/plan_cargas/detalle_plan.css' %}">
+{% endblock %}
+
+{% block contener %}
+
+
+
+
+<div class="carga-detalle-page">
+    <div class="carga-detalle-container">
+
+        <div class="carga-page-header">
+            <h2>Detalle de la Carga</h2>
+            <p>Consulta los productos asignados, el peso efectivo y los ajustes realizados por el conductor.</p>
+        </div>
+
+        <!-- RESUMEN DEL PLAN -->
+        <div class="carga-card">
+            {% if es_historico %}
+            <div class="plan-history-notice">
+                <i class="bi bi-lock"></i>
+                <div><strong>Registro histórico en modo consulta</strong><span>Esta carga pertenece a una fecha anterior y ya no permite edición ni cambios de estado.</span></div>
+            </div>
+            {% endif %}
+
+            {% if errores_salida and plan.estado == 'BORRADOR' %}
+                <div class="carga-alert-box">
+                    <strong>Antes de marcar la carga como lista:</strong>
+                    <ul>
+                        {% for error in errores_salida %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <div class="carga-summary-grid">
+                <div class="carga-info-box">
+                    <span>Vehículo</span>
+                    <strong>{{ plan.vehiculo.matricula_vehiculo }}</strong>
+                </div>
+
+                <div class="carga-info-box">
+                    <span>Fecha</span>
+                    <strong>{{ plan.fecha_planificada|date:"d/m/Y" }}</strong>
+                </div>
+
+                <div class="carga-info-box">
+                    <span>Conductor</span>
+                    <strong>
+                        {% if plan.vehiculo.usuario %}
+                            {{ plan.vehiculo.usuario.nombre_usuario }} {{ plan.vehiculo.usuario.apellido_usuario }}
+                        {% else %}
+                            Sin asignar
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div class="carga-info-box">
+                    <span>Estado</span>
+                    <strong>{{ plan.get_estado_display }}</strong>
+                </div>
+            </div>
+
+            <div class="carga-stats-grid">
+                <div class="carga-stat-box">
+                    <span>Peso programado</span>
+                    <strong>{{ peso_programado|floatformat:2 }} kg</strong>
+                </div>
+
+                <div class="carga-stat-box">
+                    <span>Peso efectivo</span>
+                    <strong>{{ peso_total|floatformat:2 }} kg</strong>
+                </div>
+
+                <div class="carga-stat-box">
+                    <span>Peso descartado</span>
+                    <strong>{{ peso_descartado|floatformat:2 }} kg</strong>
+                </div>
+
+                <div class="carga-stat-box">
+                    <span>Capacidad disponible</span>
+                    <strong>{{ disponible|floatformat:2 }} kg</strong>
+                </div>
+            </div>
+
+            <div class="carga-progress-wrap">
+                <div class="carga-progress-track">
+                    <div class="carga-progress-value js-progress-width" data-progress="{{ porcentaje|floatformat:0 }}"></div>
+                </div>
+
+                <div class="carga-progress-text">
+                    <span>Uso de capacidad: {{ porcentaje|floatformat:1 }} %</span>
+                    <span>Máximo: {{ capacidad|floatformat:2 }} kg</span>
+                </div>
+            </div>
+
+            {% if plan.notas %}
+                <div class="carga-notes-box">
+                    <strong>Notas:</strong> {{ plan.notas }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- PRODUCTOS ASIGNADOS -->
+        <div class="carga-card">
+            <div class="carga-table-heading">
+                <h3>Productos asignados</h3>
+            </div>
+
+            {% if plan.detalles.all %}
+                <div class="carga-table-toolbar">
+                    <div class="carga-search-box">
+                        <i class="bi bi-search"></i>
+                        <input
+                            type="text"
+                            id="buscarProductosAdmin"
+                            placeholder="Buscar producto, origen o estado..."
+                            autocomplete="off"
+                        >
+                    </div>
+
+                    <div id="botonesProductosAdmin" class="carga-export-area"></div>
+                </div>
+
+                <div class="carga-table-responsive">
+                    <table class="carga-data-table" id="tablaProductosAdmin">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Asignado</th>
+                                <th>Actual</th>
+                                <th>Origen</th>
+                                <th>Peso unitario</th>
+                                <th>Peso efectivo</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for detalle in plan.detalles.all %}
+                                <tr>
+                                    <td>
+                                        <div class="carga-product-name">
+                                            <strong>{{ detalle.producto.nombre_producto }}</strong>
+
+                                            {% if detalle.producto.marca_producto %}
+                                                <small>{{ detalle.producto.marca_producto }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+
+                                    <td>{{ detalle.cantidad }}</td>
+                                    <td>{{ detalle.cantidad_actual }}</td>
+                                    <td>{{ detalle.get_origen_display }}</td>
+                                    <td>{{ detalle.peso_unitario_kg|floatformat:2 }} kg</td>
+                                    <td>{{ detalle.peso_actual_kg|floatformat:2 }} kg</td>
+
+                                    <td>
+                                        {% if detalle.cantidad_actual == 0 %}
+                                            <span class="carga-badge carga-badge-discarded">DESCARTADO</span>
+                                        {% elif detalle.cantidad_actual != detalle.cantidad %}
+                                            <span class="carga-badge carga-badge-adjusted">AJUSTADO</span>
+                                        {% elif detalle.origen == 'USUARIO' %}
+                                            <span class="carga-badge carga-badge-user">AGREGADO POR USUARIO</span>
+                                        {% else %}
+                                            <span class="carga-badge carga-badge-active">ACTIVO</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="carga-empty-box">No existen productos asignados.</div>
+            {% endif %}
+        </div>
+
+        <!-- HISTORIAL DE AJUSTES -->
+        <div class="carga-card">
+            <div class="carga-table-heading">
+                <h3>Historial de ajustes del conductor</h3>
+            </div>
+
+            {% if ajustes %}
+                <div class="carga-table-toolbar">
+                    <div class="carga-search-box">
+                        <i class="bi bi-search"></i>
+                        <input
+                            type="text"
+                            id="buscarAjustesAdmin"
+                            placeholder="Buscar por producto, acción o nota..."
+                            autocomplete="off"
+                        >
+                    </div>
+
+                    <div id="botonesAjustesAdmin" class="carga-export-area"></div>
+                </div>
+
+                <div class="carga-table-responsive">
+                    <table class="carga-data-table" id="tablaAjustesAdmin">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Producto</th>
+                                <th>Acción</th>
+                                <th>Cambio</th>
+                                <th>Nota</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for ajuste in ajustes %}
+                                <tr>
+                                    <td>{{ ajuste.fecha_ajuste|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ ajuste.producto_nombre }}</td>
+                                    <td>{{ ajuste.get_tipo_ajuste_display }}</td>
+                                    <td>{{ ajuste.cantidad_anterior }} → {{ ajuste.cantidad_nueva }}</td>
+                                    <td>{{ ajuste.motivo }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="carga-empty-box">El conductor todavía no ha realizado ajustes.</div>
+            {% endif %}
+
+            <div class="carga-actions-bar">
+                <a href="{% url 'listadoplanescarga' %}" class="carga-action-btn">
+                    <i class="bi bi-arrow-left"></i>
+                    Regresar
+                </a>
+
+                {% if not es_historico %}
+                {% if plan.estado == 'BORRADOR' %}
+                    <form
+                        action="{% url 'marcarplancargalisto' plan.id_plan_carga %}"
+                        method="post"
+                        class="confirmar-accion"
+                        data-titulo="¿Marcar carga como lista?"
+                        data-texto="El conductor podrá revisar y ajustar la carga asignada."
+                        data-confirmar="Sí, marcar como lista"
+                    >
+                        {% csrf_token %}
+                        <button type="submit" class="carga-action-btn carga-action-red">
+                            Marcar como lista
+                        </button>
+                    </form>
+
+                    <form
+                        action="{% url 'cancelarplancarga' plan.id_plan_carga %}"
+                        method="post"
+                        class="confirmar-accion"
+                        data-titulo="¿Cancelar plan de carga?"
+                        data-texto="El plan dejará de estar disponible para el conductor."
+                        data-confirmar="Sí, cancelar"
+                    >
+                        {% csrf_token %}
+                        <button type="submit" class="carga-action-btn carga-action-outline">
+                            Cancelar plan
+                        </button>
+                    </form>
+
+                {% elif plan.estado == 'LISTO' %}
+                    <form
+                        action="{% url 'volverplancargaborrador' plan.id_plan_carga %}"
+                        method="post"
+                        class="confirmar-accion"
+                        data-titulo="¿Volver a borrador?"
+                        data-texto="La revisión actual del conductor se reiniciará."
+                        data-confirmar="Sí, volver a borrador"
+                    >
+                        {% csrf_token %}
+                        <button type="submit" class="carga-action-btn">
+                            Volver a borrador
+                        </button>
+                    </form>
+
+                    {% if plan.revisado_por_usuario %}
+                        <form
+                            action="{% url 'confirmarplancargaadmin' plan.id_plan_carga %}"
+                            method="post"
+                            class="confirmar-accion"
+                            data-titulo="¿Confirmar carga para salida?"
+                            data-texto="La carga quedará bloqueada para el futuro cálculo del recorrido."
+                            data-confirmar="Sí, confirmar"
+                        >
+                            {% csrf_token %}
+                            <button type="submit" class="carga-action-btn carga-action-red">
+                                Confirmar para salida
+                            </button>
+                        </form>
+                    {% endif %}
+
+                {% elif plan.estado == 'CONFIRMADO' %}
+                    <form
+                        action="{% url 'reabrirplancargaconfirmada' plan.id_plan_carga %}"
+                        method="post"
+                        class="confirmar-accion"
+                        data-titulo="¿Reabrir carga confirmada?"
+                        data-texto="La carga volverá a estado listo y deberá revisarse nuevamente."
+                        data-confirmar="Sí, reabrir"
+                    >
+                        {% csrf_token %}
+                        <button type="submit" class="carga-action-btn">
+                            Reabrir carga
+                        </button>
+                    </form>
+
+                {% elif plan.estado == 'CANCELADO' %}
+                    <form
+                        action="{% url 'reactivarplancarga' plan.id_plan_carga %}"
+                        method="post"
+                        class="confirmar-accion"
+                        data-titulo="¿Reactivar carga?"
+                        data-texto="El plan volverá al estado borrador."
+                        data-confirmar="Sí, reactivar"
+                    >
+                        {% csrf_token %}
+                        <button type="submit" class="carga-action-btn carga-action-red">
+                            Reactivar plan
+                        </button>
+                    </form>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/plan_cargas/detalle_plan.js' %}" defer></script>
+{% endblock %}

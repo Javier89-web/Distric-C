@@ -1,0 +1,62 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/salvoconductos/salvoconductos.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+  <h3>SALVOCONDUCTOS</h3>
+  <div class="mb-3 text-end"> <a href="{% url 'nuevosalvoconducto' %}" class="btn btn-success"> Nuevo Salvoconducto </a>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped" id="tabla_salvoconductos">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Usuario</th>
+          <th>Vehículo</th>
+          <th>Viaje</th>
+          <th>Vigencia</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for s in salvoconductos %}
+        <tr>
+          <td>{{ s.id_salvoconducto }}</td>
+          <td>{{ s.usuario.nombre_usuario }}</td>
+          <td>{{ s.vehiculo.matricula_vehiculo }}</td>
+          <td>Viaje #{{ s.viaje.id_viaje }}</td>
+          <td>{{ s.fecha_inicio }} → {{ s.fecha_fin }}</td>
+          <td>{{ s.estado_actual }}</td>
+          <td>
+            <a href="{% url 'pdf_salvoconducto' s.id_salvoconducto %}" class="btn-pdf" target="_blank">
+              PDF
+            </a>
+
+            <a href="{% url 'editarsalvoconducto' s.id_salvoconducto %}" class="btn-editar">
+              Editar
+            </a>
+
+            <a href="{% url 'eliminarsalvoconducto' s.id_salvoconducto %}" class="btn-eliminar js-confirm-link" data-confirm-message="¿Eliminar salvoconducto?">
+              Eliminar
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/salvoconductos/salvoconductos.js' %}" defer></script>
+{% endblock %}

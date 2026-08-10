@@ -1,0 +1,127 @@
+:root {
+    --dc-dark: #23262b;
+    --dc-red: #d71920;
+    --dc-bg: #f4f5f7;
+    --dc-border: #e2e5e9;
+    --dc-muted: #667085;
+    --dc-white: #ffffff;
+}
+
+.route-page-header {
+    margin-bottom: 22px;
+}
+
+.route-page-header h1 {
+    margin: 4px 0 7px;
+    color: #111827;
+    font-size: clamp(27px, 3vw, 36px);
+    font-weight: 750;
+    line-height: 1.18;
+}
+
+.route-page-header p {
+    max-width: 780px;
+    margin: 0;
+    color: var(--dc-muted);
+    font-size: 14px;
+}
+
+.route-page-header::after {
+    content: "";
+    display: block;
+    width: 58px;
+    height: 3px;
+    margin-top: 15px;
+    background: var(--dc-red);
+    border-radius: 999px;
+}
+
+.route-eyebrow {
+    color: var(--dc-red);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+}
+
+.route-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 42px;
+    padding: 9px 15px;
+    color: #fff !important;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    background: var(--dc-dark);
+    border: 1px solid var(--dc-dark);
+    border-radius: 9px;
+    cursor: pointer;
+    transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
+}
+
+.route-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(35, 38, 43, .14);
+}
+
+.route-btn:disabled {
+    cursor: not-allowed;
+    opacity: .5;
+}
+
+.route-btn-red {
+    background: var(--dc-red);
+    border-color: var(--dc-red);
+}
+
+.route-btn-dark {
+    background: var(--dc-dark);
+    border-color: var(--dc-dark);
+}
+
+.route-btn-outline {
+    color: var(--dc-dark) !important;
+    background: #fff;
+    border-color: #cfd4da;
+}
+
+.section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.section-heading h2 {
+    margin: 0;
+    color: #111827;
+    font-size: 19px;
+    font-weight: 720;
+}
+
+@media (max-width: 700px) {
+    .route-btn {
+        width: 100%;
+    }
+}
+
+.dc-map-info {
+    display: grid;
+    gap: 3px;
+    min-width: 150px;
+    color: #23262b;
+    font-family: Poppins, sans-serif;
+}
+
+.dc-map-info strong {
+    font-size: 12px;
+}
+
+.dc-map-info span {
+    color: #667085;
+    font-size: 10px;
+}

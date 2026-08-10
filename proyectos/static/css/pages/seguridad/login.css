@@ -1,0 +1,256 @@
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html,
+body { width: 100%; min-height: 100%; margin: 0; }
+
+body {
+    font-family: "Poppins", Arial, sans-serif;
+    color: #111827;
+    background: #eceff3 url("../../../img/login/fondo-distric.png") center / cover no-repeat fixed;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: rgba(17, 20, 24, .18);
+}
+
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 20px;
+}
+
+.login-shell {
+    width: min(1030px, 100%);
+    min-height: 570px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.18fr) minmax(350px, .82fr);
+    overflow: hidden;
+    background: rgba(255,255,255,.9);
+    border: 1px solid rgba(255,255,255,.82);
+    border-radius: 20px;
+    box-shadow: 0 26px 65px rgba(15,23,42,.24);
+    backdrop-filter: blur(6px);
+}
+
+.login-brand {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 28px;
+    padding: 42px;
+    color: #fff;
+    text-align: center;
+    background: #23262b;
+}
+
+.brand-overline {
+    display: block;
+    margin-bottom: 8px;
+    color: #ff454b;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2.4px;
+}
+
+.brand-copy h1 {
+    max-width: 510px;
+    margin: 0 auto;
+    font-size: clamp(28px, 3vw, 39px);
+    font-weight: 700;
+    line-height: 1.18;
+}
+
+.brand-logo-card {
+    width: min(420px, 92%);
+    height: 270px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 17px;
+    box-shadow: 0 16px 32px rgba(0,0,0,.22);
+}
+
+.brand-logo-card img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    object-position: center;
+}
+
+.login-card {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: center;
+    padding: 42px 38px;
+    background: rgba(255,255,255,.98);
+    border-top: 5px solid #d71920;
+}
+
+.login-identity {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-bottom: 24px;
+}
+
+.identity-icon {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #f4f5f7;
+    border: 1px solid #e2e6eb;
+    border-radius: 12px;
+}
+
+.identity-icon img { width: 88%; height: 88%; object-fit: contain; object-position: center; }
+.login-identity > span { color: #d71920; font-size: 11px; font-weight: 800; letter-spacing: 2px; }
+
+.login-heading { margin-bottom: 20px; }
+.login-heading h2 { margin: 0; color: #111; font-size: 29px; font-weight: 700; line-height: 1.2; }
+.login-heading p { margin: 7px 0 0; color: #6b7280; font-size: 11px; }
+
+.login-messages { display: grid; gap: 7px; margin: 0 0 15px; }
+.login-message {
+    padding: 10px 11px;
+    color: #27303a;
+    font-size: 10px;
+    line-height: 1.45;
+    background: #f4f5f7;
+    border-left: 3px solid #23262b;
+    border-radius: 8px;
+}
+.login-message-error { color: #991b1b; background: #fff1f2; border-left-color: #d71920; }
+.login-message-success { color: #1f2937; background: #f5f6f7; border-left-color: #23262b; }
+.login-message-warning { color: #78350f; background: #fffbeb; border-left-color: #b45309; }
+
+.login-field { margin-bottom: 14px; }
+.login-field label { display: block; margin-bottom: 6px; color: #23262b; font-size: 10px; font-weight: 700; }
+.field-control { position: relative; }
+.field-symbol {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    z-index: 2;
+    width: 18px;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    pointer-events: none;
+    transform: translateY(-50%);
+}
+.field-symbol-lock { width: 12px; height: 11px; left: 17px; border: 1.7px solid #6b7280; border-radius: 2px; }
+.field-symbol-lock::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 7px;
+    width: 8px;
+    height: 7px;
+    border: 1.7px solid #6b7280;
+    border-bottom: 0;
+    border-radius: 7px 7px 0 0;
+    transform: translateX(-50%);
+}
+.login-field input {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 13px 10px 43px;
+    color: #23262b;
+    font-family: inherit;
+    font-size: 11px;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 9px;
+    outline: none;
+}
+.login-field input::placeholder { color: #9ca3af; }
+.login-field input:focus { border-color: #23262b; box-shadow: 0 0 0 3px rgba(35,38,43,.08); }
+.login-field input.is-invalid { border-color: #d71920; box-shadow: 0 0 0 3px rgba(215,25,32,.08); }
+.field-error { min-height: 15px; display: block; margin-top: 4px; color: #b91c1c; font-size: 9px; font-weight: 600; }
+
+.row-check { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 18px; color: #4b5563; font-size: 10px; cursor: pointer; }
+.row-check input { width: 15px; height: 15px; accent-color: #23262b; }
+
+.login-submit {
+    width: 100%;
+    min-height: 47px;
+    padding: 10px 18px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    background: #23262b;
+    border: 1px solid #23262b;
+    border-radius: 9px;
+    cursor: pointer;
+}
+.login-submit:hover { background: #d71920; border-color: #d71920; }
+
+@media (max-width: 880px) {
+    .login-page { padding: 18px 14px; }
+    .login-shell { width: min(590px, 100%); grid-template-columns: 1fr; }
+    .login-brand { gap: 18px; padding: 28px 26px; }
+    .brand-copy h1 { font-size: 28px; }
+    .brand-logo-card { width: min(340px, 88%); height: 190px; }
+    .login-card { padding: 32px 28px; }
+}
+
+@media (max-width: 520px) {
+    .login-page { align-items: flex-start; padding: 10px; }
+    .login-shell { border-radius: 15px; }
+    .login-brand { gap: 14px; padding: 22px 18px; }
+    .brand-copy h1 { font-size: 22px; }
+    .brand-logo-card { width: 270px; max-width: 92%; height: 150px; padding: 13px; }
+    .login-card { padding: 27px 20px; }
+    .login-heading h2 { font-size: 25px; }
+}
+
+/* UTC como firma discreta en la esquina, sin ocupar un bloque del diseño. */
+.login-brand {
+    position: relative;
+    padding-bottom: 82px;
+}
+
+.login-brand .login-institutional-mark {
+    position: absolute;
+    left: 22px;
+    bottom: 18px;
+    padding: 5px 7px;
+    background: rgba(255, 255, 255, .88);
+    border: 1px solid rgba(255, 255, 255, .32);
+    border-radius: 8px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, .12);
+    opacity: .86;
+}
+
+@media (max-width: 880px) {
+    .login-brand {
+        padding-bottom: 76px;
+    }
+
+    .login-brand .login-institutional-mark {
+        left: 18px;
+        bottom: 14px;
+    }
+}

@@ -1,0 +1,60 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/salvoconductos/editarsalvoconducto.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+  <h3>Editar Salvoconducto</h3>
+
+  <div class="contenedor-ver-eventos">
+    <a href="{% url 'salvoconductos' %}">Listado de salvoconductos</a>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <label>Usuario</label>
+    <select name="usuario" class="form-control" required>
+      {% for u in usuarios %}
+      <option value="{{ u.id_usuario }}" {% if salvoconducto.usuario_id==u.id_usuario %}selected{% endif %}>
+        {{ u.nombre_usuario }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <label>Vehículo</label>
+    <select name="vehiculo" class="form-control" required>
+      {% for v in vehiculos %}
+      <option value="{{ v.id_vehiculo }}" {% if salvoconducto.vehiculo_id==v.id_vehiculo %}selected{% endif %}>
+        {{ v.matricula_vehiculo }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <label>Motivo</label>
+    <textarea name="motivo" class="form-control" rows="3" required>{{ salvoconducto.motivo }}</textarea>
+
+    <label>Fecha inicio</label>
+    <input type="date" name="fecha_inicio" class="form-control" value="{{ salvoconducto.fecha_inicio|date:'Y-m-d' }}"
+      required>
+
+    <label>Fecha fin</label>
+    <input type="date" name="fecha_fin" class="form-control" value="{{ salvoconducto.fecha_fin|date:'Y-m-d' }}"
+      required>
+
+    <label>Estado</label>
+    <select name="estado" class="form-control">
+      <option value="VIGENTE" {% if salvoconducto.estado=='VIGENTE' %}selected{% endif %}>VIGENTE</option>
+      <option value="VENCIDO" {% if salvoconducto.estado=='VENCIDO' %}selected{% endif %}>VENCIDO</option>
+      <option value="ANULADO" {% if salvoconducto.estado=='ANULADO' %}selected{% endif %}>ANULADO</option>
+    </select>
+
+    <button type="submit" class="btn-save">Actualizar</button>
+  </form>
+</div>
+
+{% endblock %}

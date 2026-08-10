@@ -1,0 +1,216 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block titulo %}Reportes de Pruebas | Distric C{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/rutas/reportes_viajes.css' %}">
+{% endblock %}
+
+{% block contener %}
+<main class="reports-page">
+    <div class="reports-container">
+        <header class="reports-header">
+            <div>
+                <span>CONTROL CONSOLIDADO</span>
+                <h1>{% if filtros.tipo == 'PRUEBA' %}Reportes de Pruebas{% else %}Reportes de Viajes{% endif %}</h1>
+                <p>{% if filtros.tipo == 'PRUEBA' %}Consulta las simulaciones administrativas guardadas y descarga sus informes.{% else %}Consulta recorridos por fecha, conductor, vehículo, estado y tipo de registro.{% endif %}</p>
+            </div>
+            <a href="{% url 'admin_planificacion_rutas' %}" class="reports-btn reports-btn-dark">
+                <i class="bi bi-arrow-left"></i>
+                Planificar prueba
+            </a>
+        </header>
+
+        <section class="reports-workspace">
+            <div class="reports-stats" aria-label="Resumen de reportes">
+                <article>
+                    <span>Registros encontrados</span>
+                    <strong>{{ total_viajes }}</strong>
+                </article>
+                {% if filtros.tipo == 'PRUEBA' %}
+                <article>
+                    <span>Pruebas administrativas</span>
+                    <strong>{{ total_pruebas }}</strong>
+                </article>
+                <article>
+                    <span>Distancia estimada</span>
+                    <strong>{{ resumen.distancia|default:0|floatformat:2 }} km</strong>
+                </article>
+                <article>
+                    <span>Combustible estimado</span>
+                    <strong>{{ resumen.combustible|default:0|floatformat:2 }} L</strong>
+                </article>
+                {% else %}
+                <article>
+                    <span>Viajes operativos</span>
+                    <strong>{{ total_operativos }}</strong>
+                </article>
+                <article>
+                    <span>Pruebas administrativas</span>
+                    <strong>{{ total_pruebas }}</strong>
+                </article>
+                <article>
+                    <span>Combustible estimado</span>
+                    <strong>{{ resumen.combustible|default:0|floatformat:2 }} L</strong>
+                </article>
+                {% endif %}
+            </div>
+
+            <div class="reports-divider"></div>
+
+            <div class="reports-filter-section">
+                <div class="filter-heading">
+                    <div>
+                        <h2>Filtrar reportes</h2>
+                        <p>Combina la fecha con el conductor, vehículo, tipo o estado.</p>
+                    </div>
+                    {% if filtros.fecha or filtros.usuario or filtros.vehiculo or filtros.estado or filtros.tipo %}
+                    <a href="{% url 'admin_reportes_viajes' %}{% if filtros.tipo == 'PRUEBA' %}?tipo=PRUEBA{% endif %}" class="reports-btn reports-btn-outline">
+                        Limpiar filtros
+                    </a>
+                    {% endif %}
+                </div>
+
+                <form method="get" class="reports-filter-grid">
+                    <div class="filter-field">
+                        <label for="reportDate">Fecha</label>
+                        <input type="date" id="reportDate" name="fecha" value="{{ filtros.fecha }}">
+                    </div>
+
+                    <div class="filter-field">
+                        <label for="reportUser">Conductor</label>
+                        <select id="reportUser" name="usuario">
+                            <option value="">Todos los conductores</option>
+                            {% for usuario in usuarios %}
+                            <option value="{{ usuario.id_usuario }}" {% if filtros.usuario == usuario.id_usuario|stringformat:'s' %}selected{% endif %}>
+                                {{ usuario.nombre_usuario }} {{ usuario.apellido_usuario }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-field">
+                        <label for="reportVehicle">Vehículo</label>
+                        <select id="reportVehicle" name="vehiculo">
+                            <option value="">Todos los vehículos</option>
+                            {% for vehiculo in vehiculos %}
+                            <option value="{{ vehiculo.id_vehiculo }}" {% if filtros.vehiculo == vehiculo.id_vehiculo|stringformat:'s' %}selected{% endif %}>
+                                {{ vehiculo.matricula_vehiculo }} · {{ vehiculo.modelo_vehiculo|default:"Sin modelo" }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-field">
+                        <label for="reportType">Tipo</label>
+                        <select id="reportType" name="tipo">
+                            <option value="">Todos los registros</option>
+                            <option value="OPERATIVO" {% if filtros.tipo == 'OPERATIVO' %}selected{% endif %}>Viaje operativo</option>
+                            <option value="PRUEBA" {% if filtros.tipo == 'PRUEBA' %}selected{% endif %}>Prueba administrativa</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-field">
+                        <label for="reportStatus">Estado</label>
+                        <select id="reportStatus" name="estado">
+                            <option value="">Todos los estados</option>
+                            <option value="PLANIFICADO" {% if filtros.estado == 'PLANIFICADO' %}selected{% endif %}>Planificado</option>
+                            <option value="EN_RUTA" {% if filtros.estado == 'EN_RUTA' %}selected{% endif %}>En ruta</option>
+                            <option value="COMPLETADO" {% if filtros.estado == 'COMPLETADO' %}selected{% endif %}>Completado</option>
+                            <option value="CANCELADO" {% if filtros.estado == 'CANCELADO' %}selected{% endif %}>Cancelado</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="reports-btn reports-btn-red reports-filter-submit">
+                        <i class="bi bi-search"></i>
+                        Consultar
+                    </button>
+                </form>
+            </div>
+
+            <div class="reports-divider"></div>
+
+            <div class="reports-results-heading">
+                <div>
+                    <h2>Resultados</h2>
+                    <p>Abre el detalle de cada registro o descarga directamente su informe PDF.</p>
+                </div>
+                <div class="reports-summary-row">
+                    <div><span>Distancia</span><strong>{{ resumen.distancia|default:0|floatformat:2 }} km</strong></div>
+                    <div><span>Tiempo</span><strong>{{ resumen.tiempo|default:0|floatformat:1 }} min</strong></div>
+                    <div><span>Costo</span><strong>${{ resumen.costo|default:0|floatformat:2 }}</strong></div>
+                </div>
+            </div>
+
+            <div class="reports-table-wrap">
+                <table class="reports-table">
+                    <thead>
+                        <tr>
+                            <th>Registro</th>
+                            <th>Conductor</th>
+                            <th>Vehículo</th>
+                            <th>Fecha</th>
+                            <th>Tramos</th>
+                            <th>Distancia</th>
+                            <th>Consumo IA</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for viaje in viajes %}
+                        <tr>
+                            <td>
+                                <span class="report-kind {% if viaje.es_prueba_administrativa %}report-kind-test{% else %}report-kind-trip{% endif %}">
+                                    {% if viaje.es_prueba_administrativa %}PRUEBA #{{ viaje.id_viaje }}{% else %}VIAJE #{{ viaje.id_viaje }}{% endif %}
+                                </span>
+                                {% if viaje.es_prueba_administrativa and viaje.administrador_ejecutor %}
+                                <small>Por {{ viaje.administrador_ejecutor.nombre_usuario }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ viaje.usuario.nombre_usuario }} {{ viaje.usuario.apellido_usuario }}</strong>
+                                <small>{{ viaje.usuario.correo_usuario }}</small>
+                            </td>
+                            <td>
+                                <strong>{{ viaje.vehiculo.matricula_vehiculo }}</strong>
+                                <small>{{ viaje.vehiculo.modelo_vehiculo|default:"Sin modelo" }}</small>
+                            </td>
+                            <td>
+                                <strong>{{ viaje.fecha_creacion|date:"d/m/Y" }}</strong>
+                                <small>{{ viaje.fecha_creacion|date:"H:i" }}</small>
+                            </td>
+                            <td>{{ viaje.numero_tramos }}</td>
+                            <td>{{ viaje.distancia_estimada_total_km|floatformat:2 }} km</td>
+                            <td>{{ viaje.consumo_estimado_total_l|floatformat:2 }} L</td>
+                            <td>
+                                <span class="report-state report-state-{{ viaje.estado|lower }}">{{ viaje.get_estado_display }}</span>
+                            </td>
+                            <td>
+                                <div class="report-actions">
+                                    <a href="{% url 'admin_detalle_viaje' viaje.id_viaje %}" class="reports-btn reports-btn-dark">Ver</a>
+                                    <form method="get" action="{% url 'admin_reporte_pdf_viaje' viaje.id_viaje %}" class="pdf-unit-form pdf-unit-form-compact">
+                                        <select name="unidad" aria-label="Unidad de combustible del PDF">
+                                            <option value="LITROS">L</option>
+                                            <option value="GALONES">gal</option>
+                                        </select>
+                                        <button type="submit" class="reports-btn reports-btn-red">
+                                            <i class="bi bi-file-earmark-pdf"></i> PDF
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="empty-reports">No existen registros que coincidan con los filtros seleccionados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}

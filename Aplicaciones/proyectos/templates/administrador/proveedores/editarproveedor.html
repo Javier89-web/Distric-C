@@ -1,0 +1,50 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/proveedores/editarproveedor.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+  <h3>Editar Proveedor</h3>
+
+  <form action="/procesareditarproveedor/" method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="id" value="{{ proveedor.id_proveedor }}">
+
+    <label>Nombre</label>
+    <input type="text" name="txt_nombre" class="form-control" value="{{ proveedor.nombre_proveedor }}" required>
+
+    <label>Dirección</label>
+    <input type="text" name="txt_direccion" class="form-control" value="{{ proveedor.direccion_proveedor }}">
+
+    <label>Teléfono</label>
+    <input type="text" name="txt_telefono" class="form-control" value="{{ proveedor.telefono_proveedor }}">
+
+    <label>Correo</label>
+    <input type="email" name="txt_correo" class="form-control" value="{{ proveedor.correo_proveedor }}" required>
+
+    <label>RUC</label>
+    <input type="text" name="txt_ruc" class="form-control" value="{{ proveedor.ruc_proveedor }}" required>
+
+    <label>Estado</label>
+    <select name="txt_estado" class="form-control">
+      <option value="ACTIVO" {% if proveedor.estado_proveedor=="ACTIVO" %}selected{% endif %}>
+        ACTIVO
+      </option>
+      <option value="INACTIVO" {% if proveedor.estado_proveedor=="INACTIVO" %}selected{% endif %}>
+        INACTIVO
+      </option>
+    </select>
+
+    <div class="acciones">
+      <button class="btn-save" type="submit">Actualizar</button>
+      <a href="/listadoproveedor/" class="btn-save">Cancelar</a>
+    </div>
+
+  </form>
+</div>
+
+{% endblock %}

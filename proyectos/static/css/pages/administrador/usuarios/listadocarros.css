@@ -1,0 +1,361 @@
+/* ==========================================================
+       CONTENEDOR GENERAL
+    ========================================================== */
+    .vehiculos-wrapper {
+        width: 100%;
+        min-height: 100vh;
+        padding: 82px 20px 35px;
+        background: #f4f5f7;
+    }
+
+    .vehiculos-container {
+        width: 100%;
+        max-width: 1250px;
+        margin: 0 auto;
+    }
+
+    /* ==========================================================
+       ENCABEZADO
+    ========================================================== */
+    .vehiculos-header {
+        margin-bottom: 24px;
+    }
+
+    .vehiculos-header h2 {
+        margin: 0;
+        color: #111111;
+        font-size: 26px;
+        font-weight: 700;
+    }
+
+    .vehiculos-header p {
+        margin: 6px 0 0;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .vehiculos-header::after {
+        content: "";
+        display: block;
+        width: 45px;
+        height: 3px;
+        margin-top: 13px;
+        background: #d71920;
+        border-radius: 3px;
+    }
+
+    /* ==========================================================
+       BUSCADOR
+    ========================================================== */
+    .search-container {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 15px;
+    }
+
+    .search-box {
+        position: relative;
+        width: 100%;
+        max-width: 330px;
+    }
+
+    .search-box i {
+        position: absolute;
+        top: 50%;
+        left: 13px;
+        color: #6b7280;
+        font-size: 15px;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .search-box input {
+        width: 100%;
+        height: 42px;
+        padding: 10px 14px 10px 39px;
+        color: #111111;
+        font-size: 13px;
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        outline: none;
+        transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .search-box input::placeholder {
+        color: #9ca3af;
+    }
+
+    .search-box input:focus {
+        border-color: #d71920;
+        box-shadow: 0 0 0 3px rgba(215, 25, 32, 0.08);
+    }
+
+    /* ==========================================================
+       CONTENEDOR DE TABLA
+    ========================================================== */
+    .table-container {
+        width: 100%;
+        padding: 18px;
+        overflow-x: auto;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    }
+
+    .vehiculos-table {
+        width: 100%;
+        min-width: 1100px;
+        margin: 0;
+        border-collapse: collapse;
+    }
+
+    /* ==========================================================
+       CABECERA DE TABLA
+    ========================================================== */
+    .vehiculos-table thead {
+        color: #ffffff;
+        background: #23262b;
+    }
+
+    .vehiculos-table th {
+        padding: 14px 13px;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: left;
+        white-space: nowrap;
+        border: none;
+    }
+
+    .vehiculos-table th:first-child {
+        border-radius: 8px 0 0 8px;
+    }
+
+    .vehiculos-table th:last-child {
+        border-radius: 0 8px 8px 0;
+    }
+
+    /* ==========================================================
+       CUERPO DE TABLA
+    ========================================================== */
+    .vehiculos-table td {
+        padding: 13px;
+        color: #27272a;
+        font-size: 13px;
+        vertical-align: middle;
+        border-bottom: 1px solid #eceff3;
+    }
+
+    .vehiculos-table tbody tr {
+        background: #ffffff;
+        transition: background 0.2s ease;
+    }
+
+    .vehiculos-table tbody tr:nth-child(even) {
+        background: #f8f9fa;
+    }
+
+    .vehiculos-table tbody tr:hover {
+        background: #f1f2f4;
+    }
+
+    .vehiculos-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* ==========================================================
+       FOTO DEL USUARIO
+    ========================================================== */
+    .usuario-foto-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .usuario-foto {
+        width: 43px;
+        height: 43px;
+        object-fit: cover;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+    }
+
+    .sin-dato {
+        color: #9ca3af;
+    }
+
+    /* ==========================================================
+       ROLES
+    ========================================================== */
+    .rol-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px 9px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+        border-radius: 7px;
+    }
+
+    .rol-admin {
+        color: #d71920;
+        background: rgba(215, 25, 32, 0.10);
+        border: 1px solid rgba(215, 25, 32, 0.22);
+    }
+
+    .rol-user {
+        color: #23262b;
+        background: #eceef1;
+        border: 1px solid #d6d9de;
+    }
+
+    /* ==========================================================
+       TEXTO NO APLICA
+    ========================================================== */
+    .no-aplica {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #9ca3af;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    /* ==========================================================
+       BOTONES
+    ========================================================== */
+    .btn-vehiculo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-width: 110px;
+        height: 38px;
+        padding: 7px 12px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+        text-decoration: none;
+        border-radius: 8px;
+        transition:
+            color 0.2s ease,
+            background 0.2s ease,
+            border-color 0.2s ease;
+    }
+
+    /* Agregar vehículo */
+    .btn-agregar {
+        color: #ffffff !important;
+        background: #d71920;
+        border: 1px solid #d71920;
+    }
+
+    .btn-agregar:hover {
+        color: #ffffff !important;
+        background: #b9151b;
+        border-color: #b9151b;
+        text-decoration: none;
+    }
+
+    /* Eliminar vehículo */
+    .btn-eliminar {
+        color: #d71920 !important;
+        background: #ffffff;
+        border: 1px solid #d71920;
+    }
+
+    .btn-eliminar:hover {
+        color: #ffffff !important;
+        background: #d71920;
+        text-decoration: none;
+    }
+
+    /* Ver vehículo */
+    .btn-ver {
+        color: #ffffff !important;
+        background: #23262b;
+        border: 1px solid #23262b;
+    }
+
+    .btn-ver:hover {
+        color: #ffffff !important;
+        background: #34383e;
+        border-color: #34383e;
+        text-decoration: none;
+    }
+
+    /* ==========================================================
+       MENSAJE SIN REGISTROS
+    ========================================================== */
+    .tabla-vacia {
+        padding: 28px !important;
+        color: #9ca3af !important;
+        text-align: center !important;
+    }
+
+    /* ==========================================================
+       SCROLL HORIZONTAL
+    ========================================================== */
+    .table-container::-webkit-scrollbar {
+        height: 7px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+        background: #f1f2f4;
+        border-radius: 10px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+        background: #a1a1aa;
+        border-radius: 10px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb:hover {
+        background: #71717a;
+    }
+
+    /* ==========================================================
+       RESPONSIVE
+    ========================================================== */
+    @media (max-width: 768px) {
+        .vehiculos-wrapper {
+            padding: 76px 14px 30px;
+        }
+
+        .vehiculos-header h2 {
+            font-size: 23px;
+        }
+
+        .search-container {
+            justify-content: stretch;
+        }
+
+        .search-box {
+            max-width: none;
+        }
+
+        .table-container {
+            padding: 12px;
+            border-radius: 12px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .vehiculos-wrapper {
+            padding: 70px 10px 25px;
+        }
+
+        .vehiculos-header p {
+            font-size: 13px;
+        }
+
+        .search-box input {
+            font-size: 12px;
+        }
+    }

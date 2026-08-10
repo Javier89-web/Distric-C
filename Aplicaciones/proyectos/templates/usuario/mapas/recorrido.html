@@ -1,0 +1,104 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block titulo %}Seguimiento del tramo | Distric C{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/rutas_base.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/recorrido.css' %}">
+{% endblock %}
+
+{% block contenido %}
+<div
+    id="tripTrackingConfig"
+    hidden
+    data-google-maps-key="{{ google_maps_api_key|escape }}"
+    data-origen="{{ origen_real|escape }}"
+    data-destino="{{ destino_real|escape }}"
+    data-rutas="{{ rutas_js|escape }}"
+    data-color-ruta="{{ color_ruta }}"
+    data-icon-destino="{% static 'img/puntorojo.png' %}"
+    data-icon-vehiculo="{% static 'img/punto.png' %}"
+    data-start-url="{% url 'api_iniciar_tramo' tramo.id_tramo_viaje %}"
+    data-pause-url="{% url 'api_pausar_tramo' tramo.id_tramo_viaje %}"
+    data-location-url="{% url 'api_registrar_ubicacion_tramo' tramo.id_tramo_viaje %}"
+    data-finish-url="{% url 'finalizar_tramo' tramo.id_tramo_viaje %}"
+    data-initial-status="{{ tramo.estado }}"
+    data-arrival-radius="{{ radio_llegada_m }}"
+></div>
+
+<main class="tracking-page">
+    <div class="tracking-container">
+        <header class="tracking-header">
+            <div>
+                <span class="route-eyebrow">Viaje #{{ viaje.id_viaje }} · Tramo {{ tramo.orden }}</span>
+                <h1>{{ tramo.origen_nombre }} → {{ tramo.destino_nombre }}</h1>
+                <p>La posición azul se actualizará mediante el GPS del dispositivo.</p>
+            </div>
+            <span id="trackingStatusBadge" class="tracking-status tracking-status-ready">{{ tramo.get_estado_display }}</span>
+        </header>
+
+        <section class="tracking-map-card">
+            <div id="mapa"></div>
+            <button type="button" id="btnCentrarVehiculo" class="center-map-btn">
+                <i class="bi bi-crosshair"></i>
+                Centrar vehículo
+            </button>
+        </section>
+
+        <section class="tracking-information-grid">
+            <article class="tracking-live-card">
+                <div class="tracking-card-heading">
+                    <h2><i class="bi bi-broadcast-pin"></i> Seguimiento en vivo</h2>
+                    <span id="gpsAccuracy">GPS sin iniciar</span>
+                </div>
+
+                <div class="tracking-kpi-grid">
+                    <div><span>Distancia recorrida</span><strong id="realDistance">{{ tramo.distancia_real_km|floatformat:3 }} km</strong></div>
+                    <div><span>Tiempo transcurrido</span><strong id="realTime">{{ tramo.tiempo_real_min|floatformat:1 }} min</strong></div>
+                    <div><span>Distancia al destino</span><strong id="distanceToDestination">—</strong></div>
+                    <div><span>Carga actual</span><strong>{{ tramo.carga_inicio_kg|floatformat:2 }} kg</strong></div>
+                </div>
+
+                <div id="trackingMessage" class="tracking-message">
+                    Pulsa “Iniciar seguimiento” para comenzar a registrar el tramo.
+                </div>
+            </article>
+
+            <article class="tracking-estimate-card">
+                <div class="tracking-card-heading">
+                    <h2><i class="bi bi-graph-up-arrow"></i> Resultado estimado</h2>
+                    <span>{{ tramo.modelo_ia }}</span>
+                </div>
+                <dl>
+                    <div><dt>Distancia</dt><dd>{{ tramo.distancia_estimada_km|floatformat:2 }} km</dd></div>
+                    <div><dt>Tiempo</dt><dd>{{ tramo.tiempo_estimado_min|floatformat:1 }} min</dd></div>
+                    <div><dt>Combustible IA</dt><dd>{{ tramo.consumo_estimado_l|floatformat:2 }} L</dd></div>
+                    <div><dt>Costo</dt><dd>${{ tramo.costo_estimado|floatformat:2 }}</dd></div>
+                    <div><dt>Tráfico</dt><dd>{{ tramo.trafico_descripcion }}<small>{{ tramo.detalle_prediccion.trafico.fuente }}</small></dd></div>
+                    <div><dt>Clima</dt><dd>{{ tramo.clima_descripcion }}{% if tramo.temperatura_c != None %} · {{ tramo.temperatura_c|floatformat:1 }} °C{% endif %}<small>{{ tramo.detalle_prediccion.clima.fuente }}</small></dd></div>
+                </dl>
+            </article>
+        </section>
+
+        <div class="tracking-actions">
+            <button type="button" id="btnPauseTracking" class="route-btn route-btn-outline" disabled>
+                <i class="bi bi-pause-circle"></i>
+                Detener seguimiento
+            </button>
+            <button type="button" id="btnStartTracking" class="route-btn route-btn-dark">
+                <i class="bi bi-play-circle"></i>
+                Iniciar seguimiento
+            </button>
+            <a href="{% url 'finalizar_tramo' tramo.id_tramo_viaje %}" id="btnFinishSegment" class="route-btn route-btn-red">
+                Finalizar tramo
+                <i class="bi bi-flag"></i>
+            </a>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/usuario/mapas/recorrido.js' %}" defer></script>
+{% endblock %}

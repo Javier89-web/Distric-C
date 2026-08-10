@@ -1,0 +1,406 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/vehiculos/editarvehiculo.css' %}">
+{% endblock %}
+
+{% block contenido %}
+
+
+<div class="editar-vehiculo-page">
+
+    <div class="editar-vehiculo-container">
+
+        <!-- TÍTULO FUERA DE LA TARJETA -->
+        <div class="editar-vehiculo-header">
+
+            <h2>Editar Vehículo</h2>
+
+            <p>
+                Actualiza la información registrada del vehículo seleccionado.
+            </p>
+
+        </div>
+
+        <!-- TARJETA -->
+        <div class="form-card">
+
+            <div class="form-card-title">
+
+                <i class="bi bi-car-front-fill"></i>
+
+                <h3>Información del vehículo</h3>
+
+            </div>
+
+            <!-- INFORMACIÓN DEL USUARIO -->
+            <div class="info-usuario">
+
+                <strong>Usuario asignado:</strong>
+
+                {{ usuarios.correo_usuario }}
+
+            </div>
+
+            <form
+                id="frm_editar_vehiculo"
+                action="/procesareditarvehiculo/"
+                method="post"
+                novalidate
+            >
+
+                {% csrf_token %}
+
+                <input
+                    type="hidden"
+                    name="id"
+                    value="{{ vehiculo.id_vehiculo }}"
+                >
+
+                <input
+                    type="hidden"
+                    name="usuario"
+                    value="{{ usuarios.id_usuario }}"
+                >
+
+                <div class="row">
+
+                    <!-- TIPO DE VEHÍCULO -->
+                    <div class="col-md-6 mb-3">
+
+                        <label
+                            for="txt_tipo_vehiculo"
+                            class="form-label"
+                        >
+                            Tipo de vehículo
+                        </label>
+
+                        <select
+                            name="txt_tipo_vehiculo"
+                            id="txt_tipo_vehiculo"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                Seleccione una opción
+                            </option>
+
+                            <option
+                                value="AUTOMOVIL"
+                                {% if vehiculo.tipovehiculo_vehiculo == "AUTOMOVIL" %}
+                                    selected
+                                {% endif %}
+                            >
+                                AUTOMÓVIL
+                            </option>
+
+                            <option
+                                value="TAXI"
+                                {% if vehiculo.tipovehiculo_vehiculo == "TAXI" %}
+                                    selected
+                                {% endif %}
+                            >
+                                TAXI
+                            </option>
+
+                            <option
+                                value="MOTOCICLETA"
+                                {% if vehiculo.tipovehiculo_vehiculo == "MOTOCICLETA" %}
+                                    selected
+                                {% endif %}
+                            >
+                                MOTOCICLETA
+                            </option>
+
+                            <option
+                                value="CAMION"
+                                {% if vehiculo.tipovehiculo_vehiculo == "CAMION" %}
+                                    selected
+                                {% endif %}
+                            >
+                                CAMIÓN
+                            </option>
+
+                            <option
+                                value="CAMIONETA"
+                                {% if vehiculo.tipovehiculo_vehiculo == "CAMIONETA" %}
+                                    selected
+                                {% endif %}
+                            >
+                                CAMIONETA
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- TIPO DE COMBUSTIBLE -->
+                    <div class="col-md-6 mb-3">
+
+                        <label
+                            for="txt_tipo_combustible"
+                            class="form-label"
+                        >
+                            Tipo de combustible
+                        </label>
+
+                        <select
+                            name="txt_tipo_combustible"
+                            id="txt_tipo_combustible"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                Seleccione una opción
+                            </option>
+
+                            <option
+                                value="EXTRA"
+                                {% if vehiculo.tipocombustible_vehiculo == "EXTRA" %}
+                                    selected
+                                {% endif %}
+                            >
+                                EXTRA
+                            </option>
+
+                            <option
+                                value="DIESEL"
+                                {% if vehiculo.tipocombustible_vehiculo == "DIESEL" %}
+                                    selected
+                                {% endif %}
+                            >
+                                DIÉSEL
+                            </option>
+
+                            <option
+                                value="SUPER"
+                                {% if vehiculo.tipocombustible_vehiculo == "SUPER" %}
+                                    selected
+                                {% endif %}
+                            >
+                                SÚPER
+                            </option>
+
+                            <option
+                                value="ECOPAIS"
+                                {% if vehiculo.tipocombustible_vehiculo == "ECOPAIS" %}
+                                    selected
+                                {% endif %}
+                            >
+                                ECOPAÍS
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- PLACA -->
+                    <div class="col-md-6 mb-3">
+
+                        <label
+                            for="txt_matricula"
+                            class="form-label"
+                        >
+                            Placa
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_matricula"
+                            id="txt_matricula"
+                            class="form-control"
+                            value="{{ vehiculo.matricula_vehiculo }}"
+                            placeholder="Ejemplo: ABC-1234"
+                            maxlength="8"
+                            autocomplete="off"
+                        >
+
+                        <p class="form-hint">
+                            Formato requerido: ABC-1234.
+                        </p>
+
+                    </div>
+
+                    <!-- MODELO -->
+                    <div class="col-md-6 mb-3">
+
+                        <label
+                            for="txt_modelo"
+                            class="form-label"
+                        >
+                            Modelo
+
+                            <span class="optional">
+                                (opcional)
+                            </span>
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_modelo"
+                            id="txt_modelo"
+                            class="form-control"
+                            value="{{ vehiculo.modelo_vehiculo }}"
+                            placeholder="Ejemplo: Chevrolet D-Max"
+                            maxlength="50"
+                        >
+
+                    </div>
+
+                    <!-- CÉDULA -->
+                    <div class="col-md-6 mb-3">
+
+                        <label
+                            for="txt_numero_cedula"
+                            class="form-label"
+                        >
+                            Cédula del propietario
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_numero_cedula"
+                            id="txt_numero_cedula"
+                            class="form-control"
+                            value="{{ vehiculo.numero_cedula }}"
+                            placeholder="Ingrese 10 dígitos"
+                            maxlength="10"
+                            inputmode="numeric"
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+                    <!-- MOTOR -->
+                    <div class="col-md-6 mb-3">
+
+                        <label
+                            for="txt_numero_motor"
+                            class="form-label"
+                        >
+                            Número de motor
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_numero_motor"
+                            id="txt_numero_motor"
+                            class="form-control"
+                            value="{{ vehiculo.numero_motor }}"
+                            placeholder="Letras, números o guiones"
+                            maxlength="12"
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+                    <!-- CHASIS -->
+                    <div class="col-12 mb-3">
+
+                        <label
+                            for="txt_numero_chasis"
+                            class="form-label"
+                        >
+                            Número de chasis
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_numero_chasis"
+                            id="txt_numero_chasis"
+                            class="form-control"
+                            value="{{ vehiculo.numero_chasis }}"
+                            placeholder="Ingrese los 17 caracteres del chasis"
+                            maxlength="17"
+                            autocomplete="off"
+                        >
+
+                        <p class="form-hint">
+                            Debe contener 17 caracteres. No admite las letras I, O ni Q.
+                        </p>
+
+                    </div>
+
+                    <!-- PESO -->
+                    <div class="col-md-6 mb-3">
+
+                        <label
+                            for="txt_peso_auto"
+                            class="form-label"
+                        >
+                            Peso del vehículo (t)
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_peso_auto"
+                            id="txt_peso_auto"
+                            class="form-control"
+                            value="{{ vehiculo.peso_auto }}"
+                            placeholder="Ejemplo: 1.5"
+                            inputmode="decimal"
+                        >
+
+                    </div>
+
+                    <!-- CILINDRAJE -->
+                    <div class="col-md-6 mb-3">
+
+                        <label
+                            for="txt_cilindraje"
+                            class="form-label"
+                        >
+                            Cilindraje
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_cilindraje"
+                            id="txt_cilindraje"
+                            class="form-control"
+                            value="{{ vehiculo.cilindraje }}"
+                            placeholder="Ejemplo: 2000"
+                            inputmode="decimal"
+                        >
+
+                    </div>
+
+                </div>
+
+                <!-- BOTONES -->
+                <div class="form-actions">
+
+                    <a
+                        href="/listadovehiculo/"
+                        class="form-btn btn-back"
+                    >
+                        <i class="bi bi-arrow-left"></i>
+                        Regresar
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="form-btn btn-save"
+                        id="btnGuardarVehiculo"
+                    >
+                        <i class="bi bi-check-circle"></i>
+                        Guardar cambios
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/usuario/vehiculos/editarvehiculo.js' %}" defer></script>
+{% endblock %}

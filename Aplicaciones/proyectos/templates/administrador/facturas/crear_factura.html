@@ -1,0 +1,50 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/facturas/crear_factura.css' %}">
+{% endblock %}
+{% block contener %}
+
+
+<div class="box">
+  <h3 class="page-title-centered">Crear Factura</h3>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <label>Usuario</label>
+    <select name="usuario" required>
+      <option value="">Seleccione</option>
+      {% for u in usuarios %}
+      <option value="{{ u.id_usuario }}">
+        {{ u.nombre_usuario }} {{ u.apellido_usuario }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <label>Vehículo (opcional)</label>
+    <select name="vehiculo">
+      <option value="">-- Ninguno --</option>
+      {% for v in vehiculos %}
+      <option value="{{ v.id_vehiculo }}">
+        {{ v.matricula_vehiculo }} - {{ v.modelo_vehiculo }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <label>Viaje (opcional)</label>
+    <select name="viaje">
+      <option value="">-- Ninguno --</option>
+      {% for vi in viajes %}
+      <option value="{{ vi.id_viaje }}">
+        Viaje #{{ vi.id_viaje }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <button type="submit">Crear Factura</button>
+  </form>
+</div>
+
+{% endblock %}

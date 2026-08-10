@@ -1,0 +1,312 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/cargas/listadocarga.css' %}">
+{% endblock %}
+
+{% block contenido %}
+
+
+<div class="cargas-page">
+    <div class="cargas-container">
+
+        <div class="page-header">
+            <h2>Mi Carga Asignada</h2>
+            <p>Consulta y ajusta los productos que transportará tu vehículo.</p>
+        </div>
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <span>Planes registrados</span>
+                <strong>{{ total_planes }}</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Planes listos</span>
+                <strong>{{ total_listos }}</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Cargas revisadas</span>
+                <strong>{{ total_revisados }}</strong>
+            </div>
+        </div>
+
+        <div class="vehicle-card">
+            <div class="vehicle-identity">
+                {% if vehiculo.foto_vehiculo %}
+                    <img src="{{ vehiculo.foto_vehiculo.url }}" alt="Vehículo {{ vehiculo.matricula_vehiculo }}" class="vehicle-photo">
+                {% else %}
+                    <div class="vehicle-photo-empty">
+                        <i class="bi bi-car-front-fill"></i>
+                    </div>
+                {% endif %}
+
+                <div>
+                    <strong>{{ vehiculo.matricula_vehiculo }} · {{ vehiculo.modelo_vehiculo|default:"Sin modelo" }}</strong>
+                    <span>{{ vehiculo.get_tipovehiculo_vehiculo_display }} · Capacidad: {{ vehiculo.capacidad_carga_kg|default:"0"|floatformat:2 }} kg</span>
+                </div>
+            </div>
+
+            <a href="/inicio/" class="page-btn">
+                <i class="bi bi-arrow-left"></i>
+                Menú
+            </a>
+        </div>
+
+        <div class="filter-card">
+            <div>
+                <strong>Consultar por fecha</strong>
+                <span>Selecciona un día para mostrar únicamente la carga programada en esa fecha.</span>
+            </div>
+
+            <form method="get" class="filter-form" id="formFiltroCargas">
+                <input
+                    type="date"
+                    name="fecha"
+                    id="fechaFiltroCarga"
+                    class="filter-date"
+                    value="{% if fecha_filtro %}{{ fecha_filtro|date:'Y-m-d' }}{% endif %}"
+                >
+                <button type="submit" class="page-btn">
+                    <i class="bi bi-calendar3"></i>
+                    Ver fecha
+                </button>
+                {% if fecha_filtro %}
+                    
+                    <a
+                        href="{% url 'listadocarga' %}"
+                        class="page-btn filter-clear"
+                    >
+                        <i class="bi bi-calendar3"></i>
+                        Ver todo
+                    </a>
+                {% endif %}
+            </form>
+        </div>
+
+        {% if fecha_filtro %}
+            <section class="date-group">
+                <div class="date-group-header">
+                    <div>
+                        <h3>Cargas del {{ fecha_filtro|date:"d/m/Y" }}</h3>
+                        <p>Resultados correspondientes al día seleccionado.</p>
+                    </div>
+                    <span class="group-counter">{{ planes_fecha|length }} plan{{ planes_fecha|length|pluralize }}</span>
+                </div>
+
+                {% if planes_fecha %}
+                    <div class="plans-list">
+                        {% for plan in planes_fecha %}
+                            <article class="plan-row">
+                                <div class="plan-date">
+                                    <strong>{{ plan.fecha_planificada|date:"d/m/Y" }}</strong>
+                                    <span>Plan #{{ plan.id_plan_carga }}</span>
+                                </div>
+
+                                <div class="plan-data">
+                                    <div><span>Peso efectivo</span><strong>{{ plan.peso_total_kg|floatformat:2 }} kg</strong></div>
+                                    <div><span>Capacidad disponible</span><strong>{{ plan.disponible_kg|floatformat:2 }} kg</strong></div>
+                                </div>
+
+                                <div class="plan-actions">
+                                    {% if plan.estado == "LISTO" %}
+                                        <span class="status status-ready">LISTO</span>
+                                    {% elif plan.estado == "CONFIRMADO" %}
+                                        <span class="status status-closed">CONFIRMADO</span>
+                                    {% elif plan.estado == "BORRADOR" %}
+                                        <span class="status status-draft">BORRADOR</span>
+                                    {% else %}
+                                        <span class="status status-other">{{ plan.get_estado_display }}</span>
+                                    {% endif %}
+
+                                    {% if plan.revisado_por_usuario %}
+                                        <span class="review-badge review-ok"><i class="bi bi-check-circle"></i> REVISADA</span>
+                                    {% else %}
+                                        <span class="review-badge review-pending"><i class="bi bi-exclamation-circle"></i> PENDIENTE</span>
+                                    {% endif %}
+
+                                    <a href="{% url 'detallecargausuario' plan.id_plan_carga %}" class="page-btn btn-red">
+                                        <i class="bi bi-eye"></i>
+                                        Ver carga
+                                    </a>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty">No tienes cargas asignadas para esta fecha.</div>
+                {% endif %}
+            </section>
+
+        {% elif planes %}
+
+            {% if planes_hoy %}
+                <section class="date-group">
+                    <div class="date-group-header">
+                        <div>
+                            <h3>Cargas de hoy</h3>
+                            <p>Programadas para {{ hoy|date:"d/m/Y" }}.</p>
+                        </div>
+                        <span class="group-counter">{{ planes_hoy|length }} plan{{ planes_hoy|length|pluralize }}</span>
+                    </div>
+
+                    <div class="plans-list">
+                        {% for plan in planes_hoy %}
+                            <article class="plan-row">
+                                <div class="plan-date">
+                                    <strong>{{ plan.fecha_planificada|date:"d/m/Y" }}</strong>
+                                    <span>Plan #{{ plan.id_plan_carga }}</span>
+                                </div>
+
+                                <div class="plan-data">
+                                    <div><span>Peso efectivo</span><strong>{{ plan.peso_total_kg|floatformat:2 }} kg</strong></div>
+                                    <div><span>Capacidad disponible</span><strong>{{ plan.disponible_kg|floatformat:2 }} kg</strong></div>
+                                </div>
+
+                                <div class="plan-actions">
+                                    {% if plan.estado == "LISTO" %}
+                                        <span class="status status-ready">LISTO</span>
+                                    {% elif plan.estado == "CONFIRMADO" %}
+                                        <span class="status status-closed">CONFIRMADO</span>
+                                    {% elif plan.estado == "BORRADOR" %}
+                                        <span class="status status-draft">BORRADOR</span>
+                                    {% else %}
+                                        <span class="status status-other">{{ plan.get_estado_display }}</span>
+                                    {% endif %}
+
+                                    {% if plan.revisado_por_usuario %}
+                                        <span class="review-badge review-ok"><i class="bi bi-check-circle"></i> REVISADA</span>
+                                    {% else %}
+                                        <span class="review-badge review-pending"><i class="bi bi-exclamation-circle"></i> PENDIENTE</span>
+                                    {% endif %}
+
+                                    <a href="{% url 'detallecargausuario' plan.id_plan_carga %}" class="page-btn btn-red">
+                                        <i class="bi bi-eye"></i>
+                                        Ver carga
+                                    </a>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
+
+            {% if planes_proximos %}
+                <section class="date-group">
+                    <div class="date-group-header">
+                        <div>
+                            <h3>Próximas cargas</h3>
+                            <p>Ordenadas desde la fecha más cercana.</p>
+                        </div>
+                        <span class="group-counter">{{ planes_proximos|length }} plan{{ planes_proximos|length|pluralize }}</span>
+                    </div>
+
+                    <div class="plans-list">
+                        {% for plan in planes_proximos %}
+                            <article class="plan-row">
+                                <div class="plan-date">
+                                    <strong>{{ plan.fecha_planificada|date:"d/m/Y" }}</strong>
+                                    <span>Plan #{{ plan.id_plan_carga }}</span>
+                                </div>
+
+                                <div class="plan-data">
+                                    <div><span>Peso efectivo</span><strong>{{ plan.peso_total_kg|floatformat:2 }} kg</strong></div>
+                                    <div><span>Capacidad disponible</span><strong>{{ plan.disponible_kg|floatformat:2 }} kg</strong></div>
+                                </div>
+
+                                <div class="plan-actions">
+                                    {% if plan.estado == "LISTO" %}
+                                        <span class="status status-ready">LISTO</span>
+                                    {% elif plan.estado == "CONFIRMADO" %}
+                                        <span class="status status-closed">CONFIRMADO</span>
+                                    {% elif plan.estado == "BORRADOR" %}
+                                        <span class="status status-draft">BORRADOR</span>
+                                    {% else %}
+                                        <span class="status status-other">{{ plan.get_estado_display }}</span>
+                                    {% endif %}
+
+                                    {% if plan.revisado_por_usuario %}
+                                        <span class="review-badge review-ok"><i class="bi bi-check-circle"></i> REVISADA</span>
+                                    {% else %}
+                                        <span class="review-badge review-pending"><i class="bi bi-exclamation-circle"></i> PENDIENTE</span>
+                                    {% endif %}
+
+                                    <a href="{% url 'detallecargausuario' plan.id_plan_carga %}" class="page-btn btn-red">
+                                        <i class="bi bi-eye"></i>
+                                        Ver carga
+                                    </a>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
+
+            {% if planes_anteriores %}
+                <section class="date-group">
+                    <div class="date-group-header">
+                        <div>
+                            <h3>Cargas anteriores</h3>
+                            <p>Ordenadas desde la más reciente.</p>
+                        </div>
+                        <span class="group-counter">{{ planes_anteriores|length }} plan{{ planes_anteriores|length|pluralize }}</span>
+                    </div>
+
+                    <div class="plans-list">
+                        {% for plan in planes_anteriores %}
+                            <article class="plan-row">
+                                <div class="plan-date">
+                                    <strong>{{ plan.fecha_planificada|date:"d/m/Y" }}</strong>
+                                    <span>Plan #{{ plan.id_plan_carga }}</span>
+                                </div>
+
+                                <div class="plan-data">
+                                    <div><span>Peso efectivo</span><strong>{{ plan.peso_total_kg|floatformat:2 }} kg</strong></div>
+                                    <div><span>Capacidad disponible</span><strong>{{ plan.disponible_kg|floatformat:2 }} kg</strong></div>
+                                </div>
+
+                                <div class="plan-actions">
+                                    {% if plan.estado == "LISTO" %}
+                                        <span class="status status-ready">LISTO</span>
+                                    {% elif plan.estado == "CONFIRMADO" %}
+                                        <span class="status status-closed">CONFIRMADO</span>
+                                    {% elif plan.estado == "BORRADOR" %}
+                                        <span class="status status-draft">BORRADOR</span>
+                                    {% else %}
+                                        <span class="status status-other">{{ plan.get_estado_display }}</span>
+                                    {% endif %}
+
+                                    {% if plan.revisado_por_usuario %}
+                                        <span class="review-badge review-ok"><i class="bi bi-check-circle"></i> REVISADA</span>
+                                    {% else %}
+                                        <span class="review-badge review-pending"><i class="bi bi-exclamation-circle"></i> PENDIENTE</span>
+                                    {% endif %}
+
+                                    <a href="{% url 'detallecargausuario' plan.id_plan_carga %}" class="page-btn btn-red">
+                                        <i class="bi bi-eye"></i>
+                                        Ver carga
+                                    </a>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
+
+        {% else %}
+            <div class="empty">
+                Todavía no tienes planes de carga asignados.
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/usuario/cargas/listadocarga.js' %}" defer></script>
+{% endblock %}

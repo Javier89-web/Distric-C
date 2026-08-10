@@ -1,0 +1,261 @@
+{% extends "base/plantilla.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/usuario/perfil/editarusuario.css' %}">
+{% endblock %}
+
+{% block contenido %}
+
+
+
+
+
+<div class="editar-perfil-page">
+
+    <div class="editar-perfil-container">
+
+        <div class="editar-perfil-header">
+            <h2>Editar Perfil</h2>
+
+            <p>
+                Actualiza tu información personal y tu fotografía de perfil.
+            </p>
+        </div>
+
+        <div class="form-card">
+
+            <div class="form-card-title">
+                <i class="bi bi-person-gear"></i>
+                <h3>Información personal</h3>
+            </div>
+
+            {% if errores_servidor.general %}
+                <div class="form-general-error">
+                    {{ errores_servidor.general }}
+                </div>
+            {% endif %}
+
+            <form
+                id="frm_editar_perfil"
+                action="/procesareditarusuario/"
+                method="post"
+                enctype="multipart/form-data"
+                novalidate
+            >
+
+                {% csrf_token %}
+
+                <input
+                    type="hidden"
+                    name="id_usuario"
+                    value="{{ usuario.id_usuario }}"
+                >
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="txt_cedula" class="form-label">Cédula</label>
+                        <input
+                            type="text"
+                            name="txt_cedula"
+                            id="txt_cedula"
+                            class="form-control{% if errores_servidor.txt_cedula %} error{% endif %}"
+                            value="{% if valores_formulario %}{{ valores_formulario.txt_cedula }}{% else %}{{ usuario.cedula_usuario|default:'' }}{% endif %}"
+                            placeholder="Ingrese los 10 dígitos"
+                            minlength="10"
+                            maxlength="10"
+                            inputmode="numeric"
+                        >
+                        {% if errores_servidor.txt_cedula %}
+                            <span class="server-error">{{ errores_servidor.txt_cedula }}</span>
+                        {% endif %}
+                        <p class="form-hint">La cédula debe ser válida y no puede repetirse.</p>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="txt_telefono" class="form-label">Teléfono</label>
+                        <input
+                            type="text"
+                            name="txt_telefono"
+                            id="txt_telefono"
+                            class="form-control{% if errores_servidor.txt_telefono %} error{% endif %}"
+                            value="{% if valores_formulario %}{{ valores_formulario.txt_telefono }}{% else %}{{ usuario.telefono_usuario|default:'' }}{% endif %}"
+                            placeholder="Ejemplo: 0987654321"
+                            minlength="7"
+                            maxlength="15"
+                            inputmode="tel"
+                            autocomplete="tel"
+                        >
+                        {% if errores_servidor.txt_telefono %}
+                            <span class="server-error">{{ errores_servidor.txt_telefono }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_nombre" class="form-label">
+                            Nombres
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_nombre"
+                            id="txt_nombre"
+                            class="form-control{% if errores_servidor.txt_nombre %} error{% endif %}"
+                            value="{% if valores_formulario %}{{ valores_formulario.txt_nombre }}{% else %}{{ usuario.nombre_usuario }}{% endif %}"
+                            placeholder="Ingrese los nombres"
+                            maxlength="50"
+                            autocomplete="given-name"
+                        >
+                        {% if errores_servidor.txt_nombre %}
+                            <span class="server-error">{{ errores_servidor.txt_nombre }}</span>
+                        {% endif %}
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label for="txt_apellido" class="form-label">
+                            Apellidos
+                        </label>
+
+                        <input
+                            type="text"
+                            name="txt_apellido"
+                            id="txt_apellido"
+                            class="form-control{% if errores_servidor.txt_apellido %} error{% endif %}"
+                            value="{% if valores_formulario %}{{ valores_formulario.txt_apellido }}{% else %}{{ usuario.apellido_usuario }}{% endif %}"
+                            placeholder="Ingrese los apellidos"
+                            maxlength="50"
+                            autocomplete="family-name"
+                        >
+                        {% if errores_servidor.txt_apellido %}
+                            <span class="server-error">{{ errores_servidor.txt_apellido }}</span>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label for="txt_correo" class="form-label">
+                        Correo electrónico
+                    </label>
+
+                    <input
+                        type="email"
+                        name="txt_correo"
+                        id="txt_correo"
+                        class="form-control{% if errores_servidor.txt_correo %} error{% endif %}"
+                        value="{% if valores_formulario %}{{ valores_formulario.txt_correo }}{% else %}{{ usuario.correo_usuario }}{% endif %}"
+                        placeholder="ejemplo@correo.com"
+                        maxlength="100"
+                        autocomplete="email"
+                    >
+                    {% if errores_servidor.txt_correo %}
+                        <span class="server-error">{{ errores_servidor.txt_correo }}</span>
+                    {% endif %}
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label for="foto_usuario" class="form-label">
+                        Foto del usuario
+                        <span class="optional">(opcional)</span>
+                    </label>
+
+                    {% if usuario.foto_usuario %}
+
+                        <div class="foto-actual">
+
+                            <a
+                                href="{{ usuario.foto_usuario.url }}"
+                                target="_blank"
+                                title="Ver foto actual"
+                            >
+                                <img
+                                    src="{{ usuario.foto_usuario.url }}"
+                                    alt="Foto actual de {{ usuario.nombre_usuario }}"
+                                >
+                            </a>
+
+                            <div>
+                                <strong>Foto actual</strong>
+
+                                <span>
+                                    Selecciona otra imagen únicamente cuando quieras reemplazarla.
+                                </span>
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+                    <input
+                        type="file"
+                        name="foto_usuario"
+                        id="foto_usuario"
+                        class="form-control{% if errores_servidor.foto_usuario %} error{% endif %}"
+                        accept="image/png, image/jpeg"
+                    >
+                    {% if errores_servidor.foto_usuario %}
+                        <span class="server-error">{{ errores_servidor.foto_usuario }}</span>
+                    {% endif %}
+
+                    <p class="form-hint">
+                        Formatos permitidos: PNG, JPG y JPEG. Tamaño máximo: 5 MB.
+                    </p>
+
+                    <div id="errorFoto"></div>
+
+                </div>
+
+                <div class="form-actions">
+
+                    <a
+                        href="/perfilusuario/"
+                        class="form-btn btn-back"
+                    >
+                        <i class="bi bi-arrow-left"></i>
+                        Regresar
+                    </a>
+
+                    <button
+                        type="reset"
+                        class="form-btn btn-clear"
+                        id="btnLimpiar"
+                    >
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                        Restaurar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="form-btn btn-save"
+                        id="btnGuardarPerfil"
+                    >
+                        <i class="bi bi-check-circle"></i>
+                        Guardar cambios
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/usuario/perfil/editarusuario.js' %}" defer></script>
+{% endblock %}

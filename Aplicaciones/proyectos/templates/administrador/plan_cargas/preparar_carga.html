@@ -1,0 +1,78 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static l10n %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/plan_cargas/preparar_carga.css' %}">
+{% endblock %}
+
+{% block contener %}
+<main class="prepare-page" data-capacidad="{{ capacidad|unlocalize }}">
+    <div class="prepare-container">
+        <header class="page-header">
+            <div>
+                <h2>Preparar carga</h2>
+                <p>Selecciona cantidades sin perder de vista la capacidad del vehículo.</p>
+            </div>
+        </header>
+
+        <section class="summary-card">
+            <div class="summary-grid">
+                <div class="summary-item"><span>Vehículo</span><strong>{{ plan.vehiculo.matricula_vehiculo }}</strong></div>
+                <div class="summary-item"><span>Conductor</span><strong>{% if plan.vehiculo.usuario %}{{ plan.vehiculo.usuario.nombre_usuario }} {{ plan.vehiculo.usuario.apellido_usuario }}{% else %}Sin asignar{% endif %}</strong></div>
+                <div class="summary-item"><span>Fecha</span><strong>{{ plan.fecha_planificada|date:"d/m/Y" }}</strong></div>
+                <div class="summary-item"><span>Capacidad</span><strong>{{ capacidad|floatformat:2 }} kg</strong></div>
+            </div>
+            <div class="capacity-line">
+                <div class="progress-track"><div class="progress-value" id="barraCarga"></div></div>
+                <p class="weight-message" id="mensajePeso"></p>
+            </div>
+        </section>
+
+        <form action="{% url 'guardarplancarga' plan.id_plan_carga %}" method="post" id="frmPlanCarga" data-loading-text="Guardando productos…">
+            {% csrf_token %}
+            <section class="products-card">
+                <div class="products-header">
+                    <div><h3>Productos</h3><span>{{ productos|length }} disponibles</span></div>
+                    <div class="search-box"><i class="bi bi-search"></i><input type="text" id="buscarProductoCarga" placeholder="Buscar por producto o marca..." autocomplete="off"></div>
+                </div>
+
+                {% if productos %}
+                <div class="product-list" id="listaProductosCarga">
+                    {% for producto in productos %}
+                    <article class="product-row {% if not producto.activo %}inactive{% endif %}" data-busqueda="{{ producto.nombre_producto }} {{ producto.marca_producto }} {{ producto.get_presentacion_producto_display }}">
+                        <div class="product-main">
+                            <strong>{{ producto.nombre_producto }}</strong>
+                            <span>{{ producto.marca_producto|default:"Sin marca" }} · {{ producto.get_presentacion_producto_display }}</span>
+                        </div>
+                        <div class="product-weight"><span>Peso</span><strong>{{ producto.peso_unitario_kg|floatformat:2 }} kg</strong></div>
+                        <div class="quantity-control">
+                            <button type="button" class="quantity-button restar" data-input="cantidad_{{ producto.id_producto_carga }}" aria-label="Restar">−</button>
+                            <input type="number" name="cantidad_{{ producto.id_producto_carga }}" id="cantidad_{{ producto.id_producto_carga }}" class="quantity-input cantidad-producto" value="{{ producto.cantidad_plan }}" min="0" max="9999" step="1" data-peso="{{ producto.peso_unitario_kg|unlocalize }}">
+                            <button type="button" class="quantity-button sumar" data-input="cantidad_{{ producto.id_producto_carga }}" aria-label="Sumar">+</button>
+                        </div>
+                        <strong class="subtotal" id="subtotal_{{ producto.id_producto_carga }}">{{ producto.subtotal_plan|floatformat:2 }} kg</strong>
+                    </article>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-products">No existen productos disponibles para cargar.</div>
+                {% endif %}
+
+                <div class="notes-field">
+                    <label for="notas">Observación <span class="optional">(opcional)</span></label>
+                    <textarea name="notas" id="notas" maxlength="1000" rows="2" placeholder="Información adicional para esta carga">{{ plan.notas }}</textarea>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'listadoplanescarga' %}?fecha={{ plan.fecha_planificada|date:'Y-m-d' }}" class="form-btn btn-dark"><i class="bi bi-arrow-left"></i> Regresar</a>
+                    <button type="submit" class="form-btn btn-red" id="btnGuardarProductos"><i class="bi bi-check-circle"></i> Guardar productos</button>
+                </div>
+            </section>
+        </form>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/plan_cargas/preparar_carga.js' %}" defer></script>
+{% endblock %}

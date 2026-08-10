@@ -1,0 +1,53 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/pagos/registrar_pago.css' %}">
+{% endblock %}
+{% block contener %}
+<div class="box">
+    <h3>Registrar Pago</h3>
+    <div class="info-factura">
+      <p><strong>Factura:</strong> {{ factura.numero_factura }}</p>
+      <p><strong>Cliente:</strong> {{ factura.cliente_nombre }}</p>
+      <p><strong>Numero de Cuenta:</strong> {{ factura.numero_cuenta }}</p>
+      <p><strong>Total a pagar:</strong> $ {{ factura.total }}</p>
+    </div>
+    <form action="{% url 'guardar_pago' %}" method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <input type="hidden" name="factura_id" value="{{ factura.id_factura }}">
+
+      <label>Método de pago</label>
+      <select name="metodo" class="form-control" required>
+        <option value="EFECTIVO">EFECTIVO</option>
+        <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+      </select>
+
+      <label>Monto pagado</label>
+      <input type="number" step="0.01" name="monto" class="form-control" value="{{ factura.total }}" required>
+
+      <label>Banco (solo transferencia)</label>
+      <input type="text" name="banco" class="form-control" placeholder="Ej: Banco Pichincha">
+
+      <label>Referencia</label>
+      <input type="text" name="referencia" class="form-control" placeholder="N° transferencia / comprobante">
+
+      <label for="comprobante" class="form-label">Comprobante de pago:</label>
+      <input type="file" id="comprobante" name="comprobante" class="form-control" accept="image/*">
+
+
+      <button class="btn-save" type="submit">
+        Confirmar Pago
+      </button>
+    </form>
+  </div>
+
+
+  
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/pagos/registrar_pago.js' %}" defer></script>
+{% endblock %}

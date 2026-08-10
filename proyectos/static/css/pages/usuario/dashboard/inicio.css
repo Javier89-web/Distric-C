@@ -1,0 +1,76 @@
+body {
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  html,
+  body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  #map {
+    position: fixed;
+    top: 58px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: calc(100vh - 58px);
+    overflow: hidden;
+  }
+
+  #btnUbicacion {
+    position: absolute;
+    top: 220px;
+    left: 15px;
+    z-index: 1000;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  }
+
+  #btnUbicacion:hover {
+    background-color: #0056b3;
+  }
+
+  #estadoGPS {
+    position: absolute;
+    top: 270px;
+    left: 15px;
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.78);
+    color: #fff;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    max-width: 300px;
+    display: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  }
+
+  .estado-ok {
+    border-left: 5px solid #28a745;
+  }
+
+  .estado-alerta {
+    border-left: 5px solid #ffc107;
+  }
+
+  .estado-error {
+    border-left: 5px solid #dc3545;
+  }
+
+  @media (max-width: 768px) {
+    #map {
+      top: 56px;
+      height: calc(100vh - 56px);
+    }
+  }

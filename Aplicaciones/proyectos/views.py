@@ -9,6 +9,7 @@ import calendar
 import json
 import random
 import re
+import secrets
 from datetime import datetime, timedelta
 from decimal import Decimal
 
@@ -703,6 +704,54 @@ def _validar_acceso_admin_usuarios(request):
     return None
 
 
+
+def _clave_superusuario_administracion():
+    """Clave compartida con el bypass GPS administrativo.
+
+    Se obtiene de RUTAS_MODO_PRUEBA_CLAVE para no exponer el valor real
+    dentro del repositorio público.
+    """
+    return str(getattr(settings, 'RUTAS_MODO_PRUEBA_CLAVE', '') or '').strip()
+
+
+def _obtener_datos_administrador_formulario(request, administrador_actual=None):
+    cargo = _normalizar_espacios(request.POST.get('admin_cargo', ''))
+    codigo = request.POST.get('admin_codigo_interno', '').strip().upper()
+    telefono = re.sub(
+        r'[\s\-()]',
+        '',
+        request.POST.get('admin_telefono_institucional', '').strip()
+    )
+
+    if len(cargo) < 2 or len(cargo) > 100:
+        return None, 'El cargo del administrador debe tener entre 2 y 100 caracteres.'
+
+    if not re.fullmatch(r"[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9' .\-]+", cargo):
+        return None, 'El cargo contiene caracteres no permitidos.'
+
+    if len(codigo) < 3 or len(codigo) > 50:
+        return None, 'El código interno debe tener entre 3 y 50 caracteres.'
+
+    if not re.fullmatch(r'[A-Z0-9_-]+', codigo):
+        return None, 'El código interno solo permite letras, números, guion y guion bajo.'
+
+    administradores = Administrador.objects.all()
+    if administrador_actual:
+        administradores = administradores.exclude(pk=administrador_actual.pk)
+
+    if administradores.filter(codigo_interno__iexact=codigo).exists():
+        return None, 'Ya existe un administrador con ese código interno.'
+
+    if not re.fullmatch(r'\+?\d{7,20}', telefono):
+        return None, 'Ingrese un teléfono institucional válido de 7 a 20 dígitos.'
+
+    return {
+        'cargo': cargo,
+        'codigo_interno': codigo,
+        'telefono_institucional': telefono,
+    }, None
+
+
 def listadousuario(request):
     acceso = _validar_acceso_admin_usuarios(request)
 
@@ -746,6 +795,11 @@ def guardarusuario(request):
     if request.method != 'POST':
         return redirect('/nuevousuario/')
 
+    tipo_rol = request.POST.get('tipo_rol', 'USUARIO').strip().upper()
+    if tipo_rol not in {'USUARIO', 'ADMINISTRADOR'}:
+        messages.error(request, 'Seleccione un tipo de cuenta válido.')
+        return redirect('/nuevousuario/')
+
     datos, error = _obtener_datos_usuario_formulario(
         request,
         requerir_contrasena=True,
@@ -756,18 +810,51 @@ def guardarusuario(request):
         messages.error(request, error)
         return redirect('/nuevousuario/')
 
+    datos_administrador = None
+    if tipo_rol == 'ADMINISTRADOR':
+        clave_configurada = _clave_superusuario_administracion()
+        clave_recibida = request.POST.get('clave_superusuario', '').strip()
+
+        if not clave_configurada:
+            messages.error(
+                request,
+                'No se ha configurado la contraseña de autorización administrativa en Render.'
+            )
+            return redirect('/nuevousuario/')
+
+        if not secrets.compare_digest(clave_recibida, clave_configurada):
+            messages.error(request, 'Contraseña de superusuario incorrecta.')
+            return redirect('/nuevousuario/')
+
+        datos_administrador, error = _obtener_datos_administrador_formulario(request)
+        if error:
+            messages.error(request, error)
+            return redirect('/nuevousuario/')
+
     foto = datos.pop('foto_usuario')
-    nuevo = Usuario.objects.create(
-        **datos,
-        tiporol='USUARIO',
-        activo=True
-    )
 
-    if foto:
-        nuevo.foto_usuario = foto
-        nuevo.save(update_fields=['foto_usuario'])
+    with transaction.atomic():
+        nuevo = Usuario.objects.create(
+            **datos,
+            tiporol=tipo_rol,
+            activo=True
+        )
 
-    messages.success(request, 'Usuario creado correctamente.')
+        if foto:
+            nuevo.foto_usuario = foto
+            nuevo.save(update_fields=['foto_usuario'])
+
+        if tipo_rol == 'ADMINISTRADOR':
+            Administrador.objects.create(
+                usuario=nuevo,
+                **datos_administrador
+            )
+
+    if tipo_rol == 'ADMINISTRADOR':
+        messages.success(request, 'Administrador creado correctamente.')
+    else:
+        messages.success(request, 'Usuario creado correctamente.')
+
     return redirect('/listadousuario/')
 
 
@@ -889,10 +976,18 @@ def editarusuarioadministrador(request, id):
         messages.error(request, 'El usuario no existe.')
         return redirect('/listadousuario/')
 
+    administrador = None
+    if usuario.tiporol == 'ADMINISTRADOR':
+        administrador = Administrador.objects.filter(usuario=usuario).first()
+
     return render(
         request,
         'administrador/usuarios/editarusuarioadministrador.html',
-        {'usuario': usuario}
+        {
+            'usuario': usuario,
+            'administrador': administrador,
+            'es_cuenta_administrador': usuario.tiporol == 'ADMINISTRADOR',
+        }
     )
 
 
@@ -928,26 +1023,55 @@ def procesareditarusuarioadministrador(request):
             id=usuario.id_usuario
         )
 
-    usuario.cedula_usuario = datos['cedula_usuario']
-    usuario.nombre_usuario = datos['nombre_usuario']
-    usuario.apellido_usuario = datos['apellido_usuario']
-    usuario.correo_usuario = datos['correo_usuario']
-    usuario.telefono_usuario = datos['telefono_usuario']
+    datos_administrador = None
+    administrador_actual = None
 
-    if datos['contrasena_usuario']:
-        usuario.contrasena_usuario = datos['contrasena_usuario']
+    if usuario.tiporol == 'ADMINISTRADOR':
+        administrador_actual = Administrador.objects.filter(usuario=usuario).first()
+        datos_administrador, error = _obtener_datos_administrador_formulario(
+            request,
+            administrador_actual=administrador_actual
+        )
 
-    if datos['foto_usuario']:
-        if usuario.foto_usuario:
-            try:
-                usuario.foto_usuario.delete(save=False)
-            except Exception:
-                pass
+        if error:
+            messages.error(request, error)
+            return redirect(
+                'editarusuarioadministrador',
+                id=usuario.id_usuario
+            )
 
-        usuario.foto_usuario = datos['foto_usuario']
+    with transaction.atomic():
+        usuario.cedula_usuario = datos['cedula_usuario']
+        usuario.nombre_usuario = datos['nombre_usuario']
+        usuario.apellido_usuario = datos['apellido_usuario']
+        usuario.correo_usuario = datos['correo_usuario']
+        usuario.telefono_usuario = datos['telefono_usuario']
 
-    usuario.save()
-    messages.success(request, 'Usuario actualizado correctamente.')
+        if datos['contrasena_usuario']:
+            usuario.contrasena_usuario = datos['contrasena_usuario']
+
+        if datos['foto_usuario']:
+            if usuario.foto_usuario:
+                try:
+                    usuario.foto_usuario.delete(save=False)
+                except Exception:
+                    pass
+
+            usuario.foto_usuario = datos['foto_usuario']
+
+        usuario.save()
+
+        if usuario.tiporol == 'ADMINISTRADOR':
+            Administrador.objects.update_or_create(
+                usuario=usuario,
+                defaults=datos_administrador
+            )
+
+    if usuario.tiporol == 'ADMINISTRADOR':
+        messages.success(request, 'Administrador actualizado correctamente.')
+    else:
+        messages.success(request, 'Usuario actualizado correctamente.')
+
     return redirect('/listadousuario/')
 
 

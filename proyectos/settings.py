@@ -259,9 +259,10 @@ GOOGLE_MAPS_SERVER_API_KEY = os.environ.get("GOOGLE_MAPS_SERVER_API_KEY", "").st
 
 
 
-# Clave administrativa para permitir continuar al siguiente tramo sin
-# validación GPS. En producción debe configurarse como variable de entorno
-# RUTAS_MODO_PRUEBA_CLAVE en Render; no se guarda la contraseña en GitHub.
+# Clave de superusuario para acciones administrativas sensibles:
+# continuar sin validación GPS y crear nuevas cuentas ADMINISTRADOR.
+# En producción se configura como RUTAS_MODO_PRUEBA_CLAVE en Render;
+# nunca se guarda la contraseña real en GitHub.
 RUTAS_MODO_PRUEBA_CLAVE = os.environ.get(
     "RUTAS_MODO_PRUEBA_CLAVE",
     "",

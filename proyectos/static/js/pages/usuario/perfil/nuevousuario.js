@@ -60,6 +60,45 @@ $(document).ready(function () {
             "La imagen supera el tamaño permitido"
         );
 
+        $.validator.addMethod(
+            "codigoAdmin",
+            function (value, element) {
+                return this.optional(element) || /^[A-Za-z0-9_-]+$/.test(value);
+            },
+            "Solo se permiten letras, números, guion y guion bajo"
+        );
+
+        $.validator.addMethod(
+            "telefonoAdmin",
+            function (value, element) {
+                return this.optional(element) || /^\+?\d{7,20}$/.test(value);
+            },
+            "Ingrese un teléfono institucional válido"
+        );
+
+        const esAdministrador = function () {
+            return $("#tipo_rol").val() === "ADMINISTRADOR";
+        };
+
+        function actualizarCamposAdministrador() {
+            const admin = esAdministrador();
+            const contenedor = $("#camposAdministrador");
+
+            contenedor.prop("hidden", !admin);
+            $("#clave_superusuario").val("");
+
+            if (!admin) {
+                contenedor.find("input").val("").removeClass("error valid");
+                contenedor.find("label.error").remove();
+            }
+
+            $("#btnGuardar").html(
+                admin
+                    ? '<i class="bi bi-check-circle"></i> Guardar administrador'
+                    : '<i class="bi bi-check-circle"></i> Guardar usuario'
+            );
+        }
+
         $("#foto_usuario").fileinput({
             language: "es",
 
@@ -137,6 +176,28 @@ $(document).ready(function () {
                     maxlength: 12
                 },
 
+                tipo_rol: {
+                    required: true
+                },
+
+                admin_cargo: {
+                    required: esAdministrador,
+                    minlength: 2,
+                    maxlength: 100
+                },
+
+                admin_codigo_interno: {
+                    required: esAdministrador,
+                    minlength: 3,
+                    maxlength: 50,
+                    codigoAdmin: true
+                },
+
+                admin_telefono_institucional: {
+                    required: esAdministrador,
+                    telefonoAdmin: true
+                },
+
                 foto_usuario: {
                     extension: "png|jpg|jpeg",
                     tamanioArchivo: 5242880
@@ -185,6 +246,28 @@ $(document).ready(function () {
                     maxlength: "Máximo 12 caracteres"
                 },
 
+                tipo_rol: {
+                    required: "Seleccione el tipo de cuenta"
+                },
+
+                admin_cargo: {
+                    required: "El cargo es obligatorio para un administrador",
+                    minlength: "Ingrese al menos 2 caracteres",
+                    maxlength: "Máximo 100 caracteres"
+                },
+
+                admin_codigo_interno: {
+                    required: "El código interno es obligatorio",
+                    minlength: "Ingrese al menos 3 caracteres",
+                    maxlength: "Máximo 50 caracteres",
+                    codigoAdmin: "Use solo letras, números, guion o guion bajo"
+                },
+
+                admin_telefono_institucional: {
+                    required: "El teléfono institucional es obligatorio",
+                    telefonoAdmin: "Ingrese entre 7 y 20 dígitos"
+                },
+
                 foto_usuario: {
                     extension: "Solo se permiten imágenes PNG, JPG o JPEG",
                     tamanioArchivo: "La imagen no puede superar los 5 MB"
@@ -213,7 +296,44 @@ $(document).ready(function () {
                     .addClass("valid");
             },
 
-            submitHandler: function (form) {
+            submitHandler: async function (form) {
+                if (esAdministrador()) {
+                    const resultado = window.Swal
+                        ? await Swal.fire({
+                            title: "Autorización para crear administrador",
+                            text: "Ingresa la contraseña de superusuario para confirmar la creación de esta cuenta administrativa.",
+                            input: "password",
+                            inputLabel: "Contraseña de superusuario",
+                            inputPlaceholder: "Ingresa la contraseña",
+                            showCancelButton: true,
+                            confirmButtonText: "Autorizar y guardar",
+                            cancelButtonText: "Cancelar",
+                            confirmButtonColor: "#d71920",
+                            cancelButtonColor: "#23262b",
+                            reverseButtons: true,
+                            allowOutsideClick: false,
+                            preConfirm: function (value) {
+                                if (!value) {
+                                    Swal.showValidationMessage("Ingresa la contraseña de superusuario.");
+                                    return false;
+                                }
+                                return value;
+                            }
+                        })
+                        : {
+                            isConfirmed: true,
+                            value: window.prompt("Contraseña de superusuario:")
+                        };
+
+                    if (!resultado.isConfirmed || !resultado.value) {
+                        return;
+                    }
+
+                    $("#clave_superusuario").val(resultado.value);
+                } else {
+                    $("#clave_superusuario").val("");
+                }
+
                 $("#btnGuardar")
                     .prop("disabled", true)
                     .html(
@@ -225,6 +345,15 @@ $(document).ready(function () {
             }
         });
 
+
+        $("#tipo_rol").on("change", function () {
+            actualizarCamposAdministrador();
+            $("#admin_cargo, #admin_codigo_interno, #admin_telefono_institucional").each(function () {
+                $(this).valid();
+            });
+        });
+
+        actualizarCamposAdministrador();
 
         let consultaCedulaTimer = null;
         let ultimaCedulaConsultada = "";
@@ -311,6 +440,8 @@ $(document).ready(function () {
                 $("#errorFoto").empty();
                 ultimaCedulaConsultada = "";
                 mostrarEstadoCedula("");
+                $("#tipo_rol").val("USUARIO");
+                actualizarCamposAdministrador();
 
                 try {
                     $("#foto_usuario").fileinput("clear");

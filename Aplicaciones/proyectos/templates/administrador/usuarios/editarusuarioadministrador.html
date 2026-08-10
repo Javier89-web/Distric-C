@@ -18,10 +18,20 @@
         <!-- Título fuera de la tarjeta -->
         <div class="editar-usuario-header">
 
-            <h2>Editar Usuario</h2>
+            <h2>
+                {% if es_cuenta_administrador %}
+                    Editar Administrador
+                {% else %}
+                    Editar Usuario
+                {% endif %}
+            </h2>
 
             <p>
-                Actualiza la información personal y los datos de acceso del usuario.
+                {% if es_cuenta_administrador %}
+                    Actualiza la información del administrador. Esta cuenta solo puede editarse desde el control de usuarios.
+                {% else %}
+                    Actualiza la información personal y los datos de acceso del usuario.
+                {% endif %}
             </p>
 
         </div>
@@ -33,7 +43,13 @@
 
                 <i class="bi bi-person-gear"></i>
 
-                <h3>Información del usuario</h3>
+                <h3>
+                    {% if es_cuenta_administrador %}
+                        Información del administrador
+                    {% else %}
+                        Información del usuario
+                    {% endif %}
+                </h3>
 
             </div>
 
@@ -52,6 +68,13 @@
                     name="id_usuario"
                     value="{{ usuario.id_usuario }}"
                 >
+
+                <div class="account-type-summary">
+                    <span>Tipo de cuenta</span>
+                    <strong class="{% if es_cuenta_administrador %}is-admin{% endif %}">
+                        {{ usuario.tiporol }}
+                    </strong>
+                </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
@@ -174,6 +197,63 @@
                     </p>
 
                 </div>
+
+                {% if es_cuenta_administrador %}
+                    <div class="admin-edit-section">
+                        <div class="admin-edit-heading">
+                            <strong>Datos administrativos</strong>
+                            <span>El rol no puede cambiarse desde esta pantalla.</span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="admin_cargo" class="form-label">
+                                    Cargo
+                                </label>
+                                <input
+                                    type="text"
+                                    name="admin_cargo"
+                                    id="admin_cargo"
+                                    class="form-control"
+                                    value="{{ administrador.cargo|default:'' }}"
+                                    placeholder="Ejemplo: Administrador General"
+                                    maxlength="100"
+                                >
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="admin_codigo_interno" class="form-label">
+                                    Código interno
+                                </label>
+                                <input
+                                    type="text"
+                                    name="admin_codigo_interno"
+                                    id="admin_codigo_interno"
+                                    class="form-control"
+                                    value="{{ administrador.codigo_interno|default:'' }}"
+                                    placeholder="Ejemplo: ADM002"
+                                    maxlength="50"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="admin_telefono_institucional" class="form-label">
+                                Teléfono institucional
+                            </label>
+                            <input
+                                type="text"
+                                name="admin_telefono_institucional"
+                                id="admin_telefono_institucional"
+                                class="form-control"
+                                value="{{ administrador.telefono_institucional|default:'' }}"
+                                placeholder="Ejemplo: 0996463030"
+                                maxlength="20"
+                                inputmode="tel"
+                            >
+                        </div>
+                    </div>
+                {% endif %}
 
                 <!-- FOTO -->
                 <div class="mb-3">

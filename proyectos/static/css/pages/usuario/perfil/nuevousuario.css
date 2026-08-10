@@ -287,3 +287,75 @@
 #frm_crear_usuario .kv-file-content img { width: 100%!important; height: 100%!important; object-fit: cover; border-radius: 5px; }
 #frm_crear_usuario .file-footer-caption { max-width: 92px; font-size: 8px; }
 #frm_crear_usuario .fileinput-remove-button,#frm_crear_usuario .btn-file { min-height: 34px; padding: 7px 10px; font-size: 10px; }
+
+
+/* Tipo de cuenta y datos administrativos */
+#frm_crear_usuario .form-select {
+    min-height: 43px;
+    color: #111111;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 9px;
+    box-shadow: none !important;
+}
+
+#frm_crear_usuario .form-select:focus {
+    border-color: #d71920;
+    box-shadow: 0 0 0 3px rgba(215, 25, 32, 0.08) !important;
+}
+
+.admin-role-fields {
+    margin: 4px 0 16px;
+    padding: 16px;
+    background: #fafafa;
+    border: 1px solid #e5e7eb;
+    border-left: 3px solid #d71920;
+    border-radius: 10px;
+}
+
+.admin-role-fields[hidden] {
+    display: none !important;
+}
+
+.admin-role-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.admin-role-heading strong {
+    display: block;
+    color: #23262b;
+    font-size: 13px;
+}
+
+.admin-role-heading span:not(.admin-role-badge) {
+    display: block;
+    margin-top: 2px;
+    color: #7c838c;
+    font-size: 11px;
+}
+
+.admin-role-badge {
+    flex-shrink: 0;
+    padding: 5px 8px;
+    color: #b9151b;
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .04em;
+}
+
+@media (max-width: 576px) {
+    .admin-role-heading {
+        align-items: flex-start;
+    }
+
+    .admin-role-badge {
+        margin-top: 1px;
+    }
+}

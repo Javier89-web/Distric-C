@@ -165,6 +165,90 @@
                 </div>
 
                 <div class="mb-3">
+                    <label for="tipo_rol" class="form-label">
+                        Tipo de cuenta
+                    </label>
+
+                    <select
+                        name="tipo_rol"
+                        id="tipo_rol"
+                        class="form-select"
+                    >
+                        <option value="USUARIO" selected>Usuario</option>
+                        <option value="ADMINISTRADOR">Administrador</option>
+                    </select>
+
+                    <p class="form-hint">
+                        Si eliges Administrador, se solicitará autorización antes de guardar.
+                    </p>
+                </div>
+
+                <div id="camposAdministrador" class="admin-role-fields" hidden>
+                    <div class="admin-role-heading">
+                        <div>
+                            <strong>Datos administrativos</strong>
+                            <span>Estos campos solo se usan para cuentas de administrador.</span>
+                        </div>
+                        <span class="admin-role-badge">ADMINISTRADOR</span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="admin_cargo" class="form-label">
+                                Cargo
+                            </label>
+                            <input
+                                type="text"
+                                name="admin_cargo"
+                                id="admin_cargo"
+                                class="form-control"
+                                placeholder="Ejemplo: Administrador General"
+                                maxlength="100"
+                                autocomplete="organization-title"
+                            >
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="admin_codigo_interno" class="form-label">
+                                Código interno
+                            </label>
+                            <input
+                                type="text"
+                                name="admin_codigo_interno"
+                                id="admin_codigo_interno"
+                                class="form-control"
+                                placeholder="Ejemplo: ADM002"
+                                maxlength="50"
+                                autocomplete="off"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="admin_telefono_institucional" class="form-label">
+                            Teléfono institucional
+                        </label>
+                        <input
+                            type="text"
+                            name="admin_telefono_institucional"
+                            id="admin_telefono_institucional"
+                            class="form-control"
+                            placeholder="Ejemplo: 0996463030"
+                            maxlength="20"
+                            inputmode="tel"
+                            autocomplete="tel"
+                        >
+                    </div>
+                </div>
+
+                <input
+                    type="hidden"
+                    name="clave_superusuario"
+                    id="clave_superusuario"
+                    value=""
+                >
+
+                <div class="mb-3">
 
                     <label for="foto_usuario" class="form-label">
                         Foto del usuario

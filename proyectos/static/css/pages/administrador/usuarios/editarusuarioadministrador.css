@@ -312,3 +312,64 @@
             height: 62px;
         }
     }
+
+
+.account-type-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 10px 12px;
+    background: #f8f9fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
+}
+
+.account-type-summary span {
+    color: #6b7280;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.account-type-summary strong {
+    padding: 4px 8px;
+    color: #374151;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 999px;
+    font-size: 10px;
+    letter-spacing: .03em;
+}
+
+.account-type-summary strong.is-admin {
+    color: #b9151b;
+    background: #fff1f2;
+    border-color: #fecdd3;
+}
+
+.admin-edit-section {
+    margin: 4px 0 16px;
+    padding: 16px;
+    background: #fafafa;
+    border: 1px solid #e5e7eb;
+    border-left: 3px solid #d71920;
+    border-radius: 10px;
+}
+
+.admin-edit-heading {
+    margin-bottom: 14px;
+}
+
+.admin-edit-heading strong {
+    display: block;
+    color: #23262b;
+    font-size: 13px;
+}
+
+.admin-edit-heading span {
+    display: block;
+    margin-top: 2px;
+    color: #7c838c;
+    font-size: 11px;
+}

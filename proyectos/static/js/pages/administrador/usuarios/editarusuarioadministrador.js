@@ -63,6 +63,22 @@ $(document).ready(function () {
             "La imagen supera el tamaño permitido"
         );
 
+        $.validator.addMethod(
+            "codigoAdmin",
+            function (value, element) {
+                return this.optional(element) || /^[A-Za-z0-9_-]+$/.test(value);
+            },
+            "Solo se permiten letras, números, guion y guion bajo"
+        );
+
+        $.validator.addMethod(
+            "telefonoAdmin",
+            function (value, element) {
+                return this.optional(element) || /^\+?\d{7,20}$/.test(value);
+            },
+            "Ingrese un teléfono institucional válido"
+        );
+
         fotoUsuario.fileinput({
             language: "es",
 
@@ -139,6 +155,24 @@ $(document).ready(function () {
                     maxlength: 12
                 },
 
+                admin_cargo: {
+                    required: true,
+                    minlength: 2,
+                    maxlength: 100
+                },
+
+                admin_codigo_interno: {
+                    required: true,
+                    minlength: 3,
+                    maxlength: 50,
+                    codigoAdmin: true
+                },
+
+                admin_telefono_institucional: {
+                    required: true,
+                    telefonoAdmin: true
+                },
+
                 foto_usuario: {
                     extension: "png|jpg|jpeg",
                     tamanioArchivo: 5242880
@@ -184,6 +218,24 @@ $(document).ready(function () {
                 txt_contrasena: {
                     minlength: "La contraseña debe tener al menos 6 caracteres",
                     maxlength: "Máximo 12 caracteres"
+                },
+
+                admin_cargo: {
+                    required: "El cargo es obligatorio",
+                    minlength: "Ingrese al menos 2 caracteres",
+                    maxlength: "Máximo 100 caracteres"
+                },
+
+                admin_codigo_interno: {
+                    required: "El código interno es obligatorio",
+                    minlength: "Ingrese al menos 3 caracteres",
+                    maxlength: "Máximo 50 caracteres",
+                    codigoAdmin: "Use solo letras, números, guion o guion bajo"
+                },
+
+                admin_telefono_institucional: {
+                    required: "El teléfono institucional es obligatorio",
+                    telefonoAdmin: "Ingrese entre 7 y 20 dígitos"
                 },
 
                 foto_usuario: {

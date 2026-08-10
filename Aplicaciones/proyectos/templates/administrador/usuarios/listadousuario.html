@@ -334,9 +334,16 @@
 
                                         {% else %}
 
-                                            <span class="sin-dato">
-                                                —
-                                            </span>
+                                            <div class="user-actions">
+                                                <a
+                                                    href="{% url 'editarusuarioadministrador' u.id_usuario %}"
+                                                    class="action-btn"
+                                                    title="Editar administrador"
+                                                >
+                                                    <i class="bi bi-pencil"></i>
+                                                    Editar
+                                                </a>
+                                            </div>
 
                                         {% endif %}
 

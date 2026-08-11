@@ -76,6 +76,12 @@ urlpatterns = [
     ),
 
     path(
+        'api/administracion/validar-codigo-administrador/',
+        views.api_validar_codigo_administrador,
+        name='api_validar_codigo_administrador'
+    ),
+
+    path(
         'api/cedula/<str:cedula>/',
         views.api_consultar_cedula,
         name='api_consultar_cedula'

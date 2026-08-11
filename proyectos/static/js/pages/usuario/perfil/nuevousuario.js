@@ -80,16 +80,34 @@ $(document).ready(function () {
             return $("#tipo_rol").val() === "ADMINISTRADOR";
         };
 
+        const validarCodigoAdminUrl = $("#admin_codigo_interno").data("validar-codigo-url");
+
         function actualizarCamposAdministrador() {
             const admin = esAdministrador();
             const contenedor = $("#camposAdministrador");
+            const cargo = $("#admin_cargo");
+            const codigo = $("#admin_codigo_interno");
+            const telefono = $("#admin_telefono_institucional");
 
             contenedor.prop("hidden", !admin);
             $("#clave_superusuario").val("");
 
+            // El cargo es fijo para todas las cuentas administrativas.
+            cargo.val("Administrador General").removeClass("error valid");
+            cargo.next("label.error").remove();
+
+            // Al volver a Usuario se limpian solo los datos editables de administrador.
             if (!admin) {
-                contenedor.find("input").val("").removeClass("error valid");
-                contenedor.find("label.error").remove();
+                codigo.val("").removeClass("error valid");
+                telefono.val("").removeClass("error valid");
+                codigo.next("label.error").remove();
+                telefono.next("label.error").remove();
+            } else {
+                // Mostrar los campos sin disparar mensajes rojos antes de guardar.
+                codigo.removeClass("error valid");
+                telefono.removeClass("error valid");
+                codigo.next("label.error").remove();
+                telefono.next("label.error").remove();
             }
 
             $("#btnGuardar").html(
@@ -180,17 +198,20 @@ $(document).ready(function () {
                     required: true
                 },
 
-                admin_cargo: {
-                    required: esAdministrador,
-                    minlength: 2,
-                    maxlength: 100
-                },
-
                 admin_codigo_interno: {
                     required: esAdministrador,
                     minlength: 3,
                     maxlength: 50,
-                    codigoAdmin: true
+                    codigoAdmin: true,
+                    remote: {
+                        url: validarCodigoAdminUrl,
+                        type: "get",
+                        data: {
+                            codigo: function () {
+                                return $("#admin_codigo_interno").val().trim().toUpperCase();
+                            }
+                        }
+                    }
                 },
 
                 admin_telefono_institucional: {
@@ -250,17 +271,12 @@ $(document).ready(function () {
                     required: "Seleccione el tipo de cuenta"
                 },
 
-                admin_cargo: {
-                    required: "El cargo es obligatorio para un administrador",
-                    minlength: "Ingrese al menos 2 caracteres",
-                    maxlength: "Máximo 100 caracteres"
-                },
-
                 admin_codigo_interno: {
                     required: "El código interno es obligatorio",
                     minlength: "Ingrese al menos 3 caracteres",
                     maxlength: "Máximo 50 caracteres",
-                    codigoAdmin: "Use solo letras, números, guion o guion bajo"
+                    codigoAdmin: "Use solo letras, números, guion o guion bajo",
+                    remote: "Este código interno ya está asignado a otro administrador"
                 },
 
                 admin_telefono_institucional: {
@@ -411,9 +427,6 @@ $(document).ready(function () {
 
         $("#tipo_rol").on("change", function () {
             actualizarCamposAdministrador();
-            $("#admin_cargo, #admin_codigo_interno, #admin_telefono_institucional").each(function () {
-                $(this).valid();
-            });
         });
 
         actualizarCamposAdministrador();

@@ -214,12 +214,11 @@
                                     type="text"
                                     name="admin_cargo"
                                     id="admin_cargo"
-                                    class="form-control"
+                                    class="form-control admin-fixed-field"
                                     value="Administrador General"
                                     readonly
                                     aria-readonly="true"
                                 >
-                                <p class="form-hint">Cargo permanente para las cuentas de administrador.</p>
                             </div>
 
                             <div class="col-md-6 mb-3">
@@ -234,6 +233,8 @@
                                     value="{{ administrador.codigo_interno|default:'' }}"
                                     placeholder="Ejemplo: ADM002"
                                     maxlength="50"
+                                    data-validar-codigo-url="{% url 'api_validar_codigo_administrador' %}"
+                                    data-usuario-id="{{ usuario.id_usuario }}"
                                 >
                             </div>
                         </div>

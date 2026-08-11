@@ -2,6 +2,7 @@ $(document).ready(function () {
 
         const formulario = $("#frm_editar_usuario_admin");
         const fotoUsuario = $("#foto_usuario");
+        const validarCodigoAdminUrl = $("#admin_codigo_interno").data("validar-codigo-url");
 
         $.validator.addMethod(
             "soloLetras",
@@ -155,17 +156,23 @@ $(document).ready(function () {
                     maxlength: 12
                 },
 
-                admin_cargo: {
-                    required: true,
-                    minlength: 2,
-                    maxlength: 100
-                },
-
                 admin_codigo_interno: {
                     required: true,
                     minlength: 3,
                     maxlength: 50,
-                    codigoAdmin: true
+                    codigoAdmin: true,
+                    remote: {
+                        url: validarCodigoAdminUrl,
+                        type: "get",
+                        data: {
+                            codigo: function () {
+                                return $("#admin_codigo_interno").val().trim().toUpperCase();
+                            },
+                            usuario_id: function () {
+                                return $("#admin_codigo_interno").data("usuario-id");
+                            }
+                        }
+                    }
                 },
 
                 admin_telefono_institucional: {
@@ -220,17 +227,12 @@ $(document).ready(function () {
                     maxlength: "Máximo 12 caracteres"
                 },
 
-                admin_cargo: {
-                    required: "El cargo es obligatorio",
-                    minlength: "Ingrese al menos 2 caracteres",
-                    maxlength: "Máximo 100 caracteres"
-                },
-
                 admin_codigo_interno: {
                     required: "El código interno es obligatorio",
                     minlength: "Ingrese al menos 3 caracteres",
                     maxlength: "Máximo 50 caracteres",
-                    codigoAdmin: "Use solo letras, números, guion o guion bajo"
+                    codigoAdmin: "Use solo letras, números, guion o guion bajo",
+                    remote: "Este código interno ya está asignado a otro administrador"
                 },
 
                 admin_telefono_institucional: {

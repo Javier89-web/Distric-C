@@ -822,6 +822,35 @@ def api_validar_clave_superusuario(request):
     return JsonResponse({'ok': True})
 
 
+@require_GET
+def api_validar_codigo_administrador(request):
+    """Valida que el código interno de administrador no esté repetido.
+
+    Devuelve ``true``/``false`` para integrarse directamente con la regla
+    ``remote`` de jQuery Validate. En edición se puede enviar ``usuario_id``
+    para excluir la cuenta que se está modificando.
+    """
+    acceso = _validar_acceso_admin_usuarios(request)
+    if acceso:
+        return JsonResponse(False, safe=False, status=403)
+
+    codigo = str(request.GET.get('codigo', '') or '').strip().upper()
+    if not codigo:
+        return JsonResponse(True, safe=False)
+
+    administradores = Administrador.objects.all()
+    usuario_id = str(request.GET.get('usuario_id', '') or '').strip()
+
+    if usuario_id.isdigit():
+        administradores = administradores.exclude(usuario_id=int(usuario_id))
+
+    disponible = not administradores.filter(
+        codigo_interno__iexact=codigo
+    ).exists()
+
+    return JsonResponse(disponible, safe=False)
+
+
 def guardarusuario(request):
     acceso = _validar_acceso_admin_usuarios(request)
 

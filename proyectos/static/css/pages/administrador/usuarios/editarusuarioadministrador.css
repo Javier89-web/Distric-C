@@ -373,3 +373,20 @@
     color: #7c838c;
     font-size: 11px;
 }
+
+
+/* Cargo administrativo fijo: visible, limpio y sin estado de validación. */
+#admin_cargo.admin-fixed-field,
+#admin_cargo.admin-fixed-field:focus {
+    color: #23262b !important;
+    font-weight: 700;
+    background: #f8fafc !important;
+    border-color: #d1d5db !important;
+    box-shadow: none !important;
+    cursor: default;
+}
+
+#admin_cargo.admin-fixed-field.error,
+#admin_cargo.admin-fixed-field.valid {
+    border-color: #d1d5db !important;
+}

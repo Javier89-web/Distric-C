@@ -203,10 +203,12 @@
                                 name="admin_cargo"
                                 id="admin_cargo"
                                 class="form-control"
-                                placeholder="Ejemplo: Administrador General"
-                                maxlength="100"
+                                value="Administrador General"
+                                readonly
+                                aria-readonly="true"
                                 autocomplete="organization-title"
                             >
+                            <p class="form-hint">Cargo permanente para las cuentas de administrador.</p>
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -227,7 +229,7 @@
 
                     <div class="mb-3">
                         <label for="admin_telefono_institucional" class="form-label">
-                            Teléfono institucional
+                            Teléfono
                         </label>
                         <input
                             type="text"

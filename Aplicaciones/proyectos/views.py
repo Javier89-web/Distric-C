@@ -715,7 +715,8 @@ def _clave_superusuario_administracion():
 
 
 def _obtener_datos_administrador_formulario(request, administrador_actual=None):
-    cargo = _normalizar_espacios(request.POST.get('admin_cargo', ''))
+    # El cargo de las cuentas administrativas es permanente y no depende del formulario.
+    cargo = 'Administrador General'
     codigo = request.POST.get('admin_codigo_interno', '').strip().upper()
     telefono = re.sub(
         r'[\s\-()]',
@@ -743,7 +744,7 @@ def _obtener_datos_administrador_formulario(request, administrador_actual=None):
         return None, 'Ya existe un administrador con ese código interno.'
 
     if not re.fullmatch(r'\+?\d{7,20}', telefono):
-        return None, 'Ingrese un teléfono institucional válido de 7 a 20 dígitos.'
+        return None, 'Ingrese un teléfono válido de 7 a 20 dígitos.'
 
     return {
         'cargo': cargo,

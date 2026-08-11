@@ -73,7 +73,7 @@ $(document).ready(function () {
             function (value, element) {
                 return this.optional(element) || /^\+?\d{7,20}$/.test(value);
             },
-            "Ingrese un teléfono institucional válido"
+            "Ingrese un teléfono válido"
         );
 
         const esAdministrador = function () {
@@ -264,7 +264,7 @@ $(document).ready(function () {
                 },
 
                 admin_telefono_institucional: {
-                    required: "El teléfono institucional es obligatorio",
+                    required: "El teléfono es obligatorio",
                     telefonoAdmin: "Ingrese entre 7 y 20 dígitos"
                 },
 

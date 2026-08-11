@@ -5,41 +5,113 @@ from Aplicaciones.proyectos.models import Usuario, Administrador
 
 
 class Command(BaseCommand):
-    help = "Crea o actualiza el administrador inicial configurado en variables de entorno"
+    help = "Crea o actualiza el administrador inicial sin generar duplicados."
 
     def handle(self, *args, **options):
-        correo = os.environ.get("INITIAL_ADMIN_EMAIL", "").strip()
-        contrasena = os.environ.get("INITIAL_ADMIN_PASSWORD", "").strip()
+
+        cedula = os.environ.get(
+            "INITIAL_ADMIN_CEDULA",
+            "1727663401"
+        ).strip()
+
+        correo = os.environ.get(
+            "INITIAL_ADMIN_EMAIL",
+            "javier_admin@distric.com"
+        ).strip()
+
+        contrasena = os.environ.get(
+            "INITIAL_ADMIN_PASSWORD",
+            ""
+        ).strip()
 
         if not correo or not contrasena:
             self.stdout.write(
                 self.style.WARNING(
-                    "Administrador inicial omitido: faltan INITIAL_ADMIN_EMAIL o INITIAL_ADMIN_PASSWORD."
+                    "No se configuró INITIAL_ADMIN_EMAIL "
+                    "o INITIAL_ADMIN_PASSWORD."
                 )
             )
             return
 
-        usuario, creado = Usuario.objects.update_or_create(
-            correo_usuario=correo,
-            defaults={
-                "cedula_usuario": os.environ.get("INITIAL_ADMIN_CEDULA", "1727663401").strip(),
-                "nombre_usuario": os.environ.get("INITIAL_ADMIN_NOMBRE", "Javier").strip(),
-                "apellido_usuario": os.environ.get("INITIAL_ADMIN_APELLIDO", "Administrador").strip(),
-                "telefono_usuario": os.environ.get("INITIAL_ADMIN_TELEFONO", "0991287430").strip(),
-                "contrasena_usuario": contrasena,
-                "tiporol": "ADMINISTRADOR",
-                "activo": True,
-            },
-        )
+        # Primero buscar por cédula porque es un campo único
+        usuario = Usuario.objects.filter(
+            cedula_usuario=cedula
+        ).first()
+
+        # Si no existe por cédula, intentar por correo
+        if not usuario:
+            usuario = Usuario.objects.filter(
+                correo_usuario=correo
+            ).first()
+
+        if usuario:
+            usuario.cedula_usuario = cedula
+            usuario.nombre_usuario = os.environ.get(
+                "INITIAL_ADMIN_NOMBRE",
+                "Javier"
+            )
+            usuario.apellido_usuario = os.environ.get(
+                "INITIAL_ADMIN_APELLIDO",
+                "Pilco"
+            )
+            usuario.telefono_usuario = os.environ.get(
+                "INITIAL_ADMIN_TELEFONO",
+                "0991287430"
+            )
+            usuario.correo_usuario = correo
+            usuario.contrasena_usuario = contrasena
+            usuario.tiporol = "ADMINISTRADOR"
+            usuario.activo = True
+
+            usuario.save()
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Administrador existente actualizado: {correo}"
+                )
+            )
+
+        else:
+            usuario = Usuario.objects.create(
+                cedula_usuario=cedula,
+                nombre_usuario=os.environ.get(
+                    "INITIAL_ADMIN_NOMBRE",
+                    "Javier"
+                ),
+                apellido_usuario=os.environ.get(
+                    "INITIAL_ADMIN_APELLIDO",
+                    "Pilco"
+                ),
+                correo_usuario=correo,
+                telefono_usuario=os.environ.get(
+                    "INITIAL_ADMIN_TELEFONO",
+                    "0991287430"
+                ),
+                contrasena_usuario=contrasena,
+                tiporol="ADMINISTRADOR",
+                activo=True
+            )
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Administrador inicial creado: {correo}"
+                )
+            )
 
         Administrador.objects.update_or_create(
             usuario=usuario,
             defaults={
-                "cargo": os.environ.get("INITIAL_ADMIN_CARGO", "Administrador General").strip(),
-                "codigo_interno": os.environ.get("INITIAL_ADMIN_CODIGO", "ADM001").strip(),
-                "telefono_institucional": os.environ.get("INITIAL_ADMIN_TELEFONO_INST", "0991287430").strip(),
-            },
+                "cargo": os.environ.get(
+                    "INITIAL_ADMIN_CARGO",
+                    "Administrador General"
+                ),
+                "codigo_interno": os.environ.get(
+                    "INITIAL_ADMIN_CODIGO",
+                    "ADM001"
+                ),
+                "telefono_institucional": os.environ.get(
+                    "INITIAL_ADMIN_TELEFONO_INST",
+                    "0991287430"
+                ),
+            }
         )
-
-        estado = "creado" if creado else "actualizado"
-        self.stdout.write(self.style.SUCCESS(f"Administrador inicial {estado}: {usuario.correo_usuario}"))

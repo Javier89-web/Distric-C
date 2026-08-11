@@ -29,7 +29,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_GET, require_POST
 
-from .ia_predictiva import predecir_costos_tramos, resumen_modelo
+from .ia_predictiva import predecir_consumo_combustible, predecir_costos_tramos, resumen_modelo
 from .models import (
     DetallePlanCarga,
     EntregaTramoViaje,
@@ -60,6 +60,7 @@ from .rutas_utils import (
 from .reportes_viaje import construir_pdf_viaje
 from .respaldo_pdf_cloudinary import respaldar_pdf_viaje
 from .servicios_contexto_ruta import buscar_lugares_google, obtener_factores_ruta
+from .servicios_google import obtener_topografia_ruta_google
 
 
 MAX_RUTAS = 6
@@ -891,6 +892,70 @@ def rutas(request):
         coords = construir_geometria_ruta_ajustada(ruta_ids, enganche)
         if len(coords) < 2:
             continue
+
+        # La topografía se obtiene únicamente para las alternativas candidatas
+        # (máximo seis), no para toda la red vial. De esta forma Elevation API
+        # influye en la recomendación final sin disparar miles de consultas.
+        topografia = obtener_topografia_ruta_google(
+            coords,
+            distancia_ruta_km=metricas["distancia_km"],
+        )
+        pendiente_pct = _float(topografia.get("pendiente_pct_ia"), 0.0)
+
+        if topografia.get("disponible") and pendiente_pct > 0:
+            # Aislamos el efecto aprendido de la pendiente comparando la misma
+            # ruta con pendiente 0 frente a la pendiente real. El cociente se
+            # aplica a la predicción acumulada por aristas, conservando el
+            # comportamiento actual de Dijkstra/Random Forest y añadiendo solo
+            # el componente topográfico.
+            argumentos_ia = {
+                "distancia_km": metricas["distancia_km"],
+                "tiempo_min": metricas["tiempo_min"],
+                "consumo_base": consumo_base,
+                "consumo_ajustado_peso": consumo_predicho,
+                "factor_peso": 1.0,
+                "factores_google": factores_google,
+                "carga_kg": float(carga_actual_kg),
+                "peso_vehiculo_kg": _peso_vehiculo_kg(vehiculo),
+                "capacidad_kg": float(plan.capacidad_kg or 1),
+                "cilindraje_l": _float(getattr(vehiculo, "cilindraje", 0), 0.0),
+                "rendimiento_km_l": rendimiento,
+                "tipo_via": tipo_via,
+                "detenciones_estimadas": detenciones,
+                "fecha_hora": timezone.localtime(),
+            }
+            referencia_plana = predecir_consumo_combustible(
+                pendiente_pct=0.0,
+                **argumentos_ia,
+            )
+            referencia_topografica = predecir_consumo_combustible(
+                pendiente_pct=pendiente_pct,
+                **argumentos_ia,
+            )
+            consumo_plano = _float(referencia_plana.get("consumo_predicho_litros"), 0.0)
+            consumo_con_pendiente = _float(
+                referencia_topografica.get("consumo_predicho_litros"),
+                consumo_plano,
+            )
+            factor_topografico = 1.0
+            if consumo_plano > 0:
+                factor_topografico = consumo_con_pendiente / consumo_plano
+            # Protección conservadora frente a datos atípicos o ruido del DEM.
+            factor_topografico = min(max(factor_topografico, 1.0), 1.35)
+            consumo_predicho *= factor_topografico
+            score = (consumo_predicho * 60.0 * 0.65) + (metricas["tiempo_min"] * 0.35)
+            topografia["factor_consumo_aplicado"] = round(factor_topografico, 5)
+        else:
+            topografia["factor_consumo_aplicado"] = 1.0
+
+        logger.info(
+            "Topografia ruta: disponible=%s pendiente_ia=%.3f%% ascenso=%sm factor=%.4f",
+            bool(topografia.get("disponible")),
+            pendiente_pct,
+            topografia.get("ascenso_acumulado_m", 0),
+            _float(topografia.get("factor_consumo_aplicado"), 1.0),
+        )
+
         detalles.append({
             "ruta_ids": ruta_ids,
             "coords": coords,
@@ -905,6 +970,7 @@ def rutas(request):
             "costo_estimado": consumo_predicho * float(precio_litro),
             "score": score,
             "modelo": modelo,
+            "topografia": topografia,
         })
 
     if not detalles:
@@ -932,6 +998,9 @@ def rutas(request):
             "modelo": item["modelo"],
             "trafico": trafico,
             "clima": clima,
+            # Se conserva para auditoría y reportes internos, pero no se muestra
+            # en la pantalla de alternativas para mantener la interfaz limpia.
+            "topografia": item.get("topografia", {}),
             "velocidad_promedio_kmh": round(item["velocidad_promedio_kmh"], 2),
             "detenciones_estimadas": item["detenciones_estimadas"],
             "tipo_via_dominante": item["tipo_via_dominante"],

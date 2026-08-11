@@ -1,3 +1,5 @@
+import hashlib
+import math
 import re
 import requests
 
@@ -7,6 +9,215 @@ from django.utils import timezone
 
 
 CACHE_GOOGLE_SEGUNDOS = 600  # 10 minutos
+CACHE_ELEVACION_SEGUNDOS = 60 * 60 * 24 * 7  # 7 días: la topografía no cambia
+
+
+def _distancia_haversine_m(lat1, lon1, lat2, lon2):
+    """Distancia horizontal aproximada entre dos coordenadas, en metros."""
+    radio = 6371000.0
+    lat1_r = math.radians(float(lat1))
+    lat2_r = math.radians(float(lat2))
+    dlat = lat2_r - lat1_r
+    dlon = math.radians(float(lon2) - float(lon1))
+    a = (
+        math.sin(dlat / 2.0) ** 2
+        + math.cos(lat1_r) * math.cos(lat2_r) * math.sin(dlon / 2.0) ** 2
+    )
+    return 2.0 * radio * math.asin(min(1.0, math.sqrt(a)))
+
+
+def _simplificar_path_elevacion(coords, max_puntos=80):
+    """Reduce una geometría larga conservando inicio, fin y forma general."""
+    validas = []
+    for punto in coords or []:
+        try:
+            lat = float(punto[0])
+            lon = float(punto[1])
+        except (TypeError, ValueError, IndexError):
+            continue
+        if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+            continue
+        if validas and abs(validas[-1][0] - lat) < 1e-9 and abs(validas[-1][1] - lon) < 1e-9:
+            continue
+        validas.append((lat, lon))
+
+    if len(validas) <= max_puntos:
+        return validas
+    if max_puntos < 2:
+        return [validas[0], validas[-1]]
+
+    ultimo = len(validas) - 1
+    indices = sorted({round(i * ultimo / (max_puntos - 1)) for i in range(max_puntos)})
+    return [validas[i] for i in indices]
+
+
+def _resumir_perfil_elevacion(resultados, distancia_ruta_km=None):
+    """Convierte muestras de Elevation API en una pendiente efectiva para la IA.
+
+    La variable enviada al Random Forest es el ascenso acumulado dividido para
+    la distancia horizontal total. Esto representa de forma conservadora cuánto
+    esfuerzo de subida existe a lo largo de toda la alternativa.
+    """
+    muestras = []
+    for item in resultados or []:
+        ubicacion = item.get("location") or {}
+        try:
+            muestras.append({
+                "lat": float(ubicacion.get("lat")),
+                "lon": float(ubicacion.get("lng")),
+                "elevacion_m": float(item.get("elevation")),
+            })
+        except (TypeError, ValueError):
+            continue
+
+    if len(muestras) < 2:
+        return None
+
+    elevaciones = [m["elevacion_m"] for m in muestras]
+    ascenso = 0.0
+    descenso = 0.0
+    distancia_m = 0.0
+    pendiente_max = 0.0
+
+    for i in range(1, len(muestras)):
+        anterior = muestras[i - 1]
+        actual = muestras[i]
+        horizontal = _distancia_haversine_m(
+            anterior["lat"], anterior["lon"], actual["lat"], actual["lon"]
+        )
+        if horizontal < 1.0:
+            continue
+        distancia_m += horizontal
+        delta = elevaciones[i] - elevaciones[i - 1]
+        # Cambios menores a 25 cm suelen ser ruido de interpolación y no afectan
+        # de forma material el consumo en una ruta vehicular.
+        if abs(delta) < 0.25:
+            continue
+        if delta > 0:
+            ascenso += delta
+            pendiente_local = min((delta / horizontal) * 100.0, 30.0)
+            pendiente_max = max(pendiente_max, pendiente_local)
+        else:
+            descenso += abs(delta)
+
+    distancia_referencia_m = distancia_m
+    try:
+        distancia_modelo = float(distancia_ruta_km or 0) * 1000.0
+        if distancia_modelo > 0:
+            distancia_referencia_m = distancia_modelo
+    except (TypeError, ValueError):
+        pass
+
+    if distancia_referencia_m <= 0:
+        return None
+
+    pendiente_efectiva = min(max((ascenso / distancia_referencia_m) * 100.0, 0.0), 12.0)
+    return {
+        "pendiente_pct_ia": round(pendiente_efectiva, 4),
+        "ascenso_acumulado_m": round(ascenso, 2),
+        "descenso_acumulado_m": round(descenso, 2),
+        "pendiente_maxima_pct": round(pendiente_max, 2),
+        "elevacion_inicio_m": round(elevaciones[0], 2),
+        "elevacion_fin_m": round(elevaciones[-1], 2),
+        "muestras": len(muestras),
+    }
+
+
+def obtener_topografia_ruta_google(coords, distancia_ruta_km=None):
+    """Obtiene Elevation API para una alternativa sin exponer datos en la UI.
+
+    Si Google no está disponible, devuelve pendiente 0 y la ruta continúa con
+    el cálculo actual. La consulta se hace una sola vez por geometría y se cachea.
+    """
+    api_key = _api_key_servidor()
+    if not api_key:
+        return {
+            "disponible": False,
+            "api_disponible": False,
+            "fuente": "Google Maps Elevation API",
+            "pendiente_pct_ia": 0.0,
+            "mensaje": "No se configuró GOOGLE_MAPS_SERVER_API_KEY.",
+        }
+
+    path = _simplificar_path_elevacion(coords, max_puntos=80)
+    if len(path) < 2:
+        return {
+            "disponible": False,
+            "api_disponible": False,
+            "fuente": "Google Maps Elevation API",
+            "pendiente_pct_ia": 0.0,
+            "mensaje": "La geometría de la ruta no contiene suficientes puntos.",
+        }
+
+    try:
+        km = max(float(distancia_ruta_km or 0), 0.0)
+    except (TypeError, ValueError):
+        km = 0.0
+    muestras = max(24, min(96, int(round(24 + km * 8))))
+
+    firma = ";".join(f"{lat:.5f},{lon:.5f}" for lat, lon in path)
+    digest = hashlib.sha1(f"{firma}|{muestras}".encode("utf-8")).hexdigest()
+    cache_key = f"google_elevation_path:{digest}"
+    cached = cache.get(cache_key)
+    if cached:
+        resultado = dict(cached)
+        resultado["desde_cache"] = True
+        return resultado
+
+    path_param = "|".join(f"{lat:.6f},{lon:.6f}" for lat, lon in path)
+    try:
+        response = requests.get(
+            "https://maps.googleapis.com/maps/api/elevation/json",
+            params={"path": path_param, "samples": muestras, "key": api_key},
+            timeout=10,
+        )
+        if response.status_code != 200:
+            return {
+                "disponible": False,
+                "api_disponible": False,
+                "fuente": "Google Maps Elevation API",
+                "pendiente_pct_ia": 0.0,
+                "mensaje": f"Elevation API respondió HTTP {response.status_code}.",
+            }
+
+        data = response.json()
+        if data.get("status") != "OK":
+            return {
+                "disponible": False,
+                "api_disponible": False,
+                "fuente": "Google Maps Elevation API",
+                "pendiente_pct_ia": 0.0,
+                "mensaje": (data.get("error_message") or f"Elevation API: {data.get('status', 'ERROR')}")[:250],
+            }
+
+        resumen = _resumir_perfil_elevacion(data.get("results", []), distancia_ruta_km=km)
+        if not resumen:
+            return {
+                "disponible": False,
+                "api_disponible": False,
+                "fuente": "Google Maps Elevation API",
+                "pendiente_pct_ia": 0.0,
+                "mensaje": "Elevation API no devolvió un perfil utilizable.",
+            }
+
+        resultado = {
+            "disponible": True,
+            "api_disponible": True,
+            "desde_cache": False,
+            "fuente": "Google Maps Elevation API",
+            "mensaje": "Topografía incorporada internamente al cálculo predictivo.",
+            **resumen,
+        }
+        cache.set(cache_key, resultado, CACHE_ELEVACION_SEGUNDOS)
+        return resultado
+    except (requests.RequestException, ValueError) as exc:
+        return {
+            "disponible": False,
+            "api_disponible": False,
+            "fuente": "Google Maps Elevation API",
+            "pendiente_pct_ia": 0.0,
+            "mensaje": f"No se pudo consultar Elevation API: {exc}",
+        }
 
 
 def _api_key_servidor():

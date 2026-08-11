@@ -403,7 +403,7 @@ def predecir_consumo_combustible(
         "modelo": detalle_modelo,
         "resumen": (
             "Random Forest estima el consumo a partir de distancia, tiempo, carga, "
-            "vehículo, tráfico, clima, horario, tipo de vía y detenciones."
+            "vehículo, tráfico, clima, horario, tipo de vía, detenciones y pendiente topográfica."
         ),
     }
 

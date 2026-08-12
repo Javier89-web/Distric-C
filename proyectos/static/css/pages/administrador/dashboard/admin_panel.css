@@ -130,24 +130,25 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 18px;
+  min-height: 210px;
   margin: 18px 0 0;
-  padding: 14px 18px;
+  padding: 28px 20px;
 }
 
 .admin-home-closing p {
   margin: 0;
   color: #666d76;
-  font-size: 15px;
-  line-height: 1.5;
-  font-weight: 500;
+  font-size: clamp(22px, 2.2vw, 30px);
+  line-height: 1.35;
+  font-weight: 600;
   text-align: center;
 }
 
 .admin-home-closing img {
   display: block;
-  width: 180px;
-  max-width: 34vw;
+  width: 320px;
+  max-width: 56vw;
   height: auto;
   object-fit: contain;
 }
@@ -167,16 +168,16 @@
   .admin-summary article { padding: 11px; }
   .summary-icon { flex-basis: 33px; width: 33px; height: 33px; font-size: 14px; }
   .admin-summary strong { font-size: 15px; }
-  .admin-home-closing { gap: 14px; padding: 12px 6px; }
-  .admin-home-closing p { font-size: 13px; }
-  .admin-home-closing img { width: 150px; }
+  .admin-home-closing { gap: 14px; min-height: 170px; padding: 18px 10px; }
+  .admin-home-closing p { font-size: 17px; }
+  .admin-home-closing img { width: 220px; max-width: 72vw; }
 }
 
 @media (max-width: 400px) {
   .admin-welcome { display: block; }
   .admin-welcome-logo { width: 145px; margin-top: 10px; }
   .admin-summary { grid-template-columns: 1fr; }
-  .admin-home-closing { flex-direction: column; gap: 8px; margin-top: 14px; }
-  .admin-home-closing p { font-size: 12.5px; }
-  .admin-home-closing img { width: 155px; max-width: 68vw; }
+  .admin-home-closing { flex-direction: column; gap: 12px; min-height: 150px; margin-top: 14px; padding: 16px 10px; }
+  .admin-home-closing p { font-size: 15px; }
+  .admin-home-closing img { width: 190px; max-width: 78vw; }
 }

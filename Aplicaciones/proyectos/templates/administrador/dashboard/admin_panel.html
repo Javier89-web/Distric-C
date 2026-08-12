@@ -8,112 +8,39 @@
 
     <section class="admin-welcome" aria-labelledby="tituloBienvenidaAdmin">
       <div class="admin-welcome-copy">
-        <span class="admin-eyebrow">DISTRIC C · PANEL ADMINISTRATIVO</span>
+        <span class="admin-label">Panel administrativo</span>
         <h1 id="tituloBienvenidaAdmin">Bienvenido{% if request.session.usuario_nombre %}, {{ request.session.usuario_nombre }}{% endif %}</h1>
-        <p>
-          Gestiona la operación de transporte desde un solo lugar. Controla usuarios,
-          vehículos, cargas y reportes manteniendo el enfoque en rutas eficientes y uso responsable del combustible.
-        </p>
-
-        <div class="admin-welcome-actions">
-          <a class="admin-primary-action" href="/plan-cargas/">
-            <i class="bi bi-box-seam"></i>
-            Planificación de cargas
-          </a>
-          <a class="admin-secondary-action" href="{% url 'admin_planificacion_rutas' %}">
-            <i class="bi bi-signpost-split"></i>
-            Planificar ruta
-          </a>
-        </div>
-
-        <div class="admin-welcome-meta">
-          <span><i class="bi bi-calendar3"></i> {% now "d/m/Y" %}</span>
-          <span><i class="bi bi-shield-check"></i> Acceso administrativo</span>
-        </div>
+        <p>Administra usuarios, vehículos, cargas y rutas de Distric C desde un solo lugar.</p>
       </div>
-
-      <div class="admin-welcome-brand" aria-label="Identidad visual Distric C">
-        <div class="admin-logo-card">
-          <img src="{% static 'img/branding/distric-c-logo.png' %}" alt="Distric C - Lo mejor para ti">
-        </div>
-        <div class="admin-brand-caption">
-          <strong>Operación conectada</strong>
-          <span>Rutas, carga y combustible en una sola plataforma.</span>
-        </div>
+      <div class="admin-welcome-logo">
+        <img src="{% static 'img/branding/distric-c-logo.png' %}" alt="Distric C - Lo mejor para ti">
       </div>
-    </section>
-
-    <section class="admin-section-heading" aria-labelledby="resumenHoyTitulo">
-      <div>
-        <span class="admin-section-kicker">RESUMEN OPERATIVO</span>
-        <h2 id="resumenHoyTitulo">Estado de hoy</h2>
-      </div>
-      <p>Información rápida para conocer la jornada sin saturar el panel.</p>
     </section>
 
     <section class="admin-summary" aria-label="Resumen operativo de hoy">
       <article>
         <span class="summary-icon summary-icon-red"><i class="bi bi-box-seam"></i></span>
-        <div><span>Cargas pendientes</span><strong>{{ cargas_pendientes_hoy }}</strong><small>Programadas para hoy</small></div>
+        <div><span>Cargas pendientes</span><strong>{{ cargas_pendientes_hoy }}</strong></div>
       </article>
       <article>
         <span class="summary-icon"><i class="bi bi-truck-front"></i></span>
-        <div><span>Viajes en ruta</span><strong>{{ viajes_en_ruta }}</strong><small>Operaciones activas</small></div>
+        <div><span>Viajes en ruta</span><strong>{{ viajes_en_ruta }}</strong></div>
       </article>
       <article>
         <span class="summary-icon"><i class="bi bi-fuel-pump"></i></span>
-        <div><span>Combustible estimado</span><strong>{{ litros_estimados_hoy|floatformat:2 }} L</strong><small>Estimación de hoy</small></div>
+        <div><span>Combustible estimado</span><strong>{{ litros_estimados_hoy|floatformat:2 }} L</strong></div>
       </article>
       <article>
         <span class="summary-icon"><i class="bi bi-cash-coin"></i></span>
-        <div><span>Costo estimado</span><strong>${{ costo_estimado_hoy|floatformat:2 }}</strong><small>Combustible estimado</small></div>
+        <div><span>Costo estimado</span><strong>${{ costo_estimado_hoy|floatformat:2 }}</strong></div>
       </article>
     </section>
 
-    <section class="admin-section-heading admin-tools-heading" aria-labelledby="accesosTitulo">
-      <div>
-        <span class="admin-section-kicker">ACCESOS PRINCIPALES</span>
-        <h2 id="accesosTitulo">¿Qué deseas gestionar?</h2>
-      </div>
-      <p>Accede directamente a las funciones administrativas más utilizadas.</p>
-    </section>
-
-    <section class="admin-quick-grid" aria-label="Accesos administrativos">
-      <a class="admin-quick-card" href="/listadousuario/">
-        <span class="quick-icon"><i class="bi bi-people"></i></span>
-        <div>
-          <strong>Control de usuarios</strong>
-          <p>Administra cuentas, roles y acceso al sistema.</p>
-        </div>
-        <i class="bi bi-arrow-right quick-arrow"></i>
-      </a>
-
-      <a class="admin-quick-card" href="/listadocarros/">
-        <span class="quick-icon"><i class="bi bi-truck-front"></i></span>
-        <div>
-          <strong>Vehículos</strong>
-          <p>Consulta y gestiona la flota registrada.</p>
-        </div>
-        <i class="bi bi-arrow-right quick-arrow"></i>
-      </a>
-
-      <a class="admin-quick-card" href="/plan-cargas/">
-        <span class="quick-icon"><i class="bi bi-box-seam"></i></span>
-        <div>
-          <strong>Planificación de cargas</strong>
-          <p>Prepara la carga asignada para cada recorrido.</p>
-        </div>
-        <i class="bi bi-arrow-right quick-arrow"></i>
-      </a>
-
-      <a class="admin-quick-card" href="{% url 'admin_reportes_viajes' %}?tipo=PRUEBA">
-        <span class="quick-icon"><i class="bi bi-file-earmark-bar-graph"></i></span>
-        <div>
-          <strong>Reportes de pruebas</strong>
-          <p>Revisa recorridos, consumo y resultados registrados.</p>
-        </div>
-        <i class="bi bi-arrow-right quick-arrow"></i>
-      </a>
+    <section class="admin-simple-actions" aria-label="Accesos rápidos">
+      <a href="/plan-cargas/"><i class="bi bi-box-seam"></i> Planificación de cargas</a>
+      <a href="{% url 'admin_planificacion_rutas' %}"><i class="bi bi-signpost-split"></i> Planificar ruta</a>
+      <a href="/listadousuario/"><i class="bi bi-people"></i> Usuarios</a>
+      <a href="{% url 'admin_reportes_viajes' %}?tipo=PRUEBA"><i class="bi bi-file-earmark-bar-graph"></i> Reportes</a>
     </section>
 
   </div>

@@ -1,5 +1,5 @@
 {% load static %}
-const CACHE_NAME = "districc-pwa-v15-home-design";
+const CACHE_NAME = "districc-pwa-v16-simple-home";
 
 // La aplicación necesita internet para mapas, tráfico, clima y demás APIs.
 // Solo se guardan recursos estáticos de interfaz; nunca páginas, formularios,

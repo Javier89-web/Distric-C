@@ -18,33 +18,25 @@
       <img src="{% static 'img/branding/distric-c-logo.png' %}" alt="Distric C - Lo mejor para ti">
     </section>
 
-    <section class="user-main-grid">
-      <article class="location-card">
-        <div class="location-card-heading">
-          <div>
-            <span class="user-label">Ubicación actual</span>
-            <h2>Tu posición</h2>
-          </div>
-          <button id="btnUbicacion" type="button"><i class="bi bi-crosshair"></i><span>Activar ubicación</span></button>
+    <section class="location-card">
+      <div class="location-card-heading">
+        <div>
+          <span class="user-label">Ubicación actual</span>
+          <h2>Tu posición</h2>
         </div>
+        <button id="btnUbicacion" type="button"><i class="bi bi-crosshair"></i><span>Activar ubicación</span></button>
+      </div>
 
-        <div id="estadoGPS" aria-live="polite"></div>
+      <div id="estadoGPS" aria-live="polite"></div>
 
-        <div class="location-map-shell">
-          <div id="map"
-               data-vehiculo-id="{{ vehiculo.id_vehiculo|default:'0' }}"
-               data-google-maps-key="{{ google_maps_api_key|escape }}"></div>
-        </div>
-      </article>
-
-      <aside class="user-actions" aria-label="Accesos rápidos">
-        <h2>Accesos rápidos</h2>
-        <a href="/listadovehiculo/"><i class="bi bi-car-front-fill"></i> Mi vehículo</a>
-        <a href="{% url 'listadocarga' %}"><i class="bi bi-box-seam"></i> Mi carga asignada</a>
-        <a href="/buscarlugares/"><i class="bi bi-pin-map"></i> Optimización de rutas</a>
-        <a href="/historial/"><i class="bi bi-clock-history"></i> Mi historial</a>
-      </aside>
+      <div class="location-map-shell">
+        <div id="map"
+             data-vehiculo-id="{{ vehiculo.id_vehiculo|default:'0' }}"
+             data-google-maps-key="{{ google_maps_api_key|escape }}"></div>
+      </div>
     </section>
+
+    <p class="user-home-phrase">Tu ubicación es el punto de partida para planificar recorridos más eficientes.</p>
 
   </div>
 </main>

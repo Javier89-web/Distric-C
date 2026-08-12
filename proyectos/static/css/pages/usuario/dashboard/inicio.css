@@ -6,14 +6,14 @@ body { margin: 0; background: #f4f5f7; }
 
 .user-home {
   min-height: 100vh;
-  padding: 82px 16px 34px;
+  padding: 78px 16px 28px;
   background: #f4f5f7;
   color: #23262b;
 }
 
 .user-home-container {
   width: 100%;
-  max-width: 1080px;
+  max-width: 1040px;
   margin: 0 auto;
 }
 
@@ -21,10 +21,10 @@ body { margin: 0; background: #f4f5f7; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding: 24px 28px;
+  gap: 22px;
+  padding: 20px 24px;
   border: 1px solid #e2e5e9;
-  border-radius: 16px;
+  border-radius: 14px;
   background: #fff;
 }
 
@@ -35,55 +35,47 @@ body { margin: 0; background: #f4f5f7; }
   color: #d71920;
   font-size: 9px;
   font-weight: 800;
-  letter-spacing: 1.2px;
+  letter-spacing: 1.15px;
   text-transform: uppercase;
 }
 
 .user-welcome h1 {
   margin: 4px 0 0;
   color: #23262b;
-  font-size: clamp(27px, 4vw, 37px);
+  font-size: clamp(27px, 4vw, 36px);
   line-height: 1.1;
   font-weight: 800;
 }
 
 .user-welcome p {
-  margin: 8px 0 0;
+  margin: 7px 0 0;
   color: #777e86;
-  font-size: 12px;
-  line-height: 1.55;
+  font-size: 11.5px;
+  line-height: 1.5;
 }
 
 .user-welcome img {
-  flex: 0 0 190px;
-  width: 190px;
-  max-width: 35%;
+  flex: 0 0 175px;
+  width: 175px;
+  max-width: 34%;
   height: auto;
   object-fit: contain;
 }
 
-.user-main-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.65fr) minmax(220px, .65fr);
-  gap: 14px;
-  margin-top: 14px;
-}
-
-.location-card,
-.user-actions {
+.location-card {
+  margin-top: 12px;
+  padding: 14px;
   border: 1px solid #e2e5e9;
   border-radius: 14px;
   background: #fff;
 }
-
-.location-card { padding: 16px; }
 
 .location-card-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  margin-bottom: 10px;
+  margin-bottom: 9px;
 }
 
 .location-card-heading h2 {
@@ -99,7 +91,7 @@ body { margin: 0; background: #f4f5f7; }
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 38px;
+  min-height: 37px;
   padding: 8px 12px;
   border: 0;
   border-radius: 9px;
@@ -133,7 +125,7 @@ body { margin: 0; background: #f4f5f7; }
 .location-map-shell {
   position: relative;
   overflow: hidden;
-  height: 275px;
+  height: 320px;
   border: 1px solid #e4e6e9;
   border-radius: 11px;
   background: #edf0f3;
@@ -147,65 +139,29 @@ body { margin: 0; background: #f4f5f7; }
   overflow: hidden;
 }
 
-.user-actions {
-  padding: 17px;
-}
-
-.user-actions h2 {
-  margin: 0 0 10px;
-  color: #23262b;
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.user-actions a {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 42px;
-  margin-top: 7px;
-  padding: 9px 10px;
-  border: 1px solid #e5e7ea;
-  border-radius: 9px;
-  background: #fff;
-  color: #30343a;
-  text-decoration: none;
-  font-size: 9.5px;
-  font-weight: 700;
-}
-
-.user-actions a i {
-  color: #d71920;
-  font-size: 14px;
-}
-
-.user-actions a:hover {
-  color: #d71920;
-  border-color: rgba(215, 25, 32, .28);
-}
-
-@media (max-width: 760px) {
-  .user-main-grid { grid-template-columns: 1fr; }
-  .user-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-  .user-actions h2 { grid-column: 1 / -1; }
-  .user-actions a { margin-top: 0; }
+.user-home-phrase {
+  margin: 13px 0 0;
+  color: #7a8088;
+  font-size: 10.5px;
+  line-height: 1.5;
+  text-align: center;
 }
 
 @media (max-width: 600px) {
-  .user-home { padding: 72px 10px 26px; }
-  .user-welcome { padding: 19px; }
-  .user-welcome img { flex-basis: 125px; width: 125px; }
+  .user-home { padding: 72px 10px 24px; }
+  .user-welcome { padding: 18px; }
+  .user-welcome img { flex-basis: 120px; width: 120px; }
   .user-welcome h1 { font-size: 27px; }
   .user-welcome p { font-size: 10.5px; }
-  .location-card { padding: 13px; }
+  .location-card { padding: 12px; }
   .location-card-heading { align-items: flex-start; }
-  .location-map-shell { height: 245px; }
+  .location-map-shell { height: 275px; }
 }
 
 @media (max-width: 420px) {
   .user-welcome { display: block; }
-  .user-welcome img { display: block; max-width: none; margin-top: 12px; }
+  .user-welcome img { display: block; max-width: none; margin-top: 11px; }
   .location-card-heading { display: block; }
   #btnUbicacion { width: 100%; margin-top: 9px; }
-  .user-actions { grid-template-columns: 1fr; }
+  .location-map-shell { height: 255px; }
 }

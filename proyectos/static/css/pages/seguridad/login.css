@@ -29,7 +29,7 @@ body::before {
 
 .login-shell {
     width: min(1030px, 100%);
-    min-height: 570px;
+    min-height: 525px;
     display: grid;
     grid-template-columns: minmax(0, 1.18fr) minmax(350px, .82fr);
     overflow: hidden;
@@ -46,8 +46,8 @@ body::before {
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    gap: 28px;
-    padding: 42px;
+    gap: 20px;
+    padding: 34px 36px;
     color: #fff;
     text-align: center;
     background: #23262b;
@@ -71,8 +71,8 @@ body::before {
 }
 
 .brand-logo-card {
-    width: min(420px, 92%);
-    height: 270px;
+    width: min(360px, 90%);
+    height: 220px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -97,7 +97,7 @@ body::before {
     min-width: 0;
     flex-direction: column;
     justify-content: center;
-    padding: 42px 38px;
+    padding: 36px 34px;
     background: rgba(255,255,255,.98);
     border-top: 5px solid #d71920;
 }
@@ -106,7 +106,7 @@ body::before {
     display: flex;
     align-items: center;
     gap: 11px;
-    margin-bottom: 24px;
+    margin-bottom: 18px;
 }
 
 .identity-icon {
@@ -125,7 +125,7 @@ body::before {
 .identity-icon img { width: 88%; height: 88%; object-fit: contain; object-position: center; }
 .login-identity > span { color: #d71920; font-size: 11px; font-weight: 800; letter-spacing: 2px; }
 
-.login-heading { margin-bottom: 20px; }
+.login-heading { margin-bottom: 18px; }
 .login-heading h2 { margin: 0; color: #111; font-size: 29px; font-weight: 700; line-height: 1.2; }
 .login-heading p { margin: 7px 0 0; color: #6b7280; font-size: 11px; }
 
@@ -207,6 +207,14 @@ body::before {
 }
 .login-submit:hover { background: #d71920; border-color: #d71920; }
 
+.login-footnote {
+    margin: 13px 0 0;
+    color: #8a9098;
+    font-size: 9px;
+    line-height: 1.45;
+    text-align: center;
+}
+
 @media (max-width: 880px) {
     .login-page { padding: 18px 14px; }
     .login-shell { width: min(590px, 100%); grid-template-columns: 1fr; }
@@ -226,31 +234,3 @@ body::before {
     .login-heading h2 { font-size: 25px; }
 }
 
-/* UTC como firma discreta en la esquina, sin ocupar un bloque del diseño. */
-.login-brand {
-    position: relative;
-    padding-bottom: 82px;
-}
-
-.login-brand .login-institutional-mark {
-    position: absolute;
-    left: 22px;
-    bottom: 18px;
-    padding: 5px 7px;
-    background: rgba(255, 255, 255, .88);
-    border: 1px solid rgba(255, 255, 255, .32);
-    border-radius: 8px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, .12);
-    opacity: .86;
-}
-
-@media (max-width: 880px) {
-    .login-brand {
-        padding-bottom: 76px;
-    }
-
-    .login-brand .login-institutional-mark {
-        left: 18px;
-        bottom: 14px;
-    }
-}

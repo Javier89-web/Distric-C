@@ -6,19 +6,98 @@
 {% endblock %}
 
 {% block contenido %}
+<main class="user-home">
+  <div class="user-home-container">
 
+    <section class="user-welcome" aria-labelledby="tituloInicioUsuario">
+      <div class="user-welcome-copy">
+        <span class="user-eyebrow">DISTRIC C · RUTAS Y COMBUSTIBLE</span>
+        <h1 id="tituloInicioUsuario">Hola{% if request.session.usuario_nombre %}, {{ request.session.usuario_nombre }}{% endif %}</h1>
+        <p>
+          Tu jornada comienza aquí. Revisa tu ubicación, consulta la carga asignada
+          y accede a la optimización de rutas cuando estés listo para iniciar el recorrido.
+        </p>
+        <div class="user-welcome-actions">
+          <a href="/buscarlugares/" class="user-primary-action">
+            <i class="bi bi-signpost-split"></i>
+            Optimizar una ruta
+          </a>
+          <a href="{% url 'listadocarga' %}" class="user-secondary-action">
+            <i class="bi bi-box-seam"></i>
+            Ver mi carga
+          </a>
+        </div>
+      </div>
 
-<button id="btnUbicacion">Activar ubicación</button>
+      <div class="user-brand-card">
+        <img src="{% static 'img/branding/distric-c-logo.png' %}" alt="Distric C - Lo mejor para ti">
+        <span>Movilidad eficiente para cada entrega.</span>
+      </div>
+    </section>
 
-  <div id="estadoGPS"></div>
+    <section class="user-dashboard-grid">
+      <article class="location-card">
+        <div class="location-card-heading">
+          <div>
+            <span class="user-section-kicker">UBICACIÓN ACTUAL</span>
+            <h2>Tu posición en el mapa</h2>
+            <p>Activa la ubicación para comprobar tu punto actual antes de iniciar un recorrido.</p>
+          </div>
+          <button id="btnUbicacion" type="button"><i class="bi bi-crosshair"></i><span>Activar ubicación</span></button>
+        </div>
 
-  <div id="map" data-vehiculo-id="{{ vehiculo.id_vehiculo|default:'0' }}" data-google-maps-key="{{ google_maps_api_key|escape }}"></div>
+        <div id="estadoGPS" aria-live="polite"></div>
 
-  
+        <div class="location-map-shell">
+          <div id="map"
+               data-vehiculo-id="{{ vehiculo.id_vehiculo|default:'0' }}"
+               data-google-maps-key="{{ google_maps_api_key|escape }}"></div>
+          <div class="map-corner-label"><i class="bi bi-geo-alt-fill"></i> Vista de ubicación</div>
+        </div>
+      </article>
 
+      <aside class="user-side-panel" aria-label="Accesos rápidos">
+        <div class="user-side-heading">
+          <span class="user-section-kicker">ACCESOS RÁPIDOS</span>
+          <h2>Continúa tu jornada</h2>
+        </div>
 
-  
+        <a class="user-quick-card" href="/listadovehiculo/">
+          <span class="user-quick-icon"><i class="bi bi-car-front-fill"></i></span>
+          <div><strong>Mi vehículo</strong><small>Consulta el vehículo asignado.</small></div>
+          <i class="bi bi-chevron-right"></i>
+        </a>
 
+        <a class="user-quick-card" href="{% url 'listadocarga' %}">
+          <span class="user-quick-icon"><i class="bi bi-box-seam"></i></span>
+          <div><strong>Mi carga asignada</strong><small>Revisa productos y peso planificado.</small></div>
+          <i class="bi bi-chevron-right"></i>
+        </a>
+
+        <a class="user-quick-card" href="/buscarlugares/">
+          <span class="user-quick-icon"><i class="bi bi-pin-map"></i></span>
+          <div><strong>Optimización de rutas</strong><small>Calcula alternativas para tu destino.</small></div>
+          <i class="bi bi-chevron-right"></i>
+        </a>
+
+        <a class="user-quick-card" href="/historial/">
+          <span class="user-quick-icon"><i class="bi bi-clock-history"></i></span>
+          <div><strong>Mi historial</strong><small>Consulta recorridos ya registrados.</small></div>
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      </aside>
+    </section>
+
+    <section class="user-tip-card">
+      <span class="tip-icon"><i class="bi bi-lightbulb"></i></span>
+      <div>
+        <strong>Antes de salir</strong>
+        <p>Verifica tu ubicación, tu vehículo y la carga asignada. El sistema utilizará estos datos para apoyar el cálculo de la ruta y el consumo estimado.</p>
+      </div>
+    </section>
+
+  </div>
+</main>
 {% endblock %}
 
 {% block extra_js %}

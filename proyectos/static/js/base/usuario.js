@@ -155,16 +155,16 @@
         if (!panel) return;
 
         const ruta = window.location.pathname;
+        const parametros = new URLSearchParams(window.location.search);
+        const tipoReporte = (parametros.get("tipo") || "").toUpperCase();
         const enlaces = [
             ["routeAdminMenuInicio", ["/adminpanel/"]],
             ["routeAdminMenuUsuarios", ["/listadousuario/", "/nuevousuario/", "/editarusuario/"]],
             ["routeAdminMenuVehiculos", ["/listadocarros/", "/nuevocarro/", "/editarcarro/", "/vehiculos/"]],
             ["routeAdminMenuProductos", ["/productos-carga/"]],
-            ["routeAdminMenuCombustible", ["/combustible/precios/"]],
             ["routeAdminMenuPlanCargas", ["/plan-cargas/"]],
             ["routeAdminMenuConsultaCargas", ["/consulta-cargas/"]],
             ["routeAdminMenuTramos", ["/administrador/rutas/tramos-generales/"]],
-            ["routeAdminMenuReportes", ["/administrador/rutas/reportes/"]],
             ["routeAdminMenuPlanificacion", [
                 "/administrador/rutas/planificacion/",
                 "/buscarlugares/",
@@ -182,6 +182,14 @@
                 enlace.classList.add("active");
             }
         });
+
+        if (ruta.startsWith("/administrador/rutas/reportes/")) {
+            const idReporte = tipoReporte === "GENERAL"
+                ? "routeAdminMenuReportesGenerales"
+                : "routeAdminMenuReportesTramos";
+            const enlaceReporte = document.getElementById(idReporte);
+            if (enlaceReporte) enlaceReporte.classList.add("active");
+        }
 
         const grupos = Array.from(panel.querySelectorAll(".admin-route-menu-group"));
 

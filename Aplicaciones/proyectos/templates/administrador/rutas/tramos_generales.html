@@ -15,7 +15,7 @@
         <p>Selecciona el vehículo con su conductor y la carga. Después define los puntos 0 → 1 → 2 → 3 en el mapa.</p>
       </div>
       <a href="{% url 'admin_reportes_viajes' %}?tipo=GENERAL" class="general-btn dark">
-        <i class="bi bi-file-earmark-bar-graph"></i> Reportes
+        <i class="bi bi-file-earmark-bar-graph"></i> Reportes de Tramos Generales
       </a>
     </header>
 
@@ -138,86 +138,6 @@
       </form>
     </section>
 
-    {% if recientes %}
-    <section class="general-card history-card">
-      <div class="section-heading history-heading">
-        <div>
-          <h2>Historial de cálculos</h2>
-          <p>Busca y revisa los recorridos generales guardados.</p>
-        </div>
-      </div>
-
-      <div class="general-history-filter-panel">
-        <div class="general-history-filter-title">
-          <strong>Filtrar cálculos</strong>
-          <span>Encuentra rápidamente un recorrido guardado.</span>
-        </div>
-        <div class="general-history-filter-grid">
-          <label class="general-history-field general-history-field-search">
-            <span>Buscar</span>
-            <div class="general-history-input-icon">
-              <i class="bi bi-search"></i>
-              <input type="search" id="generalHistorySearch" placeholder="Plan, placa o conductor..." autocomplete="off">
-            </div>
-          </label>
-          <label class="general-history-field">
-            <span>Fecha</span>
-            <input type="date" id="generalHistoryDate">
-          </label>
-          <label class="general-history-field">
-            <span>Tramos</span>
-            <select id="generalHistorySegments">
-              <option value="">Todos</option>
-              <option value="1-5">1 a 5</option>
-              <option value="6-10">6 a 10</option>
-              <option value="11+">11 o más</option>
-            </select>
-          </label>
-          <button type="button" class="general-history-clear" id="generalHistoryClear">
-            <i class="bi bi-arrow-counterclockwise"></i> Limpiar
-          </button>
-        </div>
-      </div>
-
-      <div class="general-history-table-wrap">
-        <table id="generalHistoryTable" class="general-history-table display">
-          <thead>
-            <tr>
-              <th>Plan</th>
-              <th>Vehículo</th>
-              <th>Conductor</th>
-              <th>Fecha</th>
-              <th>Tramos</th>
-              <th>Distancia</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for viaje in recientes %}
-            <tr data-date="{{ viaje.fecha_creacion|date:'Y-m-d' }}" data-tramos="{{ viaje.cantidad_tramos }}">
-              <td data-order="{{ viaje.id_viaje }}"><strong>Plan #{{ viaje.id_viaje }}</strong></td>
-              <td>
-                <strong>{{ viaje.vehiculo.matricula_vehiculo }}</strong>
-                <span>{{ viaje.vehiculo.modelo_vehiculo|default:"Sin modelo" }}</span>
-              </td>
-              <td>
-                <strong>{{ viaje.usuario.nombre_usuario }} {{ viaje.usuario.apellido_usuario }}</strong>
-              </td>
-              <td data-order="{{ viaje.fecha_creacion|date:'YmdHis' }}">{{ viaje.fecha_creacion|date:"d/m/Y H:i" }}</td>
-              <td data-order="{{ viaje.cantidad_tramos }}"><span class="history-count-badge">{{ viaje.cantidad_tramos }}</span></td>
-              <td data-order="{{ viaje.distancia_estimada_total_km|default:0 }}"><strong>{{ viaje.distancia_estimada_total_km|floatformat:2 }} km</strong></td>
-              <td>
-                <a href="{% url 'admin_detalle_tramos_generales' viaje.id_viaje %}" class="history-view-btn">
-                  Ver detalle <i class="bi bi-chevron-right"></i>
-                </a>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </section>
-    {% endif %}
   </div>
 </main>
 

@@ -1,7 +1,7 @@
 {% extends "base/plantillaadministrador.html" %}
 {% load static %}
 
-{% block titulo %}{% if filtros.tipo == 'GENERAL' %}Tramos Generales{% elif filtros.tipo == 'PRUEBA' %}Reportes de Pruebas{% else %}Reportes de Viajes{% endif %} | Distric C{% endblock %}
+{% block titulo %}{% if filtros.tipo == 'GENERAL' %}Reportes de Tramos Generales{% elif filtros.tipo == 'PRUEBA' %}Reportes por Tramos{% else %}Reportes de Viajes{% endif %} | Distric C{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/administrador/rutas/reportes_viajes.css' %}">
@@ -13,13 +13,13 @@
         <header class="reports-header">
             <div>
                 <span>CONTROL CONSOLIDADO</span>
-                <h1>{% if filtros.tipo == 'PRUEBA' %}Reportes de Pruebas{% elif filtros.tipo == 'GENERAL' %}Tramos Generales{% else %}Reportes de Viajes{% endif %}</h1>
-                <p>{% if filtros.tipo == 'PRUEBA' %}Consulta las simulaciones administrativas guardadas y descarga sus informes.{% elif filtros.tipo == 'GENERAL' %}Consulta los recorridos consolidados calculados por tramos y descarga sus informes.{% else %}Consulta recorridos por fecha, conductor, vehículo, estado y tipo de registro.{% endif %}</p>
+                <h1>{% if filtros.tipo == 'PRUEBA' %}Reportes por Tramos{% elif filtros.tipo == 'GENERAL' %}Reportes de Tramos Generales{% else %}Reportes de Viajes{% endif %}</h1>
+                <p>{% if filtros.tipo == 'PRUEBA' %}Consulta los recorridos calculados por tramos y descarga sus informes.{% elif filtros.tipo == 'GENERAL' %}Consulta el historial de tramos generales, revisa cada recorrido y descarga sus informes.{% else %}Consulta recorridos por fecha, conductor, vehículo, estado y tipo de registro.{% endif %}</p>
             </div>
             {% if filtros.tipo == 'GENERAL' %}
             <a href="{% url 'admin_tramos_generales' %}" class="reports-btn reports-btn-dark">
                 <i class="bi bi-arrow-left"></i>
-                Tramos generales
+                Planificación general
             </a>
             {% else %}
             <a href="{% url 'admin_planificacion_rutas' %}" class="reports-btn reports-btn-dark">

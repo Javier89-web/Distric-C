@@ -47,6 +47,8 @@
 
     function activarMenuActual() {
         const rutaActual = window.location.pathname;
+        const parametros = new URLSearchParams(window.location.search);
+        const tipoReporte = (parametros.get("tipo") || "").toUpperCase();
         const grupos = [
             ["menuInicio", ["/adminpanel/"]],
             ["menuUsuarios", ["/listadousuario/", "/nuevousuario/", "/editarusuario/"]],
@@ -55,9 +57,7 @@
             ["menuPlanCargas", ["/plan-cargas/"]],
             ["menuConsultaCargas", ["/consulta-cargas/"]],
             ["menuTramosGenerales", ["/administrador/rutas/tramos-generales/"]],
-            ["menuCombustible", ["/combustible/precios/"]],
-            ["menuPlanificacionRutas", ["/administrador/rutas/planificacion/"]],
-            ["menuReportesRutas", ["/administrador/rutas/reportes/"]]
+            ["menuPlanificacionRutas", ["/administrador/rutas/planificacion/"]]
         ];
 
         grupos.forEach(function (grupo) {
@@ -66,6 +66,12 @@
                 enlace.classList.add("active");
             }
         });
+
+        if (rutaActual.startsWith("/administrador/rutas/reportes/")) {
+            const idReporte = tipoReporte === "GENERAL" ? "menuReportesTramosGenerales" : "menuReportesRutas";
+            const enlaceReporte = document.getElementById(idReporte);
+            if (enlaceReporte) enlaceReporte.classList.add("active");
+        }
     }
 
     function configurarGruposMenu() {

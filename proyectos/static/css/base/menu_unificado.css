@@ -1,0 +1,107 @@
+/* ==========================================================
+   MENÚ LATERAL DISTRIC C — TIPOGRAFÍA UNIFICADA
+   Este archivo se carga AL FINAL en ambas plantillas base para
+   que ninguna vista cambie el tamaño del menú accidentalmente.
+   ========================================================== */
+
+:root {
+  --dc-menu-font-size: 18px;
+  --dc-menu-font-weight: 600;
+  --dc-menu-line-height: 1.35;
+  --dc-menu-icon-size: 19px;
+}
+
+/* Misma familia tipográfica y misma anchura del panel en cualquier vista. */
+.admin-offcanvas,
+.admin-route-offcanvas,
+#offcanvasUsuario {
+  width: 390px !important;
+  max-width: min(88vw, 390px) !important;
+  font-family: "Poppins", sans-serif !important;
+}
+
+/* Enlaces principales: administrador, rutas en modo admin y menú de usuario. */
+.admin-offcanvas .admin-menu-link,
+.admin-route-offcanvas .admin-route-menu-link,
+#offcanvasUsuario:not(.admin-route-offcanvas) .nav-link {
+  font-family: "Poppins", sans-serif !important;
+  font-size: var(--dc-menu-font-size) !important;
+  font-weight: var(--dc-menu-font-weight) !important;
+  line-height: var(--dc-menu-line-height) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+/* Botones que abren Gestión / Operación / Reportes. */
+.admin-offcanvas .admin-menu-group-toggle,
+.admin-route-offcanvas .admin-route-menu-group-toggle {
+  font-family: "Poppins", sans-serif !important;
+  font-size: var(--dc-menu-font-size) !important;
+  font-weight: var(--dc-menu-font-weight) !important;
+  line-height: var(--dc-menu-line-height) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+/* Los textos internos siempre heredan exactamente el tamaño del elemento padre. */
+.admin-offcanvas .admin-menu-link > span,
+.admin-offcanvas .admin-menu-group-title > span,
+.admin-route-offcanvas .admin-route-menu-link > span,
+.admin-route-offcanvas .admin-route-menu-group-title > span,
+#offcanvasUsuario:not(.admin-route-offcanvas) .nav-link > span {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  line-height: inherit !important;
+}
+
+/* Submenús: mismo tamaño que el resto; solo cambia la sangría visual. */
+.admin-offcanvas .admin-menu-sublink,
+.admin-route-offcanvas .admin-route-menu-sublink {
+  font-size: var(--dc-menu-font-size) !important;
+  font-weight: var(--dc-menu-font-weight) !important;
+  line-height: var(--dc-menu-line-height) !important;
+}
+
+/* Iconos con una escala uniforme en ambos menús. */
+.admin-offcanvas .admin-menu-link i:not(.admin-menu-group-chevron),
+.admin-offcanvas .admin-menu-group-title > i,
+.admin-route-offcanvas .admin-route-menu-link i:not(.admin-route-menu-chevron),
+.admin-route-offcanvas .admin-route-menu-group-title > i,
+#offcanvasUsuario:not(.admin-route-offcanvas) .nav-link i {
+  font-size: var(--dc-menu-icon-size) !important;
+}
+
+/* Cerrar sesión conserva el mismo tamaño; solo usa mayor peso para distinguir acción. */
+.admin-offcanvas .logout-link,
+.admin-route-offcanvas .admin-route-logout,
+#offcanvasUsuario:not(.admin-route-offcanvas) .nav-link[href="/logout/"] {
+  font-size: var(--dc-menu-font-size) !important;
+  font-weight: 700 !important;
+  line-height: var(--dc-menu-line-height) !important;
+}
+
+/* Evita que las reglas responsive antiguas vuelvan a reducir la tipografía. */
+@media (max-width: 900px) {
+  .admin-offcanvas .admin-menu-link,
+  .admin-offcanvas .admin-menu-group-toggle,
+  .admin-offcanvas .admin-menu-sublink,
+  .admin-route-offcanvas .admin-route-menu-link,
+  .admin-route-offcanvas .admin-route-menu-group-toggle,
+  .admin-route-offcanvas .admin-route-menu-sublink,
+  #offcanvasUsuario:not(.admin-route-offcanvas) .nav-link {
+    font-size: var(--dc-menu-font-size) !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-offcanvas .admin-menu-link,
+  .admin-offcanvas .admin-menu-group-toggle,
+  .admin-offcanvas .admin-menu-sublink,
+  .admin-route-offcanvas .admin-route-menu-link,
+  .admin-route-offcanvas .admin-route-menu-group-toggle,
+  .admin-route-offcanvas .admin-route-menu-sublink,
+  #offcanvasUsuario:not(.admin-route-offcanvas) .nav-link {
+    font-size: var(--dc-menu-font-size) !important;
+  }
+}

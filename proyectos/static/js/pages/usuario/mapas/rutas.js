@@ -6,7 +6,6 @@
 
     let map = null;
     let polylines = [];
-    let routeOutlines = [];
     let activeIndex = 1;
     const routes = JSON.parse(config.dataset.rutas || "[]");
     const origin = JSON.parse(config.dataset.origen || "{}");
@@ -28,58 +27,26 @@
         }).filter(function (point) { return Number.isFinite(point.lat) && Number.isFinite(point.lng); });
     }
 
-    function arrowIcons(index, active) {
-        if (!active) return [];
-        const color = lineColor(index);
-        return [{
-            icon: {
-                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                scale: 2,
-                fillColor: color,
-                fillOpacity: 1,
-                strokeColor: "#ffffff",
-                strokeOpacity: 1,
-                strokeWeight: 1,
-            },
-            offset: "8%",
-            repeat: "95px",
-        }];
-    }
-
     function drawAllRoutes() {
         polylines.forEach(function (line) { line.setMap(null); });
-        routeOutlines.forEach(function (line) { line.setMap(null); });
         polylines = [];
-        routeOutlines = [];
 
         routes.forEach(function (_, routeIndex) {
             const index = routeIndex + 1;
             const active = index === activeIndex;
             const path = pathFor(index);
 
-            const outline = new google.maps.Polyline({
-                map: map,
-                path: path,
-                strokeColor: "#ffffff",
-                strokeOpacity: active ? 0.95 : 0,
-                strokeWeight: active ? 11 : 0,
-                zIndex: active ? 18 : 1,
-                clickable: false,
-            });
-
             const line = new google.maps.Polyline({
                 map: map,
                 path: path,
                 strokeColor: lineColor(index),
-                strokeOpacity: active ? 1 : 0.14,
-                strokeWeight: active ? 7 : 3,
+                strokeOpacity: active ? 1 : 0.20,
+                strokeWeight: active ? 5 : 3,
                 zIndex: active ? 20 : 5,
                 clickable: true,
-                icons: arrowIcons(index, active),
             });
 
             line.addListener("click", function () { selectRoute(index); });
-            routeOutlines.push(outline);
             polylines.push(line);
         });
     }
@@ -107,19 +74,10 @@
             const index = lineIndex + 1;
             const active = index === activeIndex;
             line.setOptions({
-                strokeOpacity: active ? 1 : 0.14,
-                strokeWeight: active ? 7 : 3,
+                strokeOpacity: active ? 1 : 0.20,
+                strokeWeight: active ? 5 : 3,
                 zIndex: active ? 20 : 5,
-                icons: arrowIcons(index, active),
             });
-            const outline = routeOutlines[lineIndex];
-            if (outline) {
-                outline.setOptions({
-                    strokeOpacity: active ? 0.95 : 0,
-                    strokeWeight: active ? 11 : 0,
-                    zIndex: active ? 18 : 1,
-                });
-            }
         });
         fitRoute(activeIndex);
     }

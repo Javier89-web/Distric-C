@@ -491,3 +491,10 @@ html,body{max-width:100%;overflow-x:hidden}body{padding-bottom:env(safe-area-ins
     .admin-route-menu-link{font-size:16px!important}
     .admin-route-menu-group-toggle{font-size:15px}
 }
+
+/* Mantiene la misma escala del menú administrativo también en vistas de rutas/pruebas. */
+.admin-route-offcanvas .admin-route-menu-link,
+.admin-route-offcanvas .admin-route-menu-group-toggle,
+.admin-route-offcanvas .admin-route-menu-sublink {
+  font-size: 17px !important;
+}

@@ -2655,14 +2655,6 @@ def admin_tramos_generales(request):
             "productos": productos,
         }
 
-    recientes = (
-        Viaje.objects
-        .filter(es_plan_general=True, administrador_ejecutor=administrador)
-        .select_related("usuario", "vehiculo", "plan_carga")
-        .annotate(cantidad_tramos=Count("tramos"))
-        .order_by("-fecha_creacion")
-    )
-
     plan_preseleccionado_id = str(request.GET.get("plan") or "").strip()
     if plan_preseleccionado_id not in planes_json:
         plan_preseleccionado_id = ""
@@ -2673,7 +2665,6 @@ def admin_tramos_generales(request):
         "planes_json": json.dumps(planes_json),
         "plan_preseleccionado_id": plan_preseleccionado_id,
         "google_maps_api_key": settings.GOOGLE_MAPS_API_KEY,
-        "recientes": recientes,
     })
 
 

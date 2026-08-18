@@ -99,14 +99,20 @@ def _route_letters(total_points: int) -> list[str]:
     return [chr(65 + index) for index in range(min(total_points, 26))]
 
 
-def _route_sequence(tramos) -> tuple[str, list[tuple[str, str]]]:
+def _route_labels(total_points: int, numeric: bool = False) -> list[str]:
+    if numeric:
+        return [str(index) for index in range(total_points)]
+    return _route_letters(total_points)
+
+
+def _route_sequence(tramos, numeric: bool = False) -> tuple[str, list[tuple[str, str]]]:
     tramos = list(tramos or [])
     if not tramos:
         return "", []
     nombres = [_text(tramos[0].origen_nombre)] + [_text(t.destino_nombre) for t in tramos]
-    letras = _route_letters(len(nombres))
-    secuencia = " → ".join(letras)
-    leyenda = list(zip(letras, nombres[:len(letras)]))
+    etiquetas = _route_labels(len(nombres), numeric=numeric)
+    secuencia = " → ".join(etiquetas)
+    leyenda = list(zip(etiquetas, nombres[:len(etiquetas)]))
     return secuencia, leyenda
 
 
@@ -314,7 +320,7 @@ def _summary_table(viaje, tramos, unidad_combustible="LITROS"):
         ["Estado", "Tramos", "Distancia estimada", "Distancia GPS", "Tiempo estimado", "Tiempo real"],
         [
             viaje.get_estado_display(),
-            str(viaje.tramos_completados),
+            str(viaje.numero_tramos if getattr(viaje, "es_plan_general", False) else viaje.tramos_completados),
             f"{_number(viaje.distancia_estimada_total_km):.2f} km",
             f"{_number(viaje.distancia_real_total_km):.2f} km",
             f"{_number(viaje.tiempo_estimado_total_min):.1f} min",
@@ -400,8 +406,13 @@ def construir_pdf_viaje(viaje, tramos: Iterable, unidad_combustible="LITROS") ->
     planned_paths = [p for p in planned_paths if len(p) >= 2]
     gps_paths = [p for p in gps_paths if len(p) >= 2]
 
-    tipo_registro = "Prueba administrativa" if getattr(viaje, "es_prueba_administrativa", False) else "Viaje operativo"
-    secuencia_ruta, leyenda_ruta = _route_sequence(tramos)
+    es_plan_general = bool(getattr(viaje, "es_plan_general", False))
+    if es_plan_general:
+        tipo_registro = "Plan general de tramos"
+    else:
+        tipo_registro = "Prueba administrativa" if getattr(viaje, "es_prueba_administrativa", False) else "Viaje operativo"
+    etiquetas_ruta = _route_labels(len(tramos) + 1, numeric=es_plan_general)
+    secuencia_ruta, leyenda_ruta = _route_sequence(tramos, numeric=es_plan_general)
     ejecutor = ""
     if getattr(viaje, "administrador_ejecutor", None):
         ejecutor = (
@@ -436,7 +447,7 @@ def construir_pdf_viaje(viaje, tramos: Iterable, unidad_combustible="LITROS") ->
         ])
     story.append(Paragraph("Mapa general de la jornada", styles["SectionDC"]))
     if planned_paths:
-        story.append(_map_image(planned_paths, gps_paths, height=9.5 * cm))
+        story.append(_map_image(planned_paths, gps_paths, height=9.5 * cm, marker_labels=etiquetas_ruta))
         story.append(Paragraph(
             "Líneas de colores: rutas planificadas por tramo. Línea azul: posiciones GPS registradas cuando estuvieron disponibles.",
             styles["SmallDC"],
@@ -447,12 +458,13 @@ def construir_pdf_viaje(viaje, tramos: Iterable, unidad_combustible="LITROS") ->
     # Tabla consolidada antes de los mapas individuales.
     story.extend([Spacer(1, 0.2 * cm), Paragraph("Resultados por tramo", styles["SectionDC"])])
     data = [[
-        "Parte", "Origen → destino", "Estado", "Dist. est.", "Dist. GPS",
+        "Tramo" if es_plan_general else "Parte", "Origen → destino", "Estado", "Dist. est.", "Dist. GPS",
         "Tiempo est.", "Tiempo real", "Consumo IA", "Carga inicial", "Entregado", "Carga final",
     ]]
     for tramo in tramos:
+        numero_tramo = tramo.orden - 1 if es_plan_general else tramo.orden
         data.append([
-            str(tramo.orden),
+            str(numero_tramo),
             Paragraph(f"{_paragraph_text(tramo.origen_nombre)} → {_paragraph_text(tramo.destino_nombre)}", styles["SmallDC"]),
             tramo.get_estado_display(),
             f"{_number(tramo.distancia_estimada_km):.2f} km",
@@ -487,14 +499,15 @@ def construir_pdf_viaje(viaje, tramos: Iterable, unidad_combustible="LITROS") ->
     for index, tramo in enumerate(tramos):
         planned = _planned_coords(tramo)
         gps = _gps_coords(tramo)
-        letras = _route_letters(len(tramos) + 1)
+        etiquetas = etiquetas_ruta
         etiqueta_tramo = (
-            f"{letras[index]} → {letras[index + 1]}"
-            if index + 1 < len(letras) else f"Tramo {tramo.orden}"
+            f"{etiquetas[index]} → {etiquetas[index + 1]}"
+            if index + 1 < len(etiquetas) else f"Tramo {tramo.orden}"
         )
         story.append(PageBreak())
+        numero_tramo = tramo.orden - 1 if es_plan_general else tramo.orden
         story.append(Paragraph(
-            f"Parte {tramo.orden} · {etiqueta_tramo}: {_paragraph_text(tramo.origen_nombre)} → {_paragraph_text(tramo.destino_nombre)}",
+            f"{'Tramo' if es_plan_general else 'Parte'} {numero_tramo} · {etiqueta_tramo}: {_paragraph_text(tramo.origen_nombre)} → {_paragraph_text(tramo.destino_nombre)}",
             styles["TitleDC"],
         ))
         story.append(Paragraph(
@@ -509,7 +522,7 @@ def construir_pdf_viaje(viaje, tramos: Iterable, unidad_combustible="LITROS") ->
                 [planned],
                 [gps] if len(gps) >= 2 else [],
                 height=10.7 * cm,
-                marker_labels=[letras[index], letras[index + 1]],
+                marker_labels=[etiquetas[index], etiquetas[index + 1]],
             ))
             story.append(Paragraph(
                 "Rojo: alternativa planificada. Azul: recorrido GPS real del vehículo.",
@@ -599,22 +612,23 @@ def construir_pdf_viaje(viaje, tramos: Iterable, unidad_combustible="LITROS") ->
         ]))
         story.extend([Spacer(1, 0.2 * cm), detail_table])
 
-        evidencia = _evidencia_image(tramo)
-        if evidencia:
-            story.extend([
-                Spacer(1, 0.18 * cm),
-                Paragraph("Evidencia fotográfica de la entrega", styles["SectionDC"]),
-                evidencia,
-                Paragraph(
-                    "Imagen registrada al finalizar el tramo y almacenada como evidencia de la entrega.",
-                    styles["SmallDC"],
-                ),
-            ])
-        else:
-            story.extend([
-                Spacer(1, 0.15 * cm),
-                Paragraph("Evidencia fotográfica: no disponible en este registro.", styles["SmallDC"]),
-            ])
+        if not es_plan_general:
+            evidencia = _evidencia_image(tramo)
+            if evidencia:
+                story.extend([
+                    Spacer(1, 0.18 * cm),
+                    Paragraph("Evidencia fotográfica de la entrega", styles["SectionDC"]),
+                    evidencia,
+                    Paragraph(
+                        "Imagen registrada al finalizar el tramo y almacenada como evidencia de la entrega.",
+                        styles["SmallDC"],
+                    ),
+                ])
+            else:
+                story.extend([
+                    Spacer(1, 0.15 * cm),
+                    Paragraph("Evidencia fotográfica: no disponible en este registro.", styles["SmallDC"]),
+                ])
 
     # Página final preparada para la validación manuscrita del informe.
     validador = validador_pdf()

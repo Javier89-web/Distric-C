@@ -182,7 +182,7 @@
 
     .productos-table {
         width: 100% !important;
-        min-width: 930px;
+        min-width: 980px;
         border-collapse: collapse !important;
     }
 
@@ -342,3 +342,25 @@
 }
 
 .btn-delete-admin{display:inline-flex;align-items:center;gap:5px;min-height:35px;padding:7px 10px;color:#d71920;background:#fff;border:1px solid #d71920;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer}.btn-delete-admin:hover{color:#fff;background:#d71920}.actions form{margin:0}
+
+.content-value,
+.presentation-name,
+.weight-value {
+    display: block;
+    color: #23262b;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.content-help,
+.presentation-detail {
+    display: block;
+    margin-top: 2px;
+    color: #7a818a;
+    font-size: 10.5px;
+    white-space: nowrap;
+}
+
+.muted-value {
+    color: #9ca3af;
+}

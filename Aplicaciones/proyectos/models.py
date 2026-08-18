@@ -228,6 +228,52 @@ class CargaVehiculo(models.Model):
 
 
 
+class ProductoCatalogoPersonalizado(models.Model):
+    """Producto agregado por el administrador al catálogo local del sistema.
+
+    Este registro contiene únicamente la información base del producto.
+    La presentación, cantidad de unidades y peso se definen después, cuando
+    el producto se selecciona desde la pestaña Catálogo.
+    """
+
+    UNIDADES_CONTENIDO = [
+        ('ML', 'ml'),
+        ('L', 'L'),
+        ('G', 'g'),
+        ('KG', 'kg'),
+    ]
+
+    id_catalogo_personalizado = models.AutoField(primary_key=True)
+    nombre_producto = models.CharField(max_length=100)
+    marca_producto = models.CharField(max_length=100)
+    precio_referencia = models.DecimalField(
+        max_digits=9,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+    contenido_unitario = models.DecimalField(
+        max_digits=9,
+        decimal_places=3
+    )
+    unidad_contenido = models.CharField(
+        max_length=3,
+        choices=UNIDADES_CONTENIDO
+    )
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['marca_producto', 'nombre_producto']
+
+    @property
+    def codigo_catalogo(self):
+        return f"PROP-{self.id_catalogo_personalizado}"
+
+    def __str__(self):
+        return f"{self.marca_producto} - {self.nombre_producto}"
+
+
 class ProductoCarga(models.Model):
 
     PRESENTACIONES = [
@@ -236,8 +282,14 @@ class ProductoCarga(models.Model):
         ('PAQUETE', 'PAQUETE'),
         ('BOTELLA', 'BOTELLA'),
         ('CAJA', 'CAJA'),
-        ('FUNDA', 'FUNDA'),
         ('UNIDAD', 'UNIDAD'),
+    ]
+
+    UNIDADES_CONTENIDO = [
+        ('ML', 'ml'),
+        ('L', 'L'),
+        ('G', 'g'),
+        ('KG', 'kg'),
     ]
 
     id_producto_carga = models.AutoField(
@@ -276,6 +328,26 @@ class ProductoCarga(models.Model):
         blank=True
     )
 
+    contenido_unitario = models.DecimalField(
+        max_digits=9,
+        decimal_places=3,
+        null=True,
+        blank=True
+    )
+
+    unidad_contenido = models.CharField(
+        max_length=3,
+        choices=UNIDADES_CONTENIDO,
+        blank=True,
+        default=''
+    )
+
+    unidades_por_presentacion = models.PositiveIntegerField(
+        default=1
+    )
+
+    # Peso total de UNA presentación de carga. Se conserva este campo porque
+    # el resto del sistema lo multiplica por la cantidad de cajas/paquetes/etc.
     peso_unitario_kg = models.DecimalField(
         max_digits=9,
         decimal_places=2
@@ -308,14 +380,26 @@ class ProductoCarga(models.Model):
             "PAQUETE": "paquetes",
             "BOTELLA": "botellas",
             "CAJA": "cajas",
-            "FUNDA": "fundas",
             "UNIDAD": "unidades",
         }
         return plurales.get(self.presentacion_producto, f"{self.unidad_carga}s")
 
     @property
+    def contenido_unitario_formateado(self):
+        if self.contenido_unitario is None or not self.unidad_contenido:
+            return "—"
+        valor = format(self.contenido_unitario.normalize(), "f")
+        return f"{valor} {self.get_unidad_contenido_display()}"
+
+    @property
+    def presentacion_resumen(self):
+        presentacion = self.get_presentacion_producto_display().title()
+        cantidad = self.unidades_por_presentacion or 1
+        return f"{presentacion} x {cantidad}"
+
+    @property
     def presentacion_descriptiva(self):
-        return f"{self.get_presentacion_producto_display().title()} de {self.nombre_producto}"
+        return f"{self.presentacion_resumen} de {self.nombre_producto}"
 
     def __str__(self):
         marca = (
@@ -1111,6 +1195,7 @@ class Viaje(models.Model):
         related_name='viajes'
     )
     es_prueba_administrativa = models.BooleanField(default=False)
+    es_plan_general = models.BooleanField(default=False)
     administrador_ejecutor = models.ForeignKey(
         Usuario,
         on_delete=models.SET_NULL,
@@ -1682,6 +1767,7 @@ class HistorialPrecioCombustible(models.Model):
         blank=True,
         related_name='historial_precios_combustible',
     )
+    nota = models.CharField(max_length=500, default='', blank=True)
     fecha_ajuste = models.DateTimeField(auto_now_add=True)
 
     class Meta:

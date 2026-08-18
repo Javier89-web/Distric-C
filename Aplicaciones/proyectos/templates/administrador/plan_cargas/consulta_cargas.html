@@ -1,0 +1,105 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/plan_cargas/consulta_cargas.css' %}?v=5">
+{% endblock %}
+
+{% block contener %}
+<main class="consulta-page">
+    <div class="consulta-container">
+        <header class="consulta-header">
+            <div>
+                <span class="consulta-eyebrow">REGISTRO DE CARGAS</span>
+                <h2>Consulta de Cargas</h2>
+                <p>Selecciona una fecha para revisar las cargas registradas de esa jornada.</p>
+            </div>
+            <a href="{% url 'listadoplanescarga' %}" class="btn-dark"><i class="bi bi-box-seam"></i> Planificación</a>
+        </header>
+
+        <div class="consulta-stats">
+            <article class="consulta-stat"><span>Planes de la fecha</span><strong>{{ total_planes }}</strong></article>
+            <article class="consulta-stat"><span>Listos</span><strong>{{ total_listos }}</strong></article>
+            <article class="consulta-stat"><span>Confirmados</span><strong>{{ total_confirmados }}</strong></article>
+            <article class="consulta-stat"><span>Peso registrado</span><strong>{{ peso_total|floatformat:2 }} kg</strong></article>
+        </div>
+
+        <div class="consulta-control-card">
+            <div class="consulta-control-title">
+                <div class="consulta-control-icon"><i class="bi bi-calendar3"></i></div>
+                <div>
+                    <h3>Consultar por fecha</h3>
+                    <p>Elige cualquier día para visualizar las cargas guardadas.</p>
+                </div>
+            </div>
+
+            <form method="get" class="consulta-date-form" id="formConsultaCargas" novalidate>
+                <div class="consulta-date-field">
+                    <label for="fechaConsultaCarga">Fecha</label>
+                    <input type="date" name="fecha" id="fechaConsultaCarga" value="{{ fecha_seleccionada|date:'Y-m-d' }}">
+                    <span class="consulta-error" id="errorFechaConsultaCarga"></span>
+                </div>
+                <button type="submit" class="btn-red"><i class="bi bi-search"></i> Consultar</button>
+            </form>
+        </div>
+
+        <div class="consulta-toolbar">
+            <div class="consulta-date-title">
+                <strong>Cargas del {{ fecha_seleccionada|date:"d/m/Y" }}</strong>
+                <span>{{ total_planes }} registro{{ total_planes|pluralize }}</span>
+            </div>
+            <div class="consulta-search">
+                <i class="bi bi-search"></i>
+                <input type="text" id="buscarCargaConsulta" placeholder="Buscar por placa, modelo o conductor..." autocomplete="off">
+            </div>
+        </div>
+
+        {% if planes %}
+        <div class="consulta-grid">
+            {% for plan in planes %}
+            <article class="consulta-card" data-busqueda="{{ plan.vehiculo.matricula_vehiculo }} {{ plan.vehiculo.modelo_vehiculo }} {% if plan.vehiculo.usuario %}{{ plan.vehiculo.usuario.nombre_usuario }} {{ plan.vehiculo.usuario.apellido_usuario }} {{ plan.vehiculo.usuario.correo_usuario }}{% endif %}">
+                <div class="consulta-card-header">
+                    <div>
+                        <strong>{{ plan.vehiculo.matricula_vehiculo }}</strong>
+                        <span>{{ plan.vehiculo.modelo_vehiculo|default:"Sin modelo" }} · {{ plan.vehiculo.get_tipovehiculo_vehiculo_display }}</span>
+                    </div>
+                    {% if plan.estado == "LISTO" %}<span class="status status-ready">LISTO</span>
+                    {% elif plan.estado == "CONFIRMADO" %}<span class="status status-confirmed">CONFIRMADO</span>
+                    {% elif plan.estado == "EN_RUTA" %}<span class="status status-route">EN RUTA</span>
+                    {% elif plan.estado == "COMPLETADO" %}<span class="status status-completed">COMPLETADO</span>
+                    {% elif plan.estado == "CANCELADO" %}<span class="status status-cancelled">CANCELADO</span>
+                    {% else %}<span class="status status-draft">BORRADOR</span>{% endif %}
+                </div>
+
+                <div class="consulta-data">
+                    <div><span>Conductor</span><strong>{% if plan.vehiculo.usuario %}{{ plan.vehiculo.usuario.nombre_usuario }} {{ plan.vehiculo.usuario.apellido_usuario }}{% else %}Sin asignar{% endif %}</strong></div>
+                    <div><span>Capacidad</span><strong>{{ plan.capacidad_calculada|floatformat:2 }} kg</strong></div>
+                    <div><span>Peso planificado</span><strong>{{ plan.peso_calculado|floatformat:2 }} kg</strong></div>
+                    <div><span>Disponible</span><strong>{{ plan.disponible_calculado|floatformat:2 }} kg</strong></div>
+                </div>
+
+                {% if plan.capacidad_calculada > 0 %}
+                <div class="consulta-progress"><div class="consulta-progress-value js-consulta-progress" data-progress="{{ plan.porcentaje_calculado|floatformat:0 }}"></div></div>
+                {% endif %}
+
+                <div class="consulta-card-footer">
+                    <span>Actualizado {{ plan.fecha_actualizacion|date:"d/m/Y H:i" }}</span>
+                    <a href="{% url 'detalleplancarga' plan.id_plan_carga %}" class="btn-dark">Ver detalle</a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="consulta-empty">
+            <i class="bi bi-calendar-x"></i>
+            <strong>No hay cargas registradas en esta fecha</strong>
+            <span>Selecciona otro día para consultar sus registros.</span>
+        </div>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/plan_cargas/consulta_cargas.js' %}?v=5" defer></script>
+{% endblock %}

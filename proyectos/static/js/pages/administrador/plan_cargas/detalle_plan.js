@@ -14,58 +14,73 @@ document.addEventListener("DOMContentLoaded", function () {
                 autoWidth: false,
                 responsive: false,
                 dom: "Brt<'carga-table-bottom'<'carga-table-length'l><'carga-table-info'i><'carga-table-page'p>>",
-                buttons: [
-                    {
-                        extend: "csvHtml5",
-                        text: '<i class="bi bi-filetype-csv"></i> CSV',
-                        title: configuracion.titulo,
-                        filename: configuracion.archivo,
-                        charset: "utf-8",
-                        bom: true,
-                        exportOptions: {
-                            columns: configuracion.columnasExportar
-                        }
-                    },
-                    {
-                        extend: "excelHtml5",
-                        text: '<i class="bi bi-file-earmark-excel"></i> Excel',
-                        title: configuracion.titulo,
-                        filename: configuracion.archivo,
-                        className: "btn-excel",
-                        exportOptions: {
-                            columns: configuracion.columnasExportar
-                        }
-                    },
-                    {
-                        extend: "pdfHtml5",
-                        text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
-                        title: configuracion.titulo,
-                        filename: configuracion.archivo,
-                        className: "btn-pdf",
-                        orientation: "landscape",
-                        pageSize: "A4",
-                        exportOptions: {
-                            columns: configuracion.columnasExportar
+                buttons: (function () {
+                    const botones = [
+                        {
+                            extend: "csvHtml5",
+                            text: '<i class="bi bi-filetype-csv"></i> CSV',
+                            title: configuracion.titulo,
+                            filename: configuracion.archivo,
+                            charset: "utf-8",
+                            bom: true,
+                            exportOptions: {
+                                columns: configuracion.columnasExportar
+                            }
                         },
-                        customize: function (doc) {
-                            doc.defaultStyle.fontSize = 9;
-                            doc.styles.tableHeader = {
-                                bold: true,
-                                color: "#ffffff",
-                                fillColor: "#23262b",
-                                fontSize: 9
-                            };
-                            doc.styles.title = {
-                                color: "#23262b",
-                                fontSize: 16,
-                                bold: true,
-                                alignment: "center",
-                                margin: [0, 0, 0, 15]
-                            };
-                            window.DistricPdfBranding?.apply(doc, "Distri C · Plan de carga");
+                        {
+                            extend: "excelHtml5",
+                            text: '<i class="bi bi-file-earmark-excel"></i> Excel',
+                            title: configuracion.titulo,
+                            filename: configuracion.archivo,
+                            className: "btn-excel",
+                            exportOptions: {
+                                columns: configuracion.columnasExportar
+                            }
                         }
+                    ];
+
+                    if (configuracion.pdfUrl) {
+                        botones.push({
+                            text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
+                            className: "btn-pdf",
+                            action: function () {
+                                window.location.href = configuracion.pdfUrl;
+                            }
+                        });
+                    } else {
+                        botones.push({
+                            extend: "pdfHtml5",
+                            text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
+                            title: configuracion.titulo,
+                            filename: configuracion.archivo,
+                            className: "btn-pdf",
+                            orientation: "landscape",
+                            pageSize: "A4",
+                            exportOptions: {
+                                columns: configuracion.columnasExportar
+                            },
+                            customize: function (doc) {
+                                doc.defaultStyle.fontSize = 9;
+                                doc.styles.tableHeader = {
+                                    bold: true,
+                                    color: "#ffffff",
+                                    fillColor: "#23262b",
+                                    fontSize: 9
+                                };
+                                doc.styles.title = {
+                                    color: "#23262b",
+                                    fontSize: 16,
+                                    bold: true,
+                                    alignment: "center",
+                                    margin: [0, 0, 0, 15]
+                                };
+                                window.DistricPdfBranding?.apply(doc, "Distri C · Plan de carga");
+                            }
+                        });
                     }
-                ],
+
+                    return botones;
+                })(),
                 language: {
                     emptyTable: "No existen registros.",
                     zeroRecords: "No se encontraron coincidencias.",
@@ -95,6 +110,7 @@ document.addEventListener("DOMContentLoaded", function () {
             selector: "#tablaProductosAdmin",
             buscador: "#buscarProductosAdmin",
             botones: "#botonesProductosAdmin",
+            pdfUrl: document.getElementById("botonesProductosAdmin")?.dataset.pdfUrl || "",
             titulo: "Productos asignados al plan de carga",
             archivo: "productos_plan_carga",
             columnasExportar: [0, 1, 2, 3, 4, 5, 6],

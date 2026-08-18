@@ -1,0 +1,102 @@
+{
+  "nombre": "Random Forest Regressor híbrido v1",
+  "version": "rf-consumo-1.0",
+  "algoritmo": "RandomForestRegressor",
+  "tipo_ia": "IA predictiva - aprendizaje supervisado - regresión",
+  "entrenado_en": "2026-08-14T17:27:56.586168Z",
+  "dataset": "consumo_entrenamiento_inicial.csv",
+  "fuente_datos": "SIMULADO_CONTROLADO",
+  "features": [
+    "distancia_km",
+    "tiempo_min",
+    "velocidad_kmh",
+    "carga_kg",
+    "peso_vehiculo_kg",
+    "capacidad_kg",
+    "cilindraje_l",
+    "rendimiento_km_l",
+    "factor_trafico",
+    "factor_clima",
+    "hora_sin",
+    "hora_cos",
+    "tipo_via_codigo",
+    "detenciones_estimadas",
+    "pendiente_pct",
+    "consumo_base_l"
+  ],
+  "metricas": {
+    "mae_litros": 0.02303,
+    "rmse_litros": 0.04616,
+    "r2": 0.97777,
+    "registros": 3200,
+    "registros_entrenamiento": 2560,
+    "registros_prueba": 640
+  },
+  "importancias": [
+    {
+      "variable": "consumo_base_l",
+      "importancia": 0.839244
+    },
+    {
+      "variable": "distancia_km",
+      "importancia": 0.086397
+    },
+    {
+      "variable": "factor_trafico",
+      "importancia": 0.025797
+    },
+    {
+      "variable": "tiempo_min",
+      "importancia": 0.020981
+    },
+    {
+      "variable": "rendimiento_km_l",
+      "importancia": 0.006633
+    },
+    {
+      "variable": "detenciones_estimadas",
+      "importancia": 0.005077
+    },
+    {
+      "variable": "factor_clima",
+      "importancia": 0.004013
+    },
+    {
+      "variable": "velocidad_kmh",
+      "importancia": 0.003497
+    },
+    {
+      "variable": "carga_kg",
+      "importancia": 0.001981
+    },
+    {
+      "variable": "pendiente_pct",
+      "importancia": 0.001575
+    },
+    {
+      "variable": "hora_sin",
+      "importancia": 0.001491
+    },
+    {
+      "variable": "cilindraje_l",
+      "importancia": 0.000938
+    },
+    {
+      "variable": "hora_cos",
+      "importancia": 0.000771
+    },
+    {
+      "variable": "tipo_via_codigo",
+      "importancia": 0.000576
+    },
+    {
+      "variable": "peso_vehiculo_kg",
+      "importancia": 0.000568
+    },
+    {
+      "variable": "capacidad_kg",
+      "importancia": 0.000462
+    }
+  ],
+  "advertencia": "El conjunto inicial es simulado y controlado. Debe reemplazarse o complementarse con consumos reales para la validación final de la tesis."
+}

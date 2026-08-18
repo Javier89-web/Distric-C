@@ -124,7 +124,7 @@
                         >
                     </div>
 
-                    <div id="botonesProductosAdmin" class="carga-export-area"></div>
+                    <div id="botonesProductosAdmin" class="carga-export-area" data-pdf-url="{{ pdf_plan_url }}"></div>
                 </div>
 
                 <div class="carga-table-responsive">
@@ -340,5 +340,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/pages/administrador/plan_cargas/detalle_plan.js' %}" defer></script>
+<script src="{% static 'js/pages/administrador/plan_cargas/detalle_plan.js' %}?v=4" defer></script>
 {% endblock %}

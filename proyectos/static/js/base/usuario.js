@@ -149,11 +149,74 @@
         }, intervaloMs);
     }
 
+
+    function activarMenuAdministradorDeRutas() {
+        const panel = document.querySelector(".admin-route-offcanvas");
+        if (!panel) return;
+
+        const ruta = window.location.pathname;
+        const enlaces = [
+            ["routeAdminMenuInicio", ["/adminpanel/"]],
+            ["routeAdminMenuUsuarios", ["/listadousuario/", "/nuevousuario/", "/editarusuario/"]],
+            ["routeAdminMenuVehiculos", ["/listadocarros/", "/nuevocarro/", "/editarcarro/", "/vehiculos/"]],
+            ["routeAdminMenuProductos", ["/productos-carga/"]],
+            ["routeAdminMenuCombustible", ["/combustible/precios/"]],
+            ["routeAdminMenuPlanCargas", ["/plan-cargas/"]],
+            ["routeAdminMenuConsultaCargas", ["/consulta-cargas/"]],
+            ["routeAdminMenuTramos", ["/administrador/rutas/tramos-generales/"]],
+            ["routeAdminMenuReportes", ["/administrador/rutas/reportes/"]],
+            ["routeAdminMenuPlanificacion", [
+                "/administrador/rutas/planificacion/",
+                "/buscarlugares/",
+                "/lugar/",
+                "/rutas/",
+                "/recorrido/",
+                "/tramos/",
+                "/viajes/"
+            ]]
+        ];
+
+        enlaces.forEach(function (grupo) {
+            const enlace = document.getElementById(grupo[0]);
+            if (enlace && grupo[1].some(function (prefijo) { return ruta.startsWith(prefijo); })) {
+                enlace.classList.add("active");
+            }
+        });
+
+        const grupos = Array.from(panel.querySelectorAll(".admin-route-menu-group"));
+
+        function cambiarGrupo(grupo, abrir) {
+            const boton = grupo.querySelector(".admin-route-menu-group-toggle");
+            const submenu = grupo.querySelector(".admin-route-menu-subgroup");
+            if (!boton || !submenu) return;
+            grupo.classList.toggle("is-open", abrir);
+            boton.setAttribute("aria-expanded", abrir ? "true" : "false");
+            submenu.hidden = !abrir;
+        }
+
+        grupos.forEach(function (grupo) {
+            const boton = grupo.querySelector(".admin-route-menu-group-toggle");
+            if (!boton) return;
+            boton.addEventListener("click", function () {
+                const abrir = !grupo.classList.contains("is-open");
+                grupos.forEach(function (otro) {
+                    cambiarGrupo(otro, otro === grupo ? abrir : false);
+                });
+            });
+        });
+
+        const activo = grupos.find(function (grupo) {
+            return Boolean(grupo.querySelector(".admin-route-menu-link.active"));
+        });
+        if (activo) cambiarGrupo(activo, true);
+    }
+
     registrarServiceWorker();
 
     document.addEventListener("DOMContentLoaded", function () {
         registrarValidacionesComunes();
         mostrarMensajesDjango();
         activarNotificacionesDeEventos();
+        activarMenuAdministradorDeRutas();
     });
 })();

@@ -298,7 +298,6 @@ from .catalogo_inventario import (
     codigo_catalogo_por_nombre,
     marcas_catalogo,
     producto_catalogo_por_codigo,
-    peso_estimado_presentacion,
 )
 
 from .pdf_branding import draw_pdf_logos, draw_pdf_watermark, draw_simple_pdf_branding
@@ -325,6 +324,7 @@ from .models import (
     PrecioCombustible,
     HistorialPrecioCombustible,
     ProductoCarga,
+    ProductoCatalogoPersonalizado,
     Proveedor,
     RendimientoVehiculoTipo,
     RutaOpcion,
@@ -2192,6 +2192,156 @@ def _validar_acceso_admin_cargas(request):
     return None
 
 
+def _catalogo_productos_completo():
+    """Combina el catálogo base con los productos agregados por el administrador."""
+    productos = list(catalogo_productos())
+
+    for producto in ProductoCatalogoPersonalizado.objects.filter(activo=True):
+        contenido = producto.contenido_unitario
+        unidad = producto.unidad_contenido
+        etiqueta_unidad = dict(ProductoCatalogoPersonalizado.UNIDADES_CONTENIDO).get(
+            unidad, unidad
+        )
+        valor = format(contenido.normalize(), 'f')
+        descripcion = f"{producto.nombre_producto} · {valor} {etiqueta_unidad}"
+
+        productos.append({
+            'codigo': producto.codigo_catalogo,
+            'descripcion': descripcion,
+            'nombre': producto.nombre_producto,
+            'marca': producto.marca_producto,
+            'precio_referencia': producto.precio_referencia,
+            'contenido_unitario': producto.contenido_unitario,
+            'unidad_contenido': producto.unidad_contenido,
+            'volumen_litros_estimado': None,
+            'peso_base_kg': None,
+            'es_personalizado': True,
+        })
+
+    return productos
+
+
+def _producto_catalogo_por_codigo_completo(codigo):
+    codigo = (codigo or '').strip().upper()
+
+    if codigo.startswith('PROP-'):
+        try:
+            producto_id = int(codigo.split('-', 1)[1])
+            producto = ProductoCatalogoPersonalizado.objects.get(
+                id_catalogo_personalizado=producto_id,
+                activo=True
+            )
+        except (ValueError, ProductoCatalogoPersonalizado.DoesNotExist):
+            return None
+
+        return {
+            'codigo': producto.codigo_catalogo,
+            'descripcion': producto.nombre_producto,
+            'nombre': producto.nombre_producto,
+            'marca': producto.marca_producto,
+            'precio_referencia': producto.precio_referencia,
+            'contenido_unitario': producto.contenido_unitario,
+            'unidad_contenido': producto.unidad_contenido,
+            'es_personalizado': True,
+        }
+
+    return producto_catalogo_por_codigo(codigo)
+
+
+def _marcas_catalogo_completo():
+    marcas = {
+        producto.get('marca')
+        for producto in _catalogo_productos_completo()
+        if producto.get('marca')
+    }
+    return sorted(marcas, key=lambda valor: valor.casefold())
+
+
+def _obtener_datos_catalogo_personalizado(request):
+    nombre = request.POST.get('txt_nombre_personalizado', '').strip()
+    marca_seleccionada = request.POST.get(
+        'txt_marca_personalizada_select', ''
+    ).strip()
+
+    if (
+        marca_seleccionada != 'OTRA'
+        and marca_seleccionada not in _marcas_catalogo_completo()
+    ):
+        return None, 'Seleccione una marca válida.'
+
+    if marca_seleccionada == 'OTRA':
+        marca = request.POST.get('txt_marca_personalizada', '').strip()
+    else:
+        marca = marca_seleccionada
+
+    precio_texto = request.POST.get(
+        'txt_precio_referencia', ''
+    ).strip().replace(',', '.')
+    contenido_texto = request.POST.get(
+        'txt_contenido_catalogo_personalizado', ''
+    ).strip().replace(',', '.')
+    unidad = request.POST.get(
+        'txt_unidad_catalogo_personalizado', ''
+    ).strip().upper()
+
+    if len(nombre) < 2 or len(nombre) > 100:
+        return None, 'Ingrese un nombre de producto entre 2 y 100 caracteres.'
+
+    if len(marca) < 2 or len(marca) > 100:
+        return None, 'Seleccione o escriba una marca válida.'
+
+    unidades_validas = {
+        opcion[0] for opcion in ProductoCatalogoPersonalizado.UNIDADES_CONTENIDO
+    }
+    if unidad not in unidades_validas:
+        return None, 'Seleccione una unidad válida para el producto.'
+
+    try:
+        contenido = Decimal(contenido_texto)
+    except Exception:
+        return None, 'Ingrese un contenido por unidad válido.'
+
+    if contenido <= Decimal('0'):
+        return None, 'El contenido por unidad debe ser mayor que 0.'
+
+    precio = None
+    if precio_texto:
+        try:
+            precio = Decimal(precio_texto)
+        except Exception:
+            return None, 'Ingrese un precio de referencia válido.'
+        if precio < Decimal('0') or precio > Decimal('9999999.99'):
+            return None, 'El precio de referencia ingresado no es válido.'
+
+    repetido = ProductoCatalogoPersonalizado.objects.filter(
+        nombre_producto__iexact=nombre,
+        marca_producto__iexact=marca,
+        contenido_unitario=contenido,
+        unidad_contenido=unidad,
+        activo=True
+    )
+    if repetido.exists():
+        return None, 'Ese producto ya se encuentra registrado en el catálogo.'
+
+    # Evita duplicar un producto que ya existe en el catálogo base.
+    for item in catalogo_productos():
+        if (
+            item.get('nombre', '').strip().casefold() == nombre.casefold()
+            and item.get('marca', '').strip().casefold() == marca.casefold()
+            and item.get('contenido_unitario') == contenido
+            and (item.get('unidad_contenido') or '').upper() == unidad
+        ):
+            return None, 'Ese producto ya se encuentra registrado en el catálogo.'
+
+    return {
+        'nombre_producto': nombre,
+        'marca_producto': marca,
+        'precio_referencia': precio,
+        'contenido_unitario': contenido,
+        'unidad_contenido': unidad,
+    }, None
+
+
 def _obtener_datos_producto_carga(
     request,
     producto_actual=None
@@ -2221,24 +2371,40 @@ def _obtener_datos_producto_carga(
         ''
     ).strip()
 
-    peso_texto = request.POST.get(
-        'txt_peso_unitario_kg',
+    contenido_texto = request.POST.get(
+        'txt_contenido_unitario',
         ''
     ).strip().replace(',', '.')
+
+    unidad_contenido = request.POST.get(
+        'txt_unidad_contenido',
+        ''
+    ).strip().upper()
+
+    unidades_texto = request.POST.get(
+        'txt_unidades_presentacion',
+        '1'
+    ).strip()
 
     presentaciones_validas = [
         opcion[0]
         for opcion in ProductoCarga.PRESENTACIONES
     ]
+    unidades_contenido_validas = [
+        opcion[0]
+        for opcion in ProductoCarga.UNIDADES_CONTENIDO
+    ]
 
     if modo_producto not in ('CATALOGO', 'PERSONALIZADO'):
         return None, "Seleccione una forma válida de registrar el producto."
 
+    item_catalogo = None
+
     if modo_producto == 'CATALOGO':
-        if not marca_catalogo or marca_catalogo not in marcas_catalogo():
+        if not marca_catalogo or marca_catalogo not in _marcas_catalogo_completo():
             return None, "Seleccione una marca válida del catálogo."
 
-        item_catalogo = producto_catalogo_por_codigo(codigo_catalogo)
+        item_catalogo = _producto_catalogo_por_codigo_completo(codigo_catalogo)
 
         # Compatibilidad con registros anteriores que todavía no tenían código.
         es_legacy = (
@@ -2256,6 +2422,14 @@ def _obtener_datos_producto_carga(
             nombre = item_catalogo['nombre']
             marca = item_catalogo['marca']
             precio_referencia = item_catalogo['precio_referencia']
+
+            # Si el catálogo contiene el volumen de la botella/unidad, lo usamos
+            # como propuesta. El administrador puede corregirlo antes de guardar.
+            if not contenido_texto and item_catalogo.get('contenido_unitario') is not None:
+                contenido_texto = str(item_catalogo['contenido_unitario'])
+            if not unidad_contenido and item_catalogo.get('unidad_contenido'):
+                unidad_contenido = item_catalogo['unidad_contenido']
+
         elif es_legacy:
             nombre = producto_actual.nombre_producto
             marca = producto_actual.marca_producto
@@ -2282,7 +2456,7 @@ def _obtener_datos_producto_carga(
 
         if (
             marca_seleccionada != 'OTRA'
-            and marca_seleccionada not in marcas_catalogo()
+            and marca_seleccionada not in _marcas_catalogo_completo()
         ):
             return None, "Seleccione una marca válida para el producto propio."
 
@@ -2322,37 +2496,60 @@ def _obtener_datos_producto_carga(
     if presentacion not in presentaciones_validas:
         return None, "Seleccione una presentación válida."
 
+    if unidad_contenido not in unidades_contenido_validas:
+        return None, "Seleccione una unidad válida para el contenido del producto."
+
     if len(nota) > 250:
         return None, "La observación no puede superar los 250 caracteres."
 
-    if not peso_texto and modo_producto == 'CATALOGO' and item_catalogo:
-        peso_estimado = peso_estimado_presentacion(item_catalogo, presentacion)
-        peso_texto = str(peso_estimado or '')
+    try:
+        contenido_unitario = Decimal(contenido_texto)
+    except Exception:
+        return None, "Ingrese el contenido o peso de una unidad del producto."
+
+    if contenido_unitario <= Decimal('0'):
+        return None, "El contenido por unidad debe ser mayor que 0."
 
     try:
-        peso_unitario_kg = Decimal(peso_texto)
+        unidades_por_presentacion = int(unidades_texto)
     except Exception:
-        return None, "Ingrese un peso unitario válido."
+        return None, "Ingrese una cantidad válida de unidades por presentación."
 
-    if (
-        peso_unitario_kg <= Decimal('0') or
-        peso_unitario_kg > Decimal('2000')
-    ):
+    if unidades_por_presentacion < 1 or unidades_por_presentacion > 500:
         return None, (
-            "El peso unitario debe ser mayor que 0 "
+            "Las unidades por presentación deben estar entre 1 y 500."
+        )
+
+    factores_kg = {
+        'ML': Decimal('0.001'),
+        'L': Decimal('1'),
+        'G': Decimal('0.001'),
+        'KG': Decimal('1'),
+    }
+
+    peso_una_unidad_kg = contenido_unitario * factores_kg[unidad_contenido]
+    peso_unitario_kg = (
+        peso_una_unidad_kg * Decimal(unidades_por_presentacion)
+    ).quantize(Decimal('0.01'))
+
+    if peso_unitario_kg <= Decimal('0') or peso_unitario_kg > Decimal('2000'):
+        return None, (
+            "El peso calculado de una presentación debe ser mayor que 0 "
             "y no superar 2000 kg."
         )
 
     if codigo_catalogo:
         repetido = ProductoCarga.objects.filter(
             codigo_catalogo=codigo_catalogo,
-            presentacion_producto=presentacion
+            presentacion_producto=presentacion,
+            unidades_por_presentacion=unidades_por_presentacion
         )
     else:
         repetido = ProductoCarga.objects.filter(
             nombre_producto__iexact=nombre,
             marca_producto__iexact=marca,
-            presentacion_producto=presentacion
+            presentacion_producto=presentacion,
+            unidades_por_presentacion=unidades_por_presentacion
         )
 
     if producto_actual:
@@ -2362,7 +2559,8 @@ def _obtener_datos_producto_carga(
 
     if repetido.exists():
         return None, (
-            "Ya existe este producto con la misma marca y presentación."
+            "Ya existe este producto con la misma marca, presentación "
+            "y cantidad de unidades."
         )
 
     datos = {
@@ -2372,6 +2570,9 @@ def _obtener_datos_producto_carga(
         'precio_referencia': precio_referencia,
         'presentacion_producto': presentacion,
         'nota_producto': nota,
+        'contenido_unitario': contenido_unitario,
+        'unidad_contenido': unidad_contenido,
+        'unidades_por_presentacion': unidades_por_presentacion,
         'peso_unitario_kg': peso_unitario_kg,
     }
 
@@ -2416,8 +2617,11 @@ def nuevoproductocarga(request):
             'presentaciones': (
                 ProductoCarga.PRESENTACIONES
             ),
-            'catalogo_productos': catalogo_productos(),
-            'marcas_catalogo': marcas_catalogo(),
+            'unidades_contenido': (
+                ProductoCarga.UNIDADES_CONTENIDO
+            ),
+            'catalogo_productos': _catalogo_productos_completo(),
+            'marcas_catalogo': _marcas_catalogo_completo(),
             'codigo_catalogo_actual': '',
             'marca_catalogo_actual': '',
             'modo_producto_actual': 'CATALOGO',
@@ -2434,9 +2638,30 @@ def guardarproductocarga(request):
     if request.method != 'POST':
         return redirect('listadoproductoscarga')
 
-    datos, error = _obtener_datos_producto_carga(
-        request
-    )
+    modo_producto = request.POST.get(
+        'txt_modo_producto',
+        'CATALOGO'
+    ).strip().upper()
+
+    if modo_producto == 'PERSONALIZADO':
+        datos_catalogo, error = _obtener_datos_catalogo_personalizado(request)
+
+        if error:
+            messages.error(request, error)
+            return redirect('nuevoproductocarga')
+
+        ProductoCatalogoPersonalizado.objects.create(
+            **datos_catalogo,
+            activo=True
+        )
+
+        messages.success(
+            request,
+            "Producto agregado al catálogo. Ya puedes seleccionarlo y definir su presentación."
+        )
+        return redirect('nuevoproductocarga')
+
+    datos, error = _obtener_datos_producto_carga(request)
 
     if error:
         messages.error(request, error)
@@ -2473,7 +2698,7 @@ def editarproductocarga(request, id):
         producto.codigo_catalogo
         or codigo_catalogo_por_nombre(producto.nombre_producto)
     )
-    item_catalogo_actual = producto_catalogo_por_codigo(
+    item_catalogo_actual = _producto_catalogo_por_codigo_completo(
         codigo_catalogo_actual
     )
 
@@ -2486,16 +2711,17 @@ def editarproductocarga(request, id):
             'presentaciones': (
                 ProductoCarga.PRESENTACIONES
             ),
-            'catalogo_productos': catalogo_productos(),
-            'marcas_catalogo': marcas_catalogo(),
+            'unidades_contenido': (
+                ProductoCarga.UNIDADES_CONTENIDO
+            ),
+            'catalogo_productos': _catalogo_productos_completo(),
+            'marcas_catalogo': _marcas_catalogo_completo(),
             'codigo_catalogo_actual': codigo_catalogo_actual,
             'marca_catalogo_actual': (
                 item_catalogo_actual['marca']
                 if item_catalogo_actual else ''
             ),
-            'modo_producto_actual': (
-                'CATALOGO' if item_catalogo_actual else 'PERSONALIZADO'
-            ),
+            'modo_producto_actual': 'CATALOGO',
         }
     )
 
@@ -2558,6 +2784,18 @@ def procesareditarproductocarga(request):
 
     producto.nota_producto = datos[
         'nota_producto'
+    ]
+
+    producto.contenido_unitario = datos[
+        'contenido_unitario'
+    ]
+
+    producto.unidad_contenido = datos[
+        'unidad_contenido'
+    ]
+
+    producto.unidades_por_presentacion = datos[
+        'unidades_por_presentacion'
     ]
 
     producto.peso_unitario_kg = datos[
@@ -2646,6 +2884,14 @@ def precioscombustibleadmin(request):
     litros_por_galon = Decimal('3.785411784')
 
     if request.method == 'POST':
+        nota_ajuste = (request.POST.get('nota_ajuste') or '').strip()
+        if not nota_ajuste:
+            messages.error(request, 'La nota del ajuste es obligatoria.')
+            return redirect('precioscombustibleadmin')
+        if len(nota_ajuste) > 500:
+            messages.error(request, 'La nota del ajuste no puede superar 500 caracteres.')
+            return redirect('precioscombustibleadmin')
+
         unidad = (request.POST.get('unidad_precio') or 'LITRO').strip().upper()
         if unidad not in {'LITRO', 'GALON'}:
             messages.error(request, 'Seleccione una unidad válida para los precios.')
@@ -2705,6 +2951,7 @@ def precioscombustibleadmin(request):
                         valor_ingresado=valor_ingresado,
                         unidad_ingresada=unidad,
                         administrador=administrador_usuario,
+                        nota=nota_ajuste,
                     )
                     cambios += 1
 
@@ -2967,6 +3214,66 @@ def listadoplanescarga(request):
         'total_confirmados': total_confirmados,
         'total_borradores': total_borradores,
         'peso_total_programado': peso_total_programado,
+    })
+
+
+
+def consultacargasadmin(request):
+    acceso = _validar_acceso_admin_cargas(request)
+    if acceso:
+        return acceso
+
+    fecha_texto = (request.GET.get('fecha') or '').strip()
+    fecha_seleccionada = parse_date(fecha_texto) if fecha_texto else timezone.localdate()
+    if not fecha_seleccionada:
+        fecha_seleccionada = timezone.localdate()
+
+    planes = list(
+        PlanCarga.objects.filter(fecha_planificada=fecha_seleccionada)
+        .select_related('vehiculo', 'vehiculo__usuario')
+        .prefetch_related('detalles')
+        .order_by('vehiculo__matricula_vehiculo')
+    )
+
+    peso_total = Decimal('0.00')
+    total_borradores = 0
+    total_listos = 0
+    total_confirmados = 0
+    total_en_ruta = 0
+    total_completados = 0
+    total_cancelados = 0
+
+    for plan in planes:
+        plan.peso_calculado = plan.peso_total_kg
+        plan.capacidad_calculada = plan.capacidad_kg
+        plan.disponible_calculado = plan.disponible_kg
+        plan.porcentaje_calculado = plan.porcentaje_carga
+        peso_total += plan.peso_calculado
+
+        if plan.estado == 'BORRADOR':
+            total_borradores += 1
+        elif plan.estado == 'LISTO':
+            total_listos += 1
+        elif plan.estado == 'CONFIRMADO':
+            total_confirmados += 1
+        elif plan.estado == 'EN_RUTA':
+            total_en_ruta += 1
+        elif plan.estado == 'COMPLETADO':
+            total_completados += 1
+        elif plan.estado == 'CANCELADO':
+            total_cancelados += 1
+
+    return render(request, 'administrador/plan_cargas/consulta_cargas.html', {
+        'planes': planes,
+        'fecha_seleccionada': fecha_seleccionada,
+        'total_planes': len(planes),
+        'total_listos': total_listos,
+        'total_confirmados': total_confirmados,
+        'total_en_ruta': total_en_ruta,
+        'total_completados': total_completados,
+        'total_borradores': total_borradores,
+        'total_cancelados': total_cancelados,
+        'peso_total': peso_total,
     })
 
 
@@ -3425,8 +3732,41 @@ def detalleplancarga(request, id):
             'ajustes': plan.ajustes_usuario.all(),
             'errores_salida': errores_salida,
             'es_historico': _plan_carga_es_historico(plan),
+            # URL directa del PDF para evitar que el detalle dependa de un reverse
+            # durante el renderizado. La ruta real sigue declarada en urls.py.
+            'pdf_plan_url': f'/plan-cargas/detalle/{plan.id_plan_carga}/pdf/',
         }
     )
+
+
+def pdfplancarga(request, id):
+    acceso = _validar_acceso_admin_cargas(request)
+
+    if acceso:
+        return acceso
+
+    try:
+        plan = PlanCarga.objects.select_related(
+            'vehiculo',
+            'vehiculo__usuario',
+            'creado_por',
+            'confirmado_por'
+        ).prefetch_related(
+            'detalles',
+            'detalles__producto'
+        ).get(id_plan_carga=id)
+    except PlanCarga.DoesNotExist:
+        messages.error(request, 'El plan de carga no existe.')
+        return redirect('listadoplanescarga')
+
+    from Aplicaciones.proyectos.reportes_plan_carga import construir_pdf_plan_carga
+
+    contenido = construir_pdf_plan_carga(plan)
+    response = HttpResponse(contenido, content_type='application/pdf')
+    response['Content-Disposition'] = (
+        f'attachment; filename="plan_carga_{plan.id_plan_carga}_{plan.fecha_planificada:%Y%m%d}.pdf"'
+    )
+    return response
 
 
 def _redireccion_paradas_reservadas_usuario(request):
@@ -3857,9 +4197,10 @@ def marcarplancargalisto(request, id):
 
     messages.success(
         request,
-        'Plan listo. El conductor ya puede revisar la carga.'
+        'Plan listo. Continúa en Tramos Generales para preparar el recorrido.'
     )
-    return redirect('detalleplancarga', id=plan.id_plan_carga)
+    url_tramos = reverse('admin_tramos_generales')
+    return redirect(f"{url_tramos}?plan={plan.id_plan_carga}")
 
 
 def volverplancargaborrador(request, id):

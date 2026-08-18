@@ -2,20 +2,15 @@
 {% load static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/administrador/productos_carga/listado_productos.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/administrador/productos_carga/listado_productos.css' %}?v=2">
 {% endblock %}
 
 {% block contener %}
-
-
-
-
 <div class="catalogo-page">
     <div class="catalogo-container">
-
         <div class="page-header">
             <h2>Catálogo de Productos</h2>
-            <p>Administra productos, precios de referencia, observaciones y pesos usados en las cargas.</p>
+            <p>Administra el producto, su contenido por unidad, la presentación comercial y el peso calculado para la carga.</p>
         </div>
 
         <div class="stats-grid">
@@ -42,7 +37,7 @@
                     <input
                         type="text"
                         id="buscarProducto"
-                        placeholder="Buscar por nombre, marca, observación o presentación..."
+                        placeholder="Buscar por nombre, marca, presentación o contenido..."
                         autocomplete="off"
                     >
                 </div>
@@ -73,9 +68,9 @@
                             <th>Código</th>
                             <th>Producto</th>
                             <th>Marca</th>
-                            <th>Precio ref.</th>
+                            <th>Contenido unit.</th>
                             <th>Presentación</th>
-                            <th>Peso unitario</th>
+                            <th>Peso calculado</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
@@ -87,6 +82,7 @@
                                 <td>
                                     <span class="producto-codigo">{{ producto.codigo_catalogo|default:"LEGACY" }}</span>
                                 </td>
+
                                 <td>
                                     <span class="producto-nombre">{{ producto.nombre_producto }}</span>
                                     {% if producto.nota_producto %}
@@ -95,9 +91,25 @@
                                 </td>
 
                                 <td>{{ producto.marca_producto|default:"—" }}</td>
-                                <td>{% if producto.precio_referencia != None %}${{ producto.precio_referencia|floatformat:2 }}{% else %}—{% endif %}</td>
-                                <td>{{ producto.get_presentacion_producto_display }}</td>
-                                <td>{{ producto.peso_unitario_kg|floatformat:2 }} kg</td>
+
+                                <td>
+                                    {% if producto.contenido_unitario != None and producto.unidad_contenido %}
+                                        <span class="content-value">{{ producto.contenido_unitario|floatformat:"-3" }} {{ producto.get_unidad_contenido_display }}</span>
+                                        <small class="content-help">por unidad</small>
+                                    {% else %}
+                                        <span class="muted-value">—</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <span class="presentation-name">{{ producto.get_presentacion_producto_display }}</span>
+                                    <small class="presentation-detail">x {{ producto.unidades_por_presentacion|default:1 }} unidad{% if producto.unidades_por_presentacion != 1 %}es{% endif %}</small>
+                                </td>
+
+                                <td>
+                                    <span class="weight-value">{{ producto.peso_unitario_kg|floatformat:2 }} kg</span>
+                                    <small class="content-help">por presentación</small>
+                                </td>
 
                                 <td>
                                     {% if producto.activo %}
@@ -126,11 +138,7 @@
                                         >
                                             {% csrf_token %}
                                             <button type="submit" class="btn-outline-admin">
-                                                {% if producto.activo %}
-                                                    Inactivar
-                                                {% else %}
-                                                    Activar
-                                                {% endif %}
+                                                {% if producto.activo %}Inactivar{% else %}Activar{% endif %}
                                             </button>
                                         </form>
 
@@ -155,17 +163,8 @@
         </div>
     </div>
 </div>
-
-
-
-
-
-
-
-
-
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/pages/administrador/productos_carga/listado_productos.js' %}" defer></script>
+<script src="{% static 'js/pages/administrador/productos_carga/listado_productos.js' %}?v=2" defer></script>
 {% endblock %}

@@ -81,3 +81,4 @@ zope.interface==8.1
 qrcode[pil]==8.2
 cloudinary==1.44.1
 django-cloudinary-storage==0.3.0
+python-dotenv==1.2.2

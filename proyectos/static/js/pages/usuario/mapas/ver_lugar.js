@@ -11,7 +11,7 @@
         originTitle:document.getElementById("originTitle"),destinationTitle:document.getElementById("destinationTitle"),
         errorBox:document.getElementById("routePointErrors"),btnGps:document.getElementById("btnActualizarGps"),
         btnCenterDestination:document.getElementById("btnCentrarDestino"),btnBack:document.getElementById("btnVolverSeleccion"),
-        btnSaveCalculate:document.getElementById("btnGuardarCalcular")
+        btnSaveCalculate:document.getElementById("btnGuardarCalcular"),loading:document.getElementById("routeAlternativesLoading")
     };
 
     function n(value){const result=Number.parseFloat(value);return Number.isFinite(result)?result:null;}
@@ -25,6 +25,9 @@
     function getGps(){clearError();if(!navigator.geolocation){showError("Este navegador no admite geolocalización.");return;}els.btnGps.disabled=true;navigator.geolocation.getCurrentPosition(function(position){const point={lat:position.coords.latitude,lng:position.coords.longitude,name:"Ubicación actual del vehículo"};updateOrigin(point,true);state.originMap.panTo(point);state.originMap.setZoom(18);els.btnGps.disabled=false;},function(){els.btnGps.disabled=false;showError("No se obtuvo el GPS. Revisa el permiso o ajusta manualmente el marcador azul.");},{enableHighAccuracy:true,maximumAge:3000,timeout:20000});}
     function validPoints(){if(!state.origin||!state.destination){showError("Debes definir el punto de inicio y el destino.");return false;}const same=Math.abs(state.origin.lat-state.destination.lat)<.00001&&Math.abs(state.origin.lng-state.destination.lng)<.00001;if(same){showError("El origen y el destino no pueden ser el mismo punto.");return false;}clearError();return true;}
 
+    function showLoading(){if(!els.loading)return;els.loading.hidden=false;els.loading.setAttribute("aria-hidden","false");document.body.classList.add("route-processing-active");}
+    function hideLoading(){if(!els.loading)return;els.loading.hidden=true;els.loading.setAttribute("aria-hidden","true");document.body.classList.remove("route-processing-active");}
+
     async function saveAndCalculate(){
         if(state.saving||!validPoints())return;
         state.saving=true;
@@ -37,7 +40,8 @@
             confirmButtonColor:"#d71920",cancelButtonColor:"#23262b",reverseButtons:true
         });
         if(!result.isConfirmed){state.saving=false;els.btnSaveCalculate.disabled=false;return;}
-        els.btnSaveCalculate.innerHTML='<i class="bi bi-hourglass-split"></i> Guardando y calculando';
+        els.btnSaveCalculate.innerHTML='<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Calculando…';
+        showLoading();
         try{
             const response=await fetch(config.dataset.guardarUrl,{method:"POST",headers:{"Content-Type":"application/json","X-CSRFToken":csrfToken(),"X-Requested-With":"XMLHttpRequest"},body:JSON.stringify({nombre:state.destination.name,latitud:state.destination.lat,longitud:state.destination.lng})});
             const data=await response.json();
@@ -50,7 +54,7 @@
             }else{
                 window.location.assign(nextUrl);
             }
-        }catch(error){showError(error.message);state.saving=false;els.btnSaveCalculate.disabled=false;els.btnSaveCalculate.innerHTML=originalButton;}
+        }catch(error){hideLoading();showError(error.message);state.saving=false;els.btnSaveCalculate.disabled=false;els.btnSaveCalculate.innerHTML=originalButton;}
     }
 
     window.initDistricPointsReviewMap=function(){

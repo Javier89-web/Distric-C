@@ -10,7 +10,7 @@
     <div class="planes-container">
         <header class="page-header">
             <h2>Planificación de Cargas</h2>
-            <p>Consulta el historial o prepara la carga de un vehículo para una fecha permitida.</p>
+            <p>Prepara la carga de un vehículo para la fecha de trabajo seleccionada.</p>
         </header>
 
         <section class="stats-grid">
@@ -23,54 +23,34 @@
         <section class="load-control-card">
             <div class="load-control-heading">
                 <div>
-                    <h3>Consultar y crear cargas</h3>
-                    <p>La consulta admite fechas antiguas. Las nuevas cargas solo pueden programarse desde hoy hasta seis meses adelante.</p>
+                    <h3>Preparar una nueva carga</h3>
+                    <p>Selecciona el vehículo y la fecha en la que se realizará la planificación.</p>
                 </div>
             </div>
 
-            <div class="load-control-grid">
-                <form method="get" class="control-form" id="formFechaCarga" data-loading-text="Consultando fecha…" novalidate>
-                    <div class="control-label">
-                        <i class="bi bi-clock-history"></i>
-                        <div><strong>Consultar registros</strong><span>Selecciona cualquier fecha para ver los planes guardados.</span></div>
+            <form method="post" action="{% url 'crearplancargadesdeformulario' %}" class="control-form create-only-form" id="formCrearCarga" data-loading-text="Generando carga…" novalidate>
+                {% csrf_token %}
+                <div class="create-load-grid">
+                    <div class="control-field">
+                        <label for="vehiculoNuevaCarga">Vehículo</label>
+                        <select id="vehiculoNuevaCarga" name="vehiculo_id">
+                            <option value="">Seleccione un vehículo</option>
+                            {% for vehiculo in vehiculos_creacion %}
+                            <option value="{{ vehiculo.id_vehiculo }}">
+                                {{ vehiculo.matricula_vehiculo }} · {{ vehiculo.modelo_vehiculo|default:"Sin modelo" }}{% if vehiculo.usuario %} · {{ vehiculo.usuario.nombre_usuario }} {{ vehiculo.usuario.apellido_usuario }}{% else %} · Sin conductor{% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <span class="date-error" id="errorVehiculoNuevaCarga"></span>
                     </div>
-                    <div class="control-fields">
-                        <div class="date-field">
-                            <input type="date" name="fecha" id="fechaPlanCarga" class="date-input" value="{{ fecha_seleccionada|date:'Y-m-d' }}">
-                            <span class="date-error" id="errorFechaPlanCarga"></span>
-                        </div>
-                        <button type="submit" class="btn-dark"><i class="bi bi-calendar3"></i> Ver fecha</button>
+                    <div class="control-field">
+                        <label for="fechaNuevaCarga">Fecha</label>
+                        <input type="date" id="fechaNuevaCarga" name="fecha_planificada" value="{{ fecha_creacion_inicial|date:'Y-m-d' }}" min="{{ fecha_minima|date:'Y-m-d' }}" max="{{ fecha_maxima|date:'Y-m-d' }}">
+                        <span class="date-error" id="errorFechaNuevaCarga"></span>
                     </div>
-                </form>
-
-                <form method="post" action="{% url 'crearplancargadesdeformulario' %}" class="control-form" id="formCrearCarga" data-loading-text="Generando carga…" novalidate>
-                    {% csrf_token %}
-                    <div class="control-label">
-                        <i class="bi bi-box-seam"></i>
-                        <div><strong>Preparar una nueva carga</strong><span>Elige primero el vehículo que transportará los productos.</span></div>
-                    </div>
-                    <div class="create-load-grid">
-                        <div class="control-field">
-                            <label for="vehiculoNuevaCarga">Vehículo</label>
-                            <select id="vehiculoNuevaCarga" name="vehiculo_id">
-                                <option value="">Seleccione un vehículo</option>
-                                {% for vehiculo in vehiculos_creacion %}
-                                <option value="{{ vehiculo.id_vehiculo }}">
-                                    {{ vehiculo.matricula_vehiculo }} · {{ vehiculo.modelo_vehiculo|default:"Sin modelo" }}{% if vehiculo.usuario %} · {{ vehiculo.usuario.nombre_usuario }} {{ vehiculo.usuario.apellido_usuario }}{% else %} · Sin conductor{% endif %}
-                                </option>
-                                {% endfor %}
-                            </select>
-                            <span class="date-error" id="errorVehiculoNuevaCarga"></span>
-                        </div>
-                        <div class="control-field">
-                            <label for="fechaNuevaCarga">Fecha</label>
-                            <input type="date" id="fechaNuevaCarga" name="fecha_planificada" value="{{ fecha_creacion_inicial|date:'Y-m-d' }}" min="{{ fecha_minima|date:'Y-m-d' }}" max="{{ fecha_maxima|date:'Y-m-d' }}">
-                            <span class="date-error" id="errorFechaNuevaCarga"></span>
-                        </div>
-                        <button type="submit" class="btn-red create-load-btn"><i class="bi bi-plus-circle"></i> Generar carga</button>
-                    </div>
-                </form>
-            </div>
+                    <button type="submit" class="btn-red create-load-btn"><i class="bi bi-plus-circle"></i> Generar carga</button>
+                </div>
+            </form>
         </section>
 
         <section class="toolbar compact-toolbar">
@@ -83,7 +63,7 @@
                 {% if es_fecha_historica %}
                 <span>Registro histórico disponible únicamente para consulta.</span>
                 {% elif fecha_editable %}
-                <span>Puedes consultar y modificar los planes de esta fecha según su estado.</span>
+                <span>Puedes preparar y modificar los planes de esta fecha según su estado.</span>
                 {% else %}
                 <span>La fecha está fuera del rango de creación; permanece disponible para consulta.</span>
                 {% endif %}

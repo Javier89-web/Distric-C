@@ -304,6 +304,15 @@ path(
 ),
 
 # ==========================================================
+# CONSULTA DE CARGAS - ADMINISTRADOR
+# ==========================================================
+path(
+    'consulta-cargas/',
+    views.consultacargasadmin,
+    name='consultacargasadmin'
+),
+
+# ==========================================================
 # PLANIFICACIÓN DE CARGAS - ADMINISTRADOR
 # ==========================================================
 path(
@@ -340,6 +349,12 @@ path(
     'plan-cargas/detalle/<int:id>/',
     views.detalleplancarga,
     name='detalleplancarga'
+),
+
+path(
+    'plan-cargas/detalle/<int:id>/pdf/',
+    views.pdfplancarga,
+    name='pdfplancarga'
 ),
 
 path(
@@ -468,6 +483,30 @@ path(
     # ==========================================================
     # PLANIFICACIÓN Y REPORTES DE RUTAS - ADMINISTRADOR
     # ==========================================================
+    path(
+        'administrador/rutas/tramos-generales/',
+        rutas_views.admin_tramos_generales,
+        name='admin_tramos_generales'
+    ),
+
+    path(
+        'administrador/rutas/tramos-generales/calcular/',
+        rutas_views.admin_calcular_tramos_generales,
+        name='admin_calcular_tramos_generales'
+    ),
+
+    path(
+        'administrador/rutas/tramos-generales/<int:id_viaje>/',
+        rutas_views.admin_detalle_tramos_generales,
+        name='admin_detalle_tramos_generales'
+    ),
+
+    path(
+        'administrador/rutas/tramos-generales/<int:id_viaje>/pdf/',
+        rutas_views.admin_pdf_tramos_generales,
+        name='admin_pdf_tramos_generales'
+    ),
+
     path(
         'administrador/rutas/planificacion/',
         rutas_views.admin_planificacion_rutas,

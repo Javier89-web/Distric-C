@@ -70,8 +70,16 @@ def construir_pdf_historial_precios(historial) -> bytes:
         fontSize=9,
         leading=13,
     )
+    note_style = ParagraphStyle(
+        "FuelNote",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=6.6,
+        leading=8.2,
+        textColor=DARK,
+    )
 
-    rows = [["Fecha", "Combustible", "Anterior / L", "Nuevo / L", "Valor ingresado", "Administrador"]]
+    rows = [["Fecha", "Combustible", "Anterior / L", "Nuevo / L", "Valor ingresado", "Nota", "Administrador"]]
     for ajuste in historial:
         fecha = timezone.localtime(ajuste.fecha_ajuste).strftime("%d/%m/%Y %H:%M") if ajuste.fecha_ajuste else "-"
         unidad = "gal" if ajuste.unidad_ingresada == "GALON" else "L"
@@ -84,6 +92,7 @@ def construir_pdf_historial_precios(historial) -> bytes:
             _money(ajuste.precio_anterior_litro),
             _money(ajuste.precio_nuevo_litro),
             f"{_money(ajuste.valor_ingresado)} / {unidad}",
+            Paragraph((ajuste.nota or "-").replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'), note_style),
             admin,
         ])
 
@@ -102,7 +111,7 @@ def construir_pdf_historial_precios(historial) -> bytes:
         table = Table(
             rows,
             repeatRows=1,
-            colWidths=[2.75 * cm, 2.15 * cm, 2.0 * cm, 2.0 * cm, 2.55 * cm, 4.1 * cm],
+            colWidths=[2.35 * cm, 1.55 * cm, 1.65 * cm, 1.65 * cm, 2.15 * cm, 4.15 * cm, 2.85 * cm],
             hAlign="LEFT",
         )
         table.setStyle(TableStyle([

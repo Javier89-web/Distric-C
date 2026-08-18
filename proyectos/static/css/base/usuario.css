@@ -430,3 +430,64 @@
 
 /* Base PWA: márgenes seguros, contenido fluido y sin desplazamiento lateral accidental. */
 html,body{max-width:100%;overflow-x:hidden}body{padding-bottom:env(safe-area-inset-bottom)}img,svg,video,canvas{max-width:100%}.navbar>.container-fluid{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}.offcanvas{max-width:min(88vw,380px)!important}.table-responsive,.dataTables_wrapper{max-width:100%}@media(max-width:600px){.container,.container-fluid{max-width:100%}.dataTables_wrapper .dataTables_info,.dataTables_wrapper .dataTables_paginate{float:none!important;text-align:left!important}.dataTables_wrapper .dataTables_paginate{margin-top:6px}.iziToast-wrapper{padding-left:max(8px,env(safe-area-inset-left))!important;padding-right:max(8px,env(safe-area-inset-right))!important}}
+
+/* === ADMIN ROUTE ACCORDION MENU === */
+/* Solo se aplica cuando el administrador entra al flujo de rutas de prueba. */
+.admin-route-offcanvas{
+    width:390px!important;
+    color:#fff!important;
+    background:#23262b!important;
+    border-left:1px solid rgba(255,255,255,.06)!important;
+}
+.admin-route-offcanvas .offcanvas-header{padding:24px 24px 12px!important}
+.admin-route-offcanvas .offcanvas-body{padding:14px 24px 26px!important}
+.admin-route-offcanvas .offcanvas-title{margin:0;color:#fff!important;font-size:25px!important;font-weight:700!important}
+.admin-route-offcanvas .offcanvas-title::before{
+    content:"DISTRIC C";display:block;margin-bottom:8px;color:#d71920;
+    font-size:11px;font-weight:800;letter-spacing:3px
+}
+.admin-route-menu,.admin-route-menu-subgroup{list-style:none;margin:0;padding:0}
+.admin-route-menu{width:100%}
+.admin-route-menu-item{width:100%}
+.admin-route-menu-link{
+    width:100%;padding:10px 0!important;color:#eee!important;font-size:18px!important;font-weight:600!important;
+    text-decoration:none!important;background:transparent!important;border:0!important;
+    display:flex!important;align-items:center!important;gap:10px;transition:color .18s ease
+}
+.admin-route-menu-link i{
+    width:24px;color:#fff!important;font-size:20px!important;text-align:center!important;margin:0!important
+}
+.admin-route-menu-link:hover,.admin-route-menu-link.active{color:#fff!important}
+.admin-route-menu-link:hover i,.admin-route-menu-link.active i{color:#d71920!important}
+.admin-route-menu-group{width:100%;margin:8px 0 0;padding:0}
+.admin-route-menu-group-toggle{
+    width:100%;min-height:45px;padding:10px 12px;color:#f3f4f6;font-family:inherit;font-size:16px;font-weight:700;
+    text-align:left;background:#2b2f35;border:1px solid rgba(255,255,255,.08);border-radius:9px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;
+    transition:background .18s ease,border-color .18s ease
+}
+.admin-route-menu-group-toggle:hover,.admin-route-menu-group.is-open>.admin-route-menu-group-toggle{
+    background:#30343a;border-color:rgba(255,255,255,.14)
+}
+.admin-route-menu-group-title{min-width:0;display:flex;align-items:center;gap:10px}
+.admin-route-menu-group-title>i{width:22px;color:#fff;font-size:18px;text-align:center}
+.admin-route-menu-group.is-open .admin-route-menu-group-title>i,
+.admin-route-menu-group:has(.admin-route-menu-link.active) .admin-route-menu-group-title>i{color:#d71920}
+.admin-route-menu-chevron{flex:0 0 auto;color:#9ca3af;font-size:14px;transition:transform .18s ease}
+.admin-route-menu-group.is-open .admin-route-menu-chevron{transform:rotate(180deg)}
+.admin-route-menu-subgroup{margin:4px 0 0;padding:2px 0 2px 13px;border-left:1px solid rgba(255,255,255,.12)}
+.admin-route-menu-subgroup[hidden]{display:none!important}
+.admin-route-menu-sublink{padding:9px 8px!important;font-size:15px!important;font-weight:600!important;border-radius:7px!important}
+.admin-route-menu-sublink:hover,.admin-route-menu-sublink.active{background:rgba(255,255,255,.045)!important}
+.admin-route-menu-sublink i{width:21px!important;font-size:17px!important}
+.admin-route-logout{
+    margin-top:22px!important;padding:14px 18px!important;justify-content:center!important;
+    color:#fff!important;font-weight:700!important;background:#30343a!important;border-radius:10px!important
+}
+.admin-route-logout i{color:#d71920!important}
+.admin-route-logout:hover{background:#393e45!important}
+@media(max-width:520px){
+    .admin-route-offcanvas{width:min(88vw,390px)!important}
+    .admin-route-menu-link{font-size:16px!important}
+    .admin-route-menu-group-toggle{font-size:15px}
+}

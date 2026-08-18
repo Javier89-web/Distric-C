@@ -1,0 +1,72 @@
+DISTRIC C - RENDER + LOCALHOST
+==============================
+
+Esta version conserva la configuracion de Render y agrega soporte local.
+No cambia la logica de rutas, IA, GPS, cargas, reportes, Cloudinary ni APIs.
+
+PRIMERA VEZ EN WINDOWS
+----------------------
+1. Abre PowerShell en la carpeta del proyecto.
+2. Ejecuta:
+
+   .\preparar_local.ps1
+
+3. La primera vez se creara automaticamente un archivo .env.
+4. Abre .env y configura:
+   - PostgreSQL local
+   - GOOGLE_MAPS_API_KEY
+   - GOOGLE_MAPS_SERVER_API_KEY
+   - Cloudinary si quieres usarlo también en localhost
+   - administrador inicial si la base esta vacia
+5. Ejecuta otra vez:
+
+   .\preparar_local.ps1
+
+6. Inicia el sistema:
+
+   .\iniciar_local.ps1
+
+7. Abre:
+
+   http://127.0.0.1:8000
+
+POSTGRESQL LOCAL
+----------------
+Por defecto usa:
+  Base: mapas
+  Usuario: postgres
+  Host: localhost
+  Puerto: 5432
+
+Cambia los valores en .env si tu contraseña o configuración son distintas.
+
+Si solo quieres hacer una prueba rápida, en .env cambia:
+  LOCAL_DATABASE_ENGINE=sqlite
+
+GOOGLE MAPS EN LOCALHOST
+------------------------
+En Google Cloud, la clave del navegador debe aceptar como referers:
+  http://localhost/*
+  http://localhost:8000/*
+  http://127.0.0.1/*
+  http://127.0.0.1:8000/*
+
+La clave de servidor se reutiliza para Routes / Weather / Elevation.
+
+CLOUDINARY
+----------
+Si las 3 variables CLOUDINARY_* están configuradas, localhost usa Cloudinary.
+Si están vacías, las imágenes/archivos se guardan en la carpeta media local.
+
+RENDER
+------
+No cambia el flujo de Render:
+  git add -A
+  git commit -m "mensaje"
+  git push
+
+Render seguirá usando DATABASE_URL, variables Environment, build.sh y Daphne.
+
+IMPORTANTE
+----------
+No subas el archivo .env a GitHub. Ya está ignorado por .gitignore.

@@ -210,10 +210,101 @@
       padding: 0;
     }
 
+    .admin-menu-group {
+      width: 100%;
+      margin: 8px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .admin-menu-group-toggle {
+      width: 100%;
+      min-height: 45px;
+      padding: 10px 12px;
+      color: #f3f4f6;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      text-align: left;
+      background: #2b2f35;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+      transition: background .18s ease, border-color .18s ease;
+    }
+
+    .admin-menu-group-toggle:hover,
+    .admin-menu-group.is-open > .admin-menu-group-toggle {
+      background: #30343a;
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .admin-menu-group-title {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .admin-menu-group-title > i {
+      width: 22px;
+      color: #ffffff;
+      font-size: 18px;
+      text-align: center;
+    }
+
+    .admin-menu-group.is-open .admin-menu-group-title > i,
+    .admin-menu-group:has(.admin-menu-link.active) .admin-menu-group-title > i {
+      color: #d71920;
+    }
+
+    .admin-menu-group-chevron {
+      flex: 0 0 auto;
+      color: #9ca3af;
+      font-size: 14px;
+      transition: transform .18s ease;
+    }
+
+    .admin-menu-group.is-open .admin-menu-group-chevron {
+      transform: rotate(180deg);
+    }
+
+    .admin-menu-subgroup {
+      margin: 4px 0 0;
+      padding: 2px 0 2px 13px;
+      list-style: none;
+      border-left: 1px solid rgba(255,255,255,.12);
+    }
+
+    .admin-menu-subgroup[hidden] {
+      display: none !important;
+    }
+
+    .admin-menu-sublink {
+      padding: 9px 8px !important;
+      font-size: 15px !important;
+      font-weight: 600 !important;
+      border-radius: 7px !important;
+    }
+
+    .admin-menu-sublink:hover,
+    .admin-menu-sublink.active {
+      background: rgba(255,255,255,.045) !important;
+    }
+
+    .admin-menu-sublink i {
+      width: 21px !important;
+      font-size: 17px !important;
+    }
+
     .admin-menu-link {
       width: 100%;
 
-      padding: 12px 0 !important;
+      padding: 10px 0 !important;
 
       color: #eeeeee !important;
       font-size: 18px !important;
@@ -393,8 +484,13 @@
       }
 
       .admin-menu-link {
-        padding: 13px 0 !important;
-        font-size: 18px !important;
+        padding: 12px 0 !important;
+        font-size: 17px !important;
+      }
+
+      .admin-menu-sublink {
+        padding: 9px 8px !important;
+        font-size: 15px !important;
       }
     }
 

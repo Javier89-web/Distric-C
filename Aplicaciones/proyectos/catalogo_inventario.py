@@ -131,81 +131,131 @@ def _nombre_limpio(descripcion):
 
 
 
-def _volumen_litros_estimado(descripcion):
-    """Estima el contenido de una unidad física a partir de la descripción del catálogo.
+def _contenido_desde_descripcion(descripcion):
+    """Obtiene el contenido de UNA unidad cuando la descripción lo indica.
 
-    Es una ayuda inicial para calcular carga. El administrador puede corregir el peso
-    antes de guardar el producto.
+    Se conserva la unidad original (ml o L) para que el formulario resulte
+    natural al administrador. Si la fuente no informa el contenido, no se
+    inventa un valor y el usuario deberá completarlo.
     """
     texto = (descripcion or "").lower().replace(",", ".")
 
-    # Botellones comerciales de agua suelen estar alrededor de 20 L.
-    if "botellon" in texto or "botellón" in texto:
-        return Decimal("20.0")
-
     patrones = [
-        (r"(\d+(?:\.\d+)?)\s*(?:litros?|ltr\.?|l\b)", Decimal("1")),
-        (r"(\d+(?:\.\d+)?)\s*(?:ml|cm\b)", Decimal("0.001")),
+        (r"(\d+(?:\.\d+)?)\s*(?:litros?|ltr\.?|l\b)", "L"),
+        (r"(\d+(?:\.\d+)?)\s*(?:ml|cm\b)", "ML"),
     ]
-    for patron, factor in patrones:
-        m = re.search(patron, texto, flags=re.I)
-        if m:
-            valor = Decimal(m.group(1)) * factor
-            # El registro AGO-023 dice "2000 litros" en la fuente, pero por su
-            # presentación/precio corresponde razonablemente a 2000 ml.
-            if factor == Decimal("1") and valor > Decimal("50"):
-                valor = valor / Decimal("1000")
-            return max(valor, Decimal("0.10"))
 
-    # Descripciones como "Power de 350" omiten ml.
-    m = re.search(r"\bde\s+(\d{2,4})\b", texto)
-    if m:
-        valor = Decimal(m.group(1))
+    for patron, unidad in patrones:
+        coincidencia = re.search(patron, texto, flags=re.I)
+        if not coincidencia:
+            continue
+
+        valor = Decimal(coincidencia.group(1))
+
+        # En la fuente AGO-023 aparece "2000 litros", pero el producto y
+        # precio corresponden a una presentación de 2000 ml. Se conserva la
+        # corrección que ya manejaba el proyecto.
+        if unidad == "L" and valor > Decimal("50"):
+            return valor, "ML"
+
+        return valor, unidad
+
+    # Algunas descripciones, como "Power de 350", omiten explícitamente ml.
+    coincidencia = re.search(r"\bde\s+(\d{2,4})\b", texto)
+    if coincidencia:
+        valor = Decimal(coincidencia.group(1))
         if valor >= Decimal("100"):
-            return valor / Decimal("1000")
+            return valor, "ML"
 
-    return Decimal("1.0")
-
-
-def _peso_base_estimado(descripcion):
-    """Peso aproximado de una unidad individual, incluyendo envase básico."""
-    volumen = _volumen_litros_estimado(descripcion)
-    # Para bebidas, 1 L ≈ 1 kg. Agregamos un pequeño margen de envase.
-    empaque = Decimal("0.03") if volumen <= Decimal("2") else Decimal("0.08")
-    return (volumen + empaque).quantize(Decimal("0.01"))
+    return None, ""
 
 
-MULTIPLICADOR_PRESENTACION = {
-    "UNIDAD": Decimal("1"),
-    "BOTELLA": Decimal("1"),
-    "GALON": Decimal("1"),
-    "FUNDA": Decimal("6"),
-    "PAQUETE": Decimal("6"),
-    "CAJA": Decimal("12"),
-    "JABA": Decimal("12"),
+def contenido_a_kg(contenido, unidad):
+    """Convierte contenido por unidad a kg para planificación de carga.
+
+    En bebidas se usa la equivalencia operativa 1 L ≈ 1 kg. No pretende
+    sustituir un dato de densidad del fabricante; sirve para la estimación de
+    carga que utiliza el sistema.
+    """
+    if contenido in (None, ""):
+        return None
+
+    valor = Decimal(str(contenido))
+    unidad = (unidad or "").upper()
+
+    factores = {
+        "ML": Decimal("0.001"),
+        "L": Decimal("1"),
+        "G": Decimal("0.001"),
+        "KG": Decimal("1"),
+    }
+
+    factor = factores.get(unidad)
+    if factor is None:
+        return None
+
+    return valor * factor
+
+
+# Solo se usa como sugerencia inicial. El administrador puede indicar la
+# cantidad real de unidades que contiene una caja, paquete o jaba.
+UNIDADES_SUGERIDAS_PRESENTACION = {
+    "UNIDAD": 1,
+    "BOTELLA": 1,
+    "GALON": 1,
+    "PAQUETE": 6,
+    "CAJA": 12,
+    "JABA": 12,
 }
 
 
-def peso_estimado_presentacion(item_catalogo, presentacion):
+def peso_estimado_presentacion(item_catalogo, presentacion, unidades=None):
+    """Calcula el peso estimado de una presentación del catálogo."""
     if not item_catalogo:
         return None
-    base = Decimal(str(item_catalogo.get("peso_base_kg") or "1"))
-    multiplicador = MULTIPLICADOR_PRESENTACION.get((presentacion or "").upper(), Decimal("1"))
-    return (base * multiplicador).quantize(Decimal("0.01"))
+
+    contenido = item_catalogo.get("contenido_unitario")
+    unidad = item_catalogo.get("unidad_contenido")
+    peso_unidad_kg = contenido_a_kg(contenido, unidad)
+    if peso_unidad_kg is None:
+        return None
+
+    cantidad = unidades
+    if cantidad in (None, ""):
+        cantidad = UNIDADES_SUGERIDAS_PRESENTACION.get(
+            (presentacion or "").upper(),
+            1,
+        )
+
+    return (peso_unidad_kg * Decimal(str(cantidad))).quantize(Decimal("0.01"))
+
 
 def catalogo_productos():
-    return [
-        {
-            "codigo": codigo,
-            "descripcion": descripcion,
-            "nombre": _nombre_limpio(descripcion),
-            "marca": _marca_desde_descripcion(descripcion),
-            "precio_referencia": precio,
-            "volumen_litros_estimado": _volumen_litros_estimado(descripcion),
-            "peso_base_kg": _peso_base_estimado(descripcion),
-        }
-        for codigo, descripcion, precio in CATALOGO_INVENTARIO_AGOSTO
-    ]
+    productos = []
+
+    for codigo, descripcion, precio in CATALOGO_INVENTARIO_AGOSTO:
+        contenido, unidad = _contenido_desde_descripcion(descripcion)
+        productos.append(
+            {
+                "codigo": codigo,
+                "descripcion": descripcion,
+                "nombre": _nombre_limpio(descripcion),
+                "marca": _marca_desde_descripcion(descripcion),
+                "precio_referencia": precio,
+                "contenido_unitario": contenido,
+                "unidad_contenido": unidad,
+                # Se conservan estas claves por compatibilidad con cualquier
+                # parte antigua del proyecto que todavía las consulte.
+                "volumen_litros_estimado": (
+                    contenido_a_kg(contenido, unidad)
+                    if unidad in ("ML", "L")
+                    else None
+                ),
+                "peso_base_kg": contenido_a_kg(contenido, unidad),
+            }
+        )
+
+    return productos
 
 
 def producto_catalogo_por_codigo(codigo):

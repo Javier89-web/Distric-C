@@ -53,6 +53,9 @@
             ["menuVehiculos", ["/listadocarros/", "/nuevocarro/", "/editarcarro/", "/vehiculos/"]],
             ["menuProductosCarga", ["/productos-carga/"]],
             ["menuPlanCargas", ["/plan-cargas/"]],
+            ["menuConsultaCargas", ["/consulta-cargas/"]],
+            ["menuTramosGenerales", ["/administrador/rutas/tramos-generales/"]],
+            ["menuCombustible", ["/combustible/precios/"]],
             ["menuPlanificacionRutas", ["/administrador/rutas/planificacion/"]],
             ["menuReportesRutas", ["/administrador/rutas/reportes/"]]
         ];
@@ -63,6 +66,40 @@
                 enlace.classList.add("active");
             }
         });
+    }
+
+    function configurarGruposMenu() {
+        const gruposMenu = Array.from(document.querySelectorAll(".admin-menu-group"));
+        if (!gruposMenu.length) return;
+
+        function cambiarGrupo(grupo, abrir) {
+            const boton = grupo.querySelector(".admin-menu-group-toggle");
+            const submenu = grupo.querySelector(".admin-menu-subgroup");
+            if (!boton || !submenu) return;
+
+            grupo.classList.toggle("is-open", abrir);
+            boton.setAttribute("aria-expanded", abrir ? "true" : "false");
+            submenu.hidden = !abrir;
+        }
+
+        gruposMenu.forEach(function (grupo) {
+            const boton = grupo.querySelector(".admin-menu-group-toggle");
+            if (!boton) return;
+
+            boton.addEventListener("click", function () {
+                const abrir = !grupo.classList.contains("is-open");
+                gruposMenu.forEach(function (otroGrupo) {
+                    cambiarGrupo(otroGrupo, otroGrupo === grupo ? abrir : false);
+                });
+            });
+        });
+
+        const grupoActivo = gruposMenu.find(function (grupo) {
+            return Boolean(grupo.querySelector(".admin-menu-link.active"));
+        });
+        if (grupoActivo) {
+            cambiarGrupo(grupoActivo, true);
+        }
     }
 
     function registrarServiceWorker() {
@@ -94,6 +131,7 @@
         registrarValidacionesComunes();
         mostrarMensajesDjango();
         activarMenuActual();
+        configurarGruposMenu();
         activarScrollTop();
     });
 })();

@@ -13,10 +13,15 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 import dj_database_url
+from dotenv import load_dotenv
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# En desarrollo local se carga automáticamente .env.
+# En Render las variables del panel tienen prioridad porque override=False.
+load_dotenv(BASE_DIR / '.env', override=False)
 
 
 # Quick-start development settings - unsuitable for production
@@ -32,13 +37,20 @@ SECRET_KEY = os.environ.get(
     "django-insecure-local-development-only-change-me",
 )
 
-# Nunca activar DEBUG en Render.
-DEBUG = not IS_RENDER
+# Render siempre trabaja con DEBUG=False. En localhost puede controlarse
+# desde .env con DEBUG=True/False.
+DEBUG_ENV = os.environ.get("DEBUG", "").strip().lower()
+if IS_RENDER:
+    DEBUG = False
+elif DEBUG_ENV:
+    DEBUG = DEBUG_ENV in {"1", "true", "yes", "on"}
+else:
+    DEBUG = True
 
 RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME", "").strip()
 RENDER_EXTERNAL_URL = os.environ.get("RENDER_EXTERNAL_URL", "").rstrip("/")
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"]
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
@@ -72,7 +84,10 @@ X_FRAME_OPTIONS = "DENY"
 
 # URL pública usada para QR y cabeceras de servicios externos. En Render se obtiene
 # automáticamente; también puede sobrescribirse con PUBLIC_BASE_URL.
-PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", RENDER_EXTERNAL_URL).rstrip("/")
+PUBLIC_BASE_URL = os.environ.get(
+    "PUBLIC_BASE_URL",
+    RENDER_EXTERNAL_URL if IS_RENDER else "http://127.0.0.1:8000",
+).rstrip("/")
 
 
 
@@ -85,6 +100,9 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    # Daphne reemplaza runserver por un servidor ASGI en localhost,
+    # permitiendo HTTP + WebSockets con el mismo comando.
+    'daphne',
     'django.contrib.staticfiles',
     'cloudinary',
     'cloudinary_storage',
@@ -156,7 +174,7 @@ CHANNEL_LAYERS = {
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 
 if DATABASE_URL:
-    # Render: usar la Internal Database URL en DATABASE_URL.
+    # Render o una URL PostgreSQL completa en localhost.
     DATABASES = {
         "default": dj_database_url.parse(
             DATABASE_URL,
@@ -165,17 +183,30 @@ if DATABASE_URL:
         )
     }
 else:
-    # Desarrollo local: conserva la base PostgreSQL que ya utilizaba el proyecto.
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.environ.get("POSTGRES_DB", "mapas"),
-            "USER": os.environ.get("POSTGRES_USER", "postgres"),
-            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "root"),
-            "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
-            "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+    # Localhost soporta PostgreSQL (recomendado para replicar Render) o SQLite
+    # para pruebas rápidas. Se controla con LOCAL_DATABASE_ENGINE.
+    LOCAL_DATABASE_ENGINE = os.environ.get(
+        "LOCAL_DATABASE_ENGINE", "postgres"
+    ).strip().lower()
+
+    if LOCAL_DATABASE_ENGINE == "sqlite":
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": BASE_DIR / "db.sqlite3",
+            }
         }
-    }
+    else:
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.postgresql",
+                "NAME": os.environ.get("POSTGRES_DB", "mapas"),
+                "USER": os.environ.get("POSTGRES_USER", "postgres"),
+                "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "root"),
+                "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
+                "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+            }
+        }
 
 
 
@@ -223,28 +254,37 @@ STATICFILES_DIRS = (
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-if not DEBUG:
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-
-
-#CONFIGURANDO CARPETA PARA SUBIR ARCHIVOS
-STORAGES = {
-    "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
-
-
-
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
     'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+}
+
+CLOUDINARY_CONFIGURED = all(
+    CLOUDINARY_STORAGE.get(key)
+    for key in ('CLOUD_NAME', 'API_KEY', 'API_SECRET')
+)
+
+# En Render se conserva Cloudinary + WhiteNoise. En localhost, si no se
+# configuran credenciales de Cloudinary, los archivos se guardan en /media.
+STORAGES = {
+    "default": {
+        "BACKEND": (
+            "cloudinary_storage.storage.MediaCloudinaryStorage"
+            if CLOUDINARY_CONFIGURED
+            else "django.core.files.storage.FileSystemStorage"
+        ),
+    },
+    "staticfiles": {
+        "BACKEND": (
+            "whitenoise.storage.CompressedManifestStaticFilesStorage"
+            if not DEBUG
+            else "django.contrib.staticfiles.storage.StaticFilesStorage"
+        ),
+    },
 }
 
 

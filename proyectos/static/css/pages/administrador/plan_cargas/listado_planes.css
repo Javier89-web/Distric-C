@@ -215,3 +215,26 @@
     .vehicle-data div { grid-template-columns: 1fr; gap: 2px; }
     .vehicle-data strong { text-align: left; }
 }
+
+
+/* Formulario principal de planificación, sin bloque de consulta histórica. */
+.create-only-form {
+    margin-top: 12px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+}
+
+.create-only-form .create-load-grid {
+    grid-template-columns: minmax(260px, 1.6fr) minmax(170px, .75fr) auto;
+}
+
+@media (max-width: 700px) {
+    .load-control-heading .btn-dark { width: 100%; }
+    .create-only-form .create-load-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 520px) {
+    .create-only-form .create-load-grid { grid-template-columns: 1fr; }
+}

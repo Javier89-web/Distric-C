@@ -1,0 +1,237 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+{% block titulo %}Tramos Generales | Distric C{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/rutas/tramos_generales.css' %}?v=33">
+{% endblock %}
+
+{% block contener %}
+<main class="general-route-page">
+  <div class="general-route-container">
+    <header class="general-route-header">
+      <div>
+        <span>Planificación consolidada</span>
+        <h1>Tramos generales</h1>
+        <p>Selecciona el vehículo con su conductor y la carga. Después define los puntos 0 → 1 → 2 → 3 en el mapa.</p>
+      </div>
+      <a href="{% url 'admin_reportes_viajes' %}?tipo=GENERAL" class="general-btn dark">
+        <i class="bi bi-file-earmark-bar-graph"></i> Reportes
+      </a>
+    </header>
+
+    <section class="general-card setup-card">
+      <div class="section-heading">
+        <div>
+          <h2>1. Selecciona vehículo y carga</h2>
+          <p>Los datos se obtienen directamente de las cargas registradas en el sistema.</p>
+        </div>
+      </div>
+
+      {% if not vehiculos %}
+      <div class="general-empty-warning">
+        No existen cargas disponibles para Tramos Generales. Verifica que el vehículo tenga conductor activo y una carga con productos en estado LISTO, CONFIRMADO, EN RUTA o COMPLETADO.
+      </div>
+      {% endif %}
+
+      <div class="setup-grid-two">
+        <div class="field-group">
+          <label for="generalVehicleSelect">Vehículo · conductor</label>
+          <select id="generalVehicleSelect">
+            <option value="">Seleccione un vehículo</option>
+            {% for vehiculo in vehiculos %}
+            <option value="{{ vehiculo.id_vehiculo }}">
+              {{ vehiculo.matricula_vehiculo }} · {{ vehiculo.modelo_vehiculo|default:"Sin modelo" }} · {{ vehiculo.usuario.nombre_usuario }} {{ vehiculo.usuario.apellido_usuario }}
+            </option>
+            {% endfor %}
+          </select>
+          <small id="generalVehicleError"></small>
+        </div>
+
+        <div class="field-group">
+          <label for="generalPlanSelect">Carga</label>
+          <select id="generalPlanSelect" disabled>
+            <option value="">Seleccione primero el vehículo</option>
+          </select>
+          <small id="generalPlanError"></small>
+        </div>
+      </div>
+
+      <div class="selection-preview" id="generalSelectionPreview" hidden>
+        <div><span>Conductor</span><strong id="generalPreviewDriver">—</strong></div>
+        <div><span>Vehículo</span><strong id="generalPreviewVehicle">—</strong></div>
+        <div><span>Carga</span><strong id="generalPreviewLoad">—</strong></div>
+        <div><span>Productos</span><strong id="generalPreviewProducts">—</strong></div>
+      </div>
+
+      <div class="setup-actions">
+        <span id="generalSetupMessage">Selecciona primero el vehículo y luego una carga.</span>
+        <button type="button" class="general-btn red" id="generalAcceptSelectionBtn">
+          Aceptar e iniciar <i class="bi bi-arrow-right"></i>
+        </button>
+      </div>
+    </section>
+
+    <section class="general-card planning-card" id="generalPlanningSection" hidden>
+      <div class="section-heading map-heading">
+        <div>
+          <h2>2. Define la secuencia</h2>
+          <p>El punto 0 es la ubicación inicial. Haz clic en el mapa para agregar los puntos 1, 2, 3… en el orden real del recorrido.</p>
+        </div>
+        <button type="button" class="general-btn outline" id="useCurrentLocationBtn">
+          <i class="bi bi-crosshair"></i> Actualizar ubicación
+        </button>
+      </div>
+
+      <div class="active-plan-strip" id="generalActivePlanStrip">
+        <div><span>Conductor</span><strong id="generalActiveDriver">—</strong></div>
+        <div><span>Vehículo</span><strong id="generalActiveVehicle">—</strong></div>
+        <div><span>Carga inicial</span><strong id="generalActiveWeight">—</strong></div>
+      </div>
+
+      <div class="map-panel">
+        <div id="generalRouteMap"
+             data-google-maps-key="{{ google_maps_api_key|escape }}"
+             aria-label="Mapa de puntos para tramos generales"></div>
+        <div class="map-actions-row">
+          <span id="generalPointCount">0 destinos agregados</span>
+          <div>
+            <button type="button" class="general-btn outline" id="removeLastGeneralPointBtn">
+              <i class="bi bi-arrow-counterclockwise"></i> Quitar último punto
+            </button>
+            <button type="button" class="general-btn outline" id="clearGeneralPointsBtn">
+              <i class="bi bi-trash3"></i> Limpiar destinos
+            </button>
+          </div>
+        </div>
+        <div class="map-note" id="generalMapNote">Preparando el mapa…</div>
+      </div>
+
+      <div class="segments-editor">
+        <div class="segments-editor-heading">
+          <div>
+            <h3>Entregas por tramo</h3>
+            <p>Selecciona un tramo para revisar sus productos, cantidades y nota sin recorrer una lista extensa.</p>
+          </div>
+        </div>
+        <div id="generalSegmentTabs" class="segment-tabs" hidden aria-label="Selector de tramos"></div>
+        <div id="generalSegmentsEditor" class="segments-editor-list compact-segments">
+          <p class="general-segment-placeholder">Agrega el punto 1 en el mapa para crear el primer tramo.</p>
+        </div>
+      </div>
+
+      <form method="post" action="{% url 'admin_calcular_tramos_generales' %}" id="generalRouteForm" class="calculate-card">
+        {% csrf_token %}
+        <input type="hidden" name="plan_id" id="generalPlanInput">
+        <input type="hidden" name="origen_lat" id="generalOriginLat">
+        <input type="hidden" name="origen_lon" id="generalOriginLon">
+        <input type="hidden" name="origen_nombre" id="generalOriginName" value="Punto 0">
+        <input type="hidden" name="puntos_paradas" id="generalStopPoints">
+        <input type="hidden" name="entregas_ajustadas" id="generalDeliveryAdjustments">
+        <input type="hidden" name="notas_tramos" id="generalSegmentNotes">
+        <div>
+          <strong>3. Calcular recorrido completo</strong>
+          <span>Se respetará estrictamente el orden 0 → 1 → 2 → 3 y se utilizará la alternativa recomendada de cada tramo.</span>
+        </div>
+        <button type="submit" class="general-btn red" id="calculateGeneralRouteBtn">
+          Calcular tramos generales <i class="bi bi-arrow-right"></i>
+        </button>
+      </form>
+    </section>
+
+    {% if recientes %}
+    <section class="general-card history-card">
+      <div class="section-heading history-heading">
+        <div>
+          <h2>Historial de cálculos</h2>
+          <p>Busca y revisa los recorridos generales guardados.</p>
+        </div>
+      </div>
+
+      <div class="general-history-filter-panel">
+        <div class="general-history-filter-title">
+          <strong>Filtrar cálculos</strong>
+          <span>Encuentra rápidamente un recorrido guardado.</span>
+        </div>
+        <div class="general-history-filter-grid">
+          <label class="general-history-field general-history-field-search">
+            <span>Buscar</span>
+            <div class="general-history-input-icon">
+              <i class="bi bi-search"></i>
+              <input type="search" id="generalHistorySearch" placeholder="Plan, placa o conductor..." autocomplete="off">
+            </div>
+          </label>
+          <label class="general-history-field">
+            <span>Fecha</span>
+            <input type="date" id="generalHistoryDate">
+          </label>
+          <label class="general-history-field">
+            <span>Tramos</span>
+            <select id="generalHistorySegments">
+              <option value="">Todos</option>
+              <option value="1-5">1 a 5</option>
+              <option value="6-10">6 a 10</option>
+              <option value="11+">11 o más</option>
+            </select>
+          </label>
+          <button type="button" class="general-history-clear" id="generalHistoryClear">
+            <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+          </button>
+        </div>
+      </div>
+
+      <div class="general-history-table-wrap">
+        <table id="generalHistoryTable" class="general-history-table display">
+          <thead>
+            <tr>
+              <th>Plan</th>
+              <th>Vehículo</th>
+              <th>Conductor</th>
+              <th>Fecha</th>
+              <th>Tramos</th>
+              <th>Distancia</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for viaje in recientes %}
+            <tr data-date="{{ viaje.fecha_creacion|date:'Y-m-d' }}" data-tramos="{{ viaje.cantidad_tramos }}">
+              <td data-order="{{ viaje.id_viaje }}"><strong>Plan #{{ viaje.id_viaje }}</strong></td>
+              <td>
+                <strong>{{ viaje.vehiculo.matricula_vehiculo }}</strong>
+                <span>{{ viaje.vehiculo.modelo_vehiculo|default:"Sin modelo" }}</span>
+              </td>
+              <td>
+                <strong>{{ viaje.usuario.nombre_usuario }} {{ viaje.usuario.apellido_usuario }}</strong>
+              </td>
+              <td data-order="{{ viaje.fecha_creacion|date:'YmdHis' }}">{{ viaje.fecha_creacion|date:"d/m/Y H:i" }}</td>
+              <td data-order="{{ viaje.cantidad_tramos }}"><span class="history-count-badge">{{ viaje.cantidad_tramos }}</span></td>
+              <td data-order="{{ viaje.distancia_estimada_total_km|default:0 }}"><strong>{{ viaje.distancia_estimada_total_km|floatformat:2 }} km</strong></td>
+              <td>
+                <a href="{% url 'admin_detalle_tramos_generales' viaje.id_viaje %}" class="history-view-btn">
+                  Ver detalle <i class="bi bi-chevron-right"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% endif %}
+  </div>
+</main>
+
+<div id="generalRouteLoading" class="route-processing-overlay" hidden aria-hidden="true" aria-live="polite">
+  <div class="route-processing-box" role="status">
+    <span class="route-processing-spinner" aria-hidden="true"></span>
+    <strong>Cargando</strong>
+    <span>Calculando rutas...</span>
+  </div>
+</div>
+
+<script id="generalPlansData" type="application/json" data-preselected-plan="{{ plan_preseleccionado_id|default:'' }}">{{ planes_json|safe }}</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/rutas/tramos_generales.js' %}?v=33" defer></script>
+{% endblock %}

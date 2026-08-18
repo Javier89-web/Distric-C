@@ -2,7 +2,7 @@
 {% load static l10n %}
 
 {% block titulo %}Precios de combustible | Distri C{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/administrador/combustible/precios_combustible.css' %}">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/administrador/combustible/precios_combustible.css' %}?v=26">{% endblock %}
 
 {% block contener %}
 <main class="fuel-page">
@@ -69,6 +69,15 @@
                 {% endfor %}
             </div>
 
+            <div class="fuel-note-panel">
+                <label for="nota_ajuste">Nota del ajuste <strong>*</strong></label>
+                <textarea id="nota_ajuste" name="nota_ajuste" maxlength="500" rows="2" placeholder="Motivo del cambio de precio" required></textarea>
+                <div class="fuel-note-footer">
+                    <small>La nota se mostrará en el historial de ajustes.</small>
+                    <span><b id="fuelNoteCounter">0</b>/500</span>
+                </div>
+            </div>
+
             <div class="fuel-actions">
                 <span id="fuelUnitHelp"><i class="bi bi-info-circle"></i> Ejemplo: 3.260 significa USD 3,260 por cada galón.</span>
                 <button type="submit" class="fuel-save" id="btnGuardarPrecios"><i class="bi bi-check-circle"></i> Guardar cambios</button>
@@ -90,7 +99,7 @@
             <div class="history-table-wrap">
                 <table class="history-table" id="tablaHistorialPrecios">
                     <thead>
-                        <tr><th>Fecha</th><th>Combustible</th><th>Cambio por litro</th><th>Valor ingresado</th><th>Administrador</th></tr>
+                        <tr><th>Fecha</th><th>Combustible</th><th>Cambio por litro</th><th>Valor ingresado</th><th>Nota</th><th>Administrador</th></tr>
                     </thead>
                     <tbody>
                     {% for ajuste in historial %}
@@ -102,6 +111,7 @@
                                 <span>→</span> ${{ ajuste.precio_nuevo_litro|floatformat:4 }} / L
                             </td>
                             <td>${{ ajuste.valor_ingresado|floatformat:4 }} / {% if ajuste.unidad_ingresada == 'GALON' %}gal{% else %}L{% endif %}</td>
+                            <td class="history-note">{% if ajuste.nota %}{{ ajuste.nota }}{% else %}—{% endif %}</td>
                             <td>{% if ajuste.administrador %}{{ ajuste.administrador.nombre_usuario }} {{ ajuste.administrador.apellido_usuario }}{% else %}Sistema{% endif %}</td>
                         </tr>
                     {% endfor %}
@@ -114,4 +124,4 @@
 </main>
 {% endblock %}
 
-{% block extra_js %}<script src="{% static 'js/pages/administrador/combustible/precios_combustible.js' %}" defer></script>{% endblock %}
+{% block extra_js %}<script src="{% static 'js/pages/administrador/combustible/precios_combustible.js' %}?v=26" defer></script>{% endblock %}

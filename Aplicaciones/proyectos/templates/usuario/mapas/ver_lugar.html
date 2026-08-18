@@ -5,7 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/rutas_base.css' %}">
-<link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/ver_lugar.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/ver_lugar.css' %}?v=3">
 {% endblock %}
 
 {% block contenido %}
@@ -92,8 +92,16 @@
         </section>
     </div>
 </main>
+
+<div id="routeAlternativesLoading" class="route-processing-overlay" hidden aria-hidden="true" aria-live="polite">
+    <div class="route-processing-box" role="status">
+        <span class="route-processing-spinner" aria-hidden="true"></span>
+        <strong>Cargando</strong>
+        <span>Calculando rutas...</span>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/pages/usuario/mapas/ver_lugar.js' %}" defer></script>
+<script src="{% static 'js/pages/usuario/mapas/ver_lugar.js' %}?v=3" defer></script>
 {% endblock %}

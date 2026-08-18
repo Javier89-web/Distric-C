@@ -32,8 +32,10 @@ from django.views.decorators.http import require_GET, require_POST
 from .ia_predictiva import predecir_consumo_combustible, predecir_costos_tramos, resumen_modelo
 from .models import (
     DetallePlanCarga,
+    EntregaPlanCarga,
     EntregaTramoViaje,
     Lugarguardado,
+    ParadaPlanCarga,
     PlanCarga,
     PrecioCombustible,
     PuntoGPSViaje,
@@ -47,14 +49,20 @@ from .models import (
     Viaje,
 )
 from .rutas_utils import (
+    _peso_arista_grafo,
+    _recortar_entre_proyecciones,
     calcular_metricas_ruta,
+    candidatos_enganche_vial,
+    construir_coords_ruta_visual,
     construir_geometria_ruta_ajustada,
     construir_grafo_con_costos,
+    dijkstra,
     distancia_aprox_metros,
     k_mejores_rutas,
     metricas_avanzadas_ruta,
     metricas_parciales_enganche,
     obtener_index_tramos,
+    penalizacion_enganche_min,
     seleccionar_mejor_enganche_ruta,
 )
 from .reportes_viaje import construir_pdf_viaje
@@ -64,6 +72,7 @@ from .servicios_google import obtener_topografia_ruta_google
 
 
 MAX_RUTAS = 6
+MAX_RUTAS_GENERAL = 3
 COLORES_RUTAS = [
     "#2563eb",
     "#d97706",
@@ -571,6 +580,662 @@ def _sumar_prediccion_enganche(enganche, predicciones_aristas):
         modelo = pred.detalle
     return consumo_base, consumo_predicho, score, modelo, parciales
 
+
+
+
+def _filtrar_candidatos_enganche_general(candidatos, *, tolerancia_m=18.0, distancia_max_m=90.0):
+    """Reduce los enganches de Tramos Generales a las calzadas realmente cercanas.
+
+    El selector compartido permite explorar varias vías para encontrar una ruta. En una
+    planificación completa eso puede provocar que un punto intermedio se proyecte sobre
+    una calle paralela más lejana porque ofrece un costo menor. Aquí se conserva solo el
+    grupo de aristas físicamente próximo al marcador. Es una regla exclusiva de Tramos
+    Generales y no modifica el cálculo normal por tramo.
+    """
+    candidatos = sorted(
+        list(candidatos or []),
+        key=lambda item: (
+            _float(item.get("distancia_ajuste_m"), 999999.0),
+            _float(getattr(item.get("tramo"), "tiempo_base_min", 0.0), 0.0),
+            int(getattr(item.get("tramo"), "pk", 0) or 0),
+        ),
+    )
+    if not candidatos:
+        return []
+
+    distancia_minima = _float(candidatos[0].get("distancia_ajuste_m"), 999999.0)
+    if distancia_minima > float(distancia_max_m):
+        return []
+
+    limite = min(float(distancia_max_m), distancia_minima + float(tolerancia_m))
+    filtrados = [
+        candidato for candidato in candidatos
+        if _float(candidato.get("distancia_ajuste_m"), 999999.0) <= limite
+    ]
+    return filtrados[:10]
+
+
+def _seleccionar_enganche_general_inicial(*, lat_origen, lon_origen, lat_destino, lon_destino, grafo):
+    """Enganche seguro para el primer tramo de una planificación general.
+
+    Prioriza la proximidad física del punto a la calzada antes del ahorro de tiempo.
+    Evita que el primer cálculo salte a una vía paralela o a una rampa alejada.
+    """
+    origenes = _filtrar_candidatos_enganche_general(
+        candidatos_enganche_vial(lat_origen, lon_origen, "ORIGEN", k=18)
+    )
+    destinos = _filtrar_candidatos_enganche_general(
+        candidatos_enganche_vial(lat_destino, lon_destino, "DESTINO", k=18)
+    )
+    if not origenes or not destinos:
+        return None
+
+    mejor = None
+
+    for origen in origenes:
+        for destino in destinos:
+            if origen["tramo"].pk != destino["tramo"].pk:
+                continue
+            if origen["fraccion_proyeccion"] > destino["fraccion_proyeccion"]:
+                continue
+            diferencia = destino["fraccion_proyeccion"] - origen["fraccion_proyeccion"]
+            peso_arista = _peso_arista_grafo(
+                grafo,
+                origen["tramo"].origen_id,
+                origen["tramo"].destino_id,
+                origen["tramo"].tiempo_base_min,
+            )
+            costo = peso_arista * diferencia
+            score = (
+                costo
+                + penalizacion_enganche_min(origen["distancia_ajuste_m"])
+                + penalizacion_enganche_min(destino["distancia_ajuste_m"])
+            )
+            coords = _recortar_entre_proyecciones(
+                origen["geometria_completa"], origen["proyeccion"], destino["proyeccion"]
+            )
+            candidato = {
+                "ruta_directa": True,
+                "ruta_directa_coords": coords,
+                "fraccion_directa": diferencia,
+                "tramo_directo": origen["tramo"],
+                "nodo_origen": None,
+                "nodo_destino": None,
+                "origen": origen,
+                "destino": destino,
+                "costo_ruta_min": costo,
+                "score": score,
+                "enganche_origen_m": origen["distancia_ajuste_m"],
+                "enganche_destino_m": destino["distancia_ajuste_m"],
+            }
+            if mejor is None or candidato["score"] < mejor["score"]:
+                mejor = candidato
+
+    for origen in origenes:
+        for destino in destinos:
+            ruta_tmp, costo_tmp = dijkstra(grafo, origen["nodo_red"], destino["nodo_red"])
+            if not ruta_tmp:
+                continue
+            costo_origen = _peso_arista_grafo(
+                grafo,
+                origen["tramo"].origen_id,
+                origen["tramo"].destino_id,
+                origen["tramo"].tiempo_base_min,
+            ) * origen["fraccion_tramo"]
+            costo_destino = _peso_arista_grafo(
+                grafo,
+                destino["tramo"].origen_id,
+                destino["tramo"].destino_id,
+                destino["tramo"].tiempo_base_min,
+            ) * destino["fraccion_tramo"]
+            score = (
+                costo_tmp
+                + costo_origen
+                + costo_destino
+                + penalizacion_enganche_min(origen["distancia_ajuste_m"])
+                + penalizacion_enganche_min(destino["distancia_ajuste_m"])
+            )
+            candidato = {
+                "ruta_directa": False,
+                "nodo_origen": origen["nodo_obj"],
+                "nodo_destino": destino["nodo_obj"],
+                "ruta_ids": ruta_tmp,
+                "origen": origen,
+                "destino": destino,
+                "costo_ruta_min": costo_tmp + costo_origen + costo_destino,
+                "score": score,
+                "enganche_origen_m": origen["distancia_ajuste_m"],
+                "enganche_destino_m": destino["distancia_ajuste_m"],
+            }
+            if candidato["nodo_origen"] is None or candidato["nodo_destino"] is None:
+                continue
+            if mejor is None or candidato["score"] < mejor["score"]:
+                mejor = candidato
+
+    return mejor
+
+
+def _construir_geometria_general_segura(ruta_ids, enganche, tolerancia_empalme_m=6.0):
+    """Construye la geometría del tramo sin crear conectores rectos artificiales.
+
+    Los tres bloques (recorte de origen, camino Dijkstra y recorte de destino)
+    deben tocarse físicamente. Si la red importada contiene una inconsistencia, se
+    descarta esa alternativa en vez de dibujar una línea recta a través de una
+    manzana.
+    """
+    if enganche.get("ruta_directa"):
+        coords = [list(p) for p in enganche.get("ruta_directa_coords", [])]
+        return coords if len(coords) >= 2 else []
+
+    partes = [
+        list(enganche["origen"].get("geometria_parcial", []) or []),
+        list(construir_coords_ruta_visual(ruta_ids) or []),
+        list(enganche["destino"].get("geometria_parcial", []) or []),
+    ]
+    partes = [parte for parte in partes if parte]
+    if not partes:
+        return []
+
+    for anterior, siguiente in zip(partes[:-1], partes[1:]):
+        if not anterior or not siguiente:
+            continue
+        salto = distancia_aprox_metros(
+            anterior[-1][0], anterior[-1][1], siguiente[0][0], siguiente[0][1]
+        )
+        if salto > float(tolerancia_empalme_m):
+            return []
+
+    salida = []
+    for parte in partes:
+        for punto in parte:
+            try:
+                coord = [float(punto[0]), float(punto[1])]
+            except (TypeError, ValueError, IndexError):
+                continue
+            if not salida or distancia_aprox_metros(
+                salida[-1][0], salida[-1][1], coord[0], coord[1]
+            ) > 0.35:
+                salida.append(coord)
+    return salida
+
+
+def _geometria_general_valida(coords, origen_ajustado, destino_ajustado, distancia_km):
+    """Comprueba extremos y longitud antes de aceptar una alternativa general."""
+    if not coords or len(coords) < 2:
+        return False
+    if distancia_aprox_metros(coords[0][0], coords[0][1], origen_ajustado[0], origen_ajustado[1]) > 3.0:
+        return False
+    if distancia_aprox_metros(coords[-1][0], coords[-1][1], destino_ajustado[0], destino_ajustado[1]) > 3.0:
+        return False
+
+    longitud_m = 0.0
+    for a, b in zip(coords[:-1], coords[1:]):
+        longitud_m += distancia_aprox_metros(a[0], a[1], b[0], b[1])
+    esperada_m = max(_float(distancia_km, 0.0) * 1000.0, 0.0)
+    if esperada_m >= 80.0:
+        relacion = longitud_m / esperada_m if esperada_m else 1.0
+        if relacion < 0.60 or relacion > 1.45:
+            return False
+    return True
+
+
+def _seleccionar_enganche_general_continuo(*, continuidad_origen, lat_destino, lon_destino, grafo):
+    """Mantiene el mismo punto vial entre dos tramos consecutivos del plan general.
+
+    Esta función es exclusiva de ``Tramos Generales``. No modifica el algoritmo
+    compartido por el flujo normal. El destino ajustado del tramo anterior se
+    reutiliza como origen físico del siguiente y, siempre que sea posible, se
+    conserva exactamente la misma arista dirigida. Así se evita que un mismo
+    punto intermedio sea proyectado dos veces sobre calzadas/rampas diferentes.
+    """
+    if not continuidad_origen:
+        return None
+
+    lat_origen = _float(continuidad_origen.get("lat"), None)
+    lon_origen = _float(continuidad_origen.get("lon"), None)
+    tramo_id = continuidad_origen.get("tramo_id")
+    fraccion_previa = _float(continuidad_origen.get("fraccion_proyeccion"), None)
+    if lat_origen is None or lon_origen is None or tramo_id is None:
+        return None
+
+    # El punto ya está sobre la red. Buscamos el mismo tramo dirigido que se usó
+    # como llegada; de ese modo el siguiente segmento continúa legalmente hacia
+    # el nodo final de esa arista antes de tomar otra vía.
+    origenes = candidatos_enganche_vial(
+        lat_origen,
+        lon_origen,
+        "ORIGEN",
+        k=18,
+        radio_max_m=80.0,
+    )
+    mismos = [
+        candidato
+        for candidato in origenes
+        if int(candidato["tramo"].pk) == int(tramo_id)
+    ]
+    if mismos:
+        origen = min(
+            mismos,
+            key=lambda candidato: (
+                abs(_float(candidato.get("fraccion_proyeccion"), 0.0) - (fraccion_previa or 0.0)),
+                _float(candidato.get("distancia_ajuste_m"), 999999.0),
+            ),
+        )
+    else:
+        # Fallback seguro: solo se acepta una arista cuyo punto ajustado esté
+        # prácticamente en el mismo lugar físico. Nunca se salta a una calzada
+        # paralela alejada solo por obtener una ruta más corta.
+        candidatos_cercanos = []
+        for candidato in origenes:
+            punto = candidato.get("punto_ajustado") or []
+            if len(punto) < 2:
+                continue
+            separacion = distancia_aprox_metros(lat_origen, lon_origen, punto[0], punto[1])
+            if separacion <= 3.0:
+                candidatos_cercanos.append((separacion, candidato))
+        if not candidatos_cercanos:
+            return None
+        candidatos_cercanos.sort(key=lambda item: (item[0], _float(item[1]["tramo"].tiempo_base_min, 0.0)))
+        origen = candidatos_cercanos[0][1]
+
+    destinos = _filtrar_candidatos_enganche_general(
+        candidatos_enganche_vial(
+            lat_destino,
+            lon_destino,
+            "DESTINO",
+            k=18,
+        )
+    )
+    if not destinos:
+        return None
+
+    mejor = None
+
+    # Caso directo: origen y destino caen en la misma arista y respetan el
+    # sentido vehicular. Se replica únicamente la selección de enganche; el
+    # resto del cálculo sigue usando las mismas funciones compartidas.
+    for destino in destinos:
+        if origen["tramo"].pk != destino["tramo"].pk:
+            continue
+        if origen["fraccion_proyeccion"] > destino["fraccion_proyeccion"]:
+            continue
+        diferencia = destino["fraccion_proyeccion"] - origen["fraccion_proyeccion"]
+        peso_arista = _peso_arista_grafo(
+            grafo,
+            origen["tramo"].origen_id,
+            origen["tramo"].destino_id,
+            origen["tramo"].tiempo_base_min,
+        )
+        costo = peso_arista * diferencia
+        score = (
+            costo
+            + penalizacion_enganche_min(origen["distancia_ajuste_m"])
+            + penalizacion_enganche_min(destino["distancia_ajuste_m"])
+        )
+        coords = _recortar_entre_proyecciones(
+            origen["geometria_completa"],
+            origen["proyeccion"],
+            destino["proyeccion"],
+        )
+        candidato = {
+            "ruta_directa": True,
+            "ruta_directa_coords": coords,
+            "fraccion_directa": diferencia,
+            "tramo_directo": origen["tramo"],
+            "nodo_origen": None,
+            "nodo_destino": None,
+            "origen": origen,
+            "destino": destino,
+            "costo_ruta_min": costo,
+            "score": score,
+            "enganche_origen_m": origen["distancia_ajuste_m"],
+            "enganche_destino_m": destino["distancia_ajuste_m"],
+        }
+        if mejor is None or candidato["score"] < mejor["score"]:
+            mejor = candidato
+
+    for destino in destinos:
+        ruta_tmp, costo_tmp = dijkstra(
+            grafo,
+            origen["nodo_red"],
+            destino["nodo_red"],
+        )
+        if not ruta_tmp:
+            continue
+        costo_origen = _peso_arista_grafo(
+            grafo,
+            origen["tramo"].origen_id,
+            origen["tramo"].destino_id,
+            origen["tramo"].tiempo_base_min,
+        ) * origen["fraccion_tramo"]
+        costo_destino = _peso_arista_grafo(
+            grafo,
+            destino["tramo"].origen_id,
+            destino["tramo"].destino_id,
+            destino["tramo"].tiempo_base_min,
+        ) * destino["fraccion_tramo"]
+        score = (
+            costo_tmp
+            + costo_origen
+            + costo_destino
+            + penalizacion_enganche_min(origen["distancia_ajuste_m"])
+            + penalizacion_enganche_min(destino["distancia_ajuste_m"])
+        )
+        candidato = {
+            "ruta_directa": False,
+            "nodo_origen": origen["nodo_obj"],
+            "nodo_destino": destino["nodo_obj"],
+            "ruta_ids": ruta_tmp,
+            "origen": origen,
+            "destino": destino,
+            "costo_ruta_min": costo_tmp + costo_origen + costo_destino,
+            "score": score,
+            "enganche_origen_m": origen["distancia_ajuste_m"],
+            "enganche_destino_m": destino["distancia_ajuste_m"],
+        }
+        if candidato["nodo_origen"] is None or candidato["nodo_destino"] is None:
+            continue
+        if mejor is None or candidato["score"] < mejor["score"]:
+            mejor = candidato
+
+    return mejor
+
+
+def _calcular_ruta_recomendada_general(
+    *,
+    vehiculo,
+    plan,
+    carga_actual_kg,
+    lat_origen,
+    lon_origen,
+    lat_dest,
+    lon_dest,
+    continuidad_origen=None,
+):
+    """Calcula la alternativa recomendada para un tramo del plan general.
+
+    Reutiliza el mismo grafo, Random Forest, tráfico, clima y topografía del
+    flujo normal, pero devuelve únicamente la ruta con mejor score para poder
+    construir todos los tramos de una jornada en una sola operación.
+    """
+    rendimiento = _rendimiento(vehiculo)
+    if rendimiento <= 0:
+        raise ValueError("No existe rendimiento configurado para este tipo de vehículo.")
+
+    # Para el primer tramo se usa el punto seleccionado. En los siguientes,
+    # el contexto parte del punto vial exacto donde terminó el tramo anterior.
+    lat_origen_calculo = (
+        _float(continuidad_origen.get("lat"), lat_origen)
+        if continuidad_origen else lat_origen
+    )
+    lon_origen_calculo = (
+        _float(continuidad_origen.get("lon"), lon_origen)
+        if continuidad_origen else lon_origen
+    )
+
+    try:
+        factores_google = obtener_factores_ruta(
+            lat_origen=lat_origen_calculo,
+            lon_origen=lon_origen_calculo,
+            lat_destino=lat_dest,
+            lon_destino=lon_dest,
+        )
+    except Exception as error:
+        factores_google = {
+            "trafico": {
+                "disponible": True,
+                "api_disponible": False,
+                "fuente": "Estimación local de emergencia",
+                "factor_trafico": 1.0,
+                "descripcion_trafico": "tráfico neutral de respaldo",
+                "mensaje": f"No se pudo consultar el contexto: {error}",
+            },
+            "clima": {
+                "disponible": True,
+                "api_disponible": False,
+                "fuente": "Estimación climática neutral",
+                "factor_clima": 1.0,
+                "descripcion_clima": "condición neutral de respaldo",
+                "mensaje": f"No se pudo consultar el contexto: {error}",
+            },
+        }
+
+    tramos_red = list(obtener_index_tramos().values())
+    predicciones_aristas = predecir_costos_tramos(
+        tramos_red,
+        vehiculo=vehiculo,
+        carga_kg=float(carga_actual_kg),
+        capacidad_kg=float(plan.capacidad_kg or 1),
+        rendimiento_km_l=rendimiento,
+        factores_google=factores_google,
+        fecha_hora=timezone.localtime(),
+    )
+
+    grafo = construir_grafo_con_costos({
+        clave: prediccion.costo_dijkstra
+        for clave, prediccion in predicciones_aristas.items()
+    })
+
+    if continuidad_origen:
+        enganche = _seleccionar_enganche_general_continuo(
+            continuidad_origen=continuidad_origen,
+            lat_destino=lat_dest,
+            lon_destino=lon_dest,
+            grafo=grafo,
+        )
+        if not enganche:
+            raise ValueError(
+                "No se pudo mantener la continuidad vial entre dos tramos generales. "
+                "Ajusta ligeramente el punto intermedio y vuelve a calcular."
+            )
+    else:
+        enganche = _seleccionar_enganche_general_inicial(
+            lat_origen=lat_origen,
+            lon_origen=lon_origen,
+            lat_destino=lat_dest,
+            lon_destino=lon_dest,
+            grafo=grafo,
+        )
+        if not enganche:
+            raise ValueError(
+                "No se encontró una conexión vial segura para uno de los puntos. "
+                "Coloca el marcador más cerca de la calzada y vuelve a calcular."
+            )
+
+    if enganche.get("ruta_directa"):
+        rutas_candidatas = [([], float(enganche.get("costo_ruta_min", 0.0)))]
+    else:
+        rutas_candidatas = k_mejores_rutas(
+            grafo,
+            enganche["nodo_origen"].id_nodo,
+            enganche["nodo_destino"].id_nodo,
+            k=MAX_RUTAS_GENERAL,
+            penalizacion_base=1.55,
+            umbral_similitud=0.82,
+        )
+        if 0 < len(rutas_candidatas) < MAX_RUTAS_GENERAL:
+            adicionales = k_mejores_rutas(
+                grafo,
+                enganche["nodo_origen"].id_nodo,
+                enganche["nodo_destino"].id_nodo,
+                k=MAX_RUTAS_GENERAL,
+                penalizacion_base=1.55,
+                umbral_similitud=0.95,
+            )
+            existentes = {tuple(ruta) for ruta, _ in rutas_candidatas}
+            for ruta, costo in adicionales:
+                firma = tuple(ruta)
+                if firma not in existentes:
+                    rutas_candidatas.append((ruta, costo))
+                    existentes.add(firma)
+                if len(rutas_candidatas) >= MAX_RUTAS_GENERAL:
+                    break
+
+    if not rutas_candidatas:
+        raise ValueError("No se encontraron rutas transitables entre dos puntos del plan general.")
+
+    parcial_base, parcial_predicho, parcial_score, parcial_modelo, parciales = (
+        _sumar_prediccion_enganche(enganche, predicciones_aristas)
+    )
+    factor_trafico_ruta = _float(
+        (factores_google.get("trafico", {}) or {}).get("factor_trafico"),
+        1.0,
+    )
+    precio_litro = _precio_litro(vehiculo)
+    detalles = []
+
+    for ruta_ids, _ in rutas_candidatas:
+        metricas = metricas_avanzadas_ruta(ruta_ids)
+        metricas["distancia_km"] += parciales.get("distancia_km", 0.0)
+        metricas["tiempo_min"] += parciales.get("tiempo_min", 0.0)
+        metricas["tiempo_min"] *= factor_trafico_ruta
+        metricas["velocidad_promedio_kmh"] = (
+            metricas["distancia_km"] / metricas["tiempo_min"] * 60.0
+            if metricas["tiempo_min"] > 0 else 0.0
+        )
+
+        consumo_base, consumo_predicho, score, modelo = _sumar_prediccion_ruta(
+            ruta_ids,
+            predicciones_aristas,
+        )
+        consumo_base += parcial_base
+        consumo_predicho += parcial_predicho
+        score += parcial_score
+        if not modelo:
+            modelo = parcial_modelo
+
+        if enganche.get("ruta_directa"):
+            tipo_via = enganche["tramo_directo"].tipo_via or "URBANA"
+            distribucion = {tipo_via: 1}
+            detenciones = 1
+        else:
+            tipo_via = metricas["tipo_via_dominante"]
+            distribucion = metricas["distribucion_vias"]
+            detenciones = metricas["detenciones_estimadas"]
+
+        coords = _construir_geometria_general_segura(ruta_ids, enganche)
+        if not _geometria_general_valida(
+            coords,
+            enganche["origen"]["punto_ajustado"],
+            enganche["destino"]["punto_ajustado"],
+            metricas["distancia_km"],
+        ):
+            continue
+
+        topografia = obtener_topografia_ruta_google(
+            coords,
+            distancia_ruta_km=metricas["distancia_km"],
+        )
+        pendiente_pct = _float(topografia.get("pendiente_pct_ia"), 0.0)
+        if topografia.get("disponible") and pendiente_pct > 0:
+            argumentos_ia = {
+                "distancia_km": metricas["distancia_km"],
+                "tiempo_min": metricas["tiempo_min"],
+                "consumo_base": consumo_base,
+                "consumo_ajustado_peso": consumo_predicho,
+                "factor_peso": 1.0,
+                "factores_google": factores_google,
+                "carga_kg": float(carga_actual_kg),
+                "peso_vehiculo_kg": _peso_vehiculo_kg(vehiculo),
+                "capacidad_kg": float(plan.capacidad_kg or 1),
+                "cilindraje_l": _float(getattr(vehiculo, "cilindraje", 0), 0.0),
+                "rendimiento_km_l": rendimiento,
+                "tipo_via": tipo_via,
+                "detenciones_estimadas": detenciones,
+                "fecha_hora": timezone.localtime(),
+            }
+            referencia_plana = predecir_consumo_combustible(
+                pendiente_pct=0.0,
+                **argumentos_ia,
+            )
+            referencia_topografica = predecir_consumo_combustible(
+                pendiente_pct=pendiente_pct,
+                **argumentos_ia,
+            )
+            consumo_plano = _float(referencia_plana.get("consumo_predicho_litros"), 0.0)
+            consumo_con_pendiente = _float(
+                referencia_topografica.get("consumo_predicho_litros"),
+                consumo_plano,
+            )
+            factor_topografico = 1.0
+            if consumo_plano > 0:
+                factor_topografico = consumo_con_pendiente / consumo_plano
+            factor_topografico = min(max(factor_topografico, 1.0), 1.35)
+            consumo_predicho *= factor_topografico
+            score = (consumo_predicho * 60.0 * 0.65) + (metricas["tiempo_min"] * 0.35)
+            topografia["factor_consumo_aplicado"] = round(factor_topografico, 5)
+        else:
+            topografia["factor_consumo_aplicado"] = 1.0
+
+        detalles.append({
+            "coords": coords,
+            "distancia_km": metricas["distancia_km"],
+            "tiempo_min": metricas["tiempo_min"],
+            "velocidad_promedio_kmh": metricas["velocidad_promedio_kmh"],
+            "detenciones_estimadas": detenciones,
+            "tipo_via_dominante": tipo_via,
+            "distribucion_vias": distribucion,
+            "consumo_base": consumo_base,
+            "consumo_predicho": consumo_predicho,
+            "costo_estimado": consumo_predicho * float(precio_litro),
+            "score": score,
+            "modelo": modelo,
+            "topografia": topografia,
+        })
+
+    if not detalles:
+        raise ValueError("La red vial no produjo una geometría continua para uno de los tramos.")
+
+    detalles.sort(key=lambda item: (item["score"], item["consumo_predicho"], item["tiempo_min"]))
+    mejor = detalles[0]
+    trafico = factores_google.get("trafico", {}) or {}
+    clima = factores_google.get("clima", {}) or {}
+    mejor["trafico"] = trafico
+    mejor["clima"] = clima
+    mejor["origen_ajustado"] = enganche["origen"]["punto_ajustado"]
+    mejor["destino_ajustado"] = enganche["destino"]["punto_ajustado"]
+    mejor["ajuste_origen_m"] = enganche.get("enganche_origen_m", 0)
+    mejor["ajuste_destino_m"] = enganche.get("enganche_destino_m", 0)
+    mejor["factores_google"] = factores_google
+    # Metadato interno exclusivo del cálculo general. Permite que el siguiente
+    # tramo arranque exactamente en la arista/punto donde terminó este.
+    mejor["continuidad_destino"] = {
+        "tramo_id": int(enganche["destino"]["tramo"].pk),
+        "lat": float(enganche["destino"]["punto_ajustado"][0]),
+        "lon": float(enganche["destino"]["punto_ajustado"][1]),
+        "fraccion_proyeccion": float(enganche["destino"].get("fraccion_proyeccion", 0.0)),
+    }
+    return mejor
+
+
+def _proyecciones_tramos_generales(tramos, servicio_por_parada_min=15.0):
+    """Resume cuántas entregas caben aproximadamente en 3 h, 6 h y 1 día.
+
+    No inventa una probabilidad estadística: usa el tiempo estimado de ruta y
+    agrega una reserva operativa explícita de 15 minutos por parada.
+    """
+    tramos = list(tramos or [])
+    acumulado = 0.0
+    llegadas = []
+    for tramo in tramos:
+        acumulado += _float(tramo.tiempo_estimado_min)
+        acumulado += float(servicio_por_parada_min)
+        llegadas.append(acumulado)
+
+    total = len(tramos)
+    resultado = []
+    for etiqueta, minutos in (("3 horas", 180), ("6 horas", 360), ("1 día", 1440)):
+        alcanzados = sum(1 for valor in llegadas if valor <= minutos)
+        porcentaje = (alcanzados / total * 100.0) if total else 0.0
+        resultado.append({
+            "etiqueta": etiqueta,
+            "minutos": minutos,
+            "destinos_alcanzados": alcanzados,
+            "destinos_totales": total,
+            "porcentaje": round(porcentaje, 1),
+            "completo": bool(total and alcanzados == total),
+        })
+    return resultado, acumulado
 
 def _crear_viaje_y_tramo(
     *,
@@ -1887,6 +2552,896 @@ def eliminar_viaje_historial(request, id_viaje):
 # PLANIFICACIÓN Y REPORTES DE RUTAS - ADMINISTRADOR
 # =============================================================================
 
+
+def _planes_para_tramos_generales():
+    """Cargas existentes utilizables exclusivamente por Tramos Generales.
+
+    La selección de este módulo debe reutilizar los datos ya registrados en
+    Vehiculo, Usuario y PlanCarga. No exige que el plan esté confirmado: un
+    plan BORRADOR con productos también puede utilizarse para una simulación
+    administrativa. Solo se excluyen los planes cancelados.
+    """
+    return (
+        PlanCarga.objects
+        .filter(
+            vehiculo__usuario__isnull=False,
+            vehiculo__usuario__activo=True,
+            vehiculo__usuario__tiporol="USUARIO",
+        )
+        .exclude(estado="CANCELADO")
+        .select_related("vehiculo", "vehiculo__usuario")
+        .prefetch_related("detalles__producto")
+        .distinct()
+        .order_by("vehiculo__usuario__apellido_usuario", "-fecha_planificada", "-id_plan_carga")
+    )
+
+
+def admin_tramos_generales(request):
+    administrador = _administrador_actual(request)
+    if not administrador:
+        messages.error(request, "No tienes permisos para acceder a los tramos generales.")
+        return redirect("login")
+
+    planes = []
+    planes_json = {}
+
+    # El selector Vehículo · conductor se alimenta directamente de los datos
+    # existentes y NO depende de que exista una carga en un estado específico.
+    # Así nunca desaparece un conductor/vehículo válido por un filtro de planes.
+    vehiculos = list(
+        Vehiculo.objects
+        .filter(
+            usuario__isnull=False,
+            usuario__activo=True,
+            usuario__tiporol="USUARIO",
+        )
+        .select_related("usuario")
+        .order_by("usuario__apellido_usuario", "usuario__nombre_usuario", "matricula_vehiculo")
+    )
+
+    for plan in _planes_para_tramos_generales():
+        detalles = list(
+            plan.detalles.select_related("producto")
+            .filter(cantidad_actual__gt=0)
+            .order_by("producto__nombre_producto")
+        )
+        if not detalles:
+            continue
+
+        peso_total = plan.peso_total_kg
+        if peso_total <= 0:
+            continue
+
+        vehiculo = plan.vehiculo
+        usuario = vehiculo.usuario
+
+        productos = []
+        for detalle in detalles:
+            producto = detalle.producto
+            productos.append({
+                "detalle_id": detalle.id_detalle_plan_carga,
+                "producto": producto.nombre_producto,
+                "marca": producto.marca_producto or "",
+                "presentacion": producto.get_presentacion_producto_display(),
+                "presentacion_resumen": producto.presentacion_resumen,
+                "contenido_formateado": producto.contenido_unitario_formateado,
+                "unidad_carga": producto.unidad_carga,
+                "unidad_carga_plural": producto.unidad_carga_plural,
+                "cantidad": int(detalle.cantidad_actual or 0),
+                "peso_unitario_kg": float(detalle.peso_unitario_kg or 0),
+                "peso_kg": float(detalle.peso_actual_kg or 0),
+            })
+
+        fila = {
+            "plan": plan,
+            "vehiculo": vehiculo,
+            "usuario": usuario,
+            "peso": peso_total,
+            "productos": len(productos),
+            "revisado": bool(plan.revisado_por_usuario),
+        }
+        planes.append(fila)
+
+        planes_json[str(plan.id_plan_carga)] = {
+            "id": plan.id_plan_carga,
+            "vehiculo_id": vehiculo.id_vehiculo,
+            "vehiculo": vehiculo.matricula_vehiculo,
+            "modelo": vehiculo.modelo_vehiculo or "Sin modelo",
+            "conductor": f"{usuario.nombre_usuario} {usuario.apellido_usuario}".strip(),
+            "fecha": plan.fecha_planificada.strftime("%d/%m/%Y"),
+            "estado": plan.get_estado_display(),
+            "revisado": bool(plan.revisado_por_usuario),
+            "peso_kg": float(peso_total),
+            "productos": productos,
+        }
+
+    recientes = (
+        Viaje.objects
+        .filter(es_plan_general=True, administrador_ejecutor=administrador)
+        .select_related("usuario", "vehiculo", "plan_carga")
+        .annotate(cantidad_tramos=Count("tramos"))
+        .order_by("-fecha_creacion")
+    )
+
+    plan_preseleccionado_id = str(request.GET.get("plan") or "").strip()
+    if plan_preseleccionado_id not in planes_json:
+        plan_preseleccionado_id = ""
+
+    return render(request, "administrador/rutas/tramos_generales.html", {
+        "vehiculos": vehiculos,
+        "planes_disponibles": planes,
+        "planes_json": json.dumps(planes_json),
+        "plan_preseleccionado_id": plan_preseleccionado_id,
+        "google_maps_api_key": settings.GOOGLE_MAPS_API_KEY,
+        "recientes": recientes,
+    })
+
+
+@require_POST
+def admin_calcular_tramos_generales(request):
+    administrador = _administrador_actual(request)
+    if not administrador:
+        return redirect("login")
+
+    plan_id = request.POST.get("plan_id")
+    origen_lat = _float(request.POST.get("origen_lat"), None)
+    origen_lon = _float(request.POST.get("origen_lon"), None)
+    origen_nombre = (request.POST.get("origen_nombre") or "Punto 0").strip()[:250]
+
+    if None in {origen_lat, origen_lon}:
+        messages.error(request, "Selecciona el punto 0 de inicio en el mapa.")
+        return redirect("admin_tramos_generales")
+
+    try:
+        plan = (
+            PlanCarga.objects
+            .select_related("vehiculo", "vehiculo__usuario")
+            .prefetch_related("detalles__producto")
+            .get(
+                id_plan_carga=plan_id,
+                vehiculo__usuario__isnull=False,
+                vehiculo__usuario__activo=True,
+                vehiculo__usuario__tiporol="USUARIO",
+                estado__in=["BORRADOR", "LISTO", "CONFIRMADO", "EN_RUTA", "COMPLETADO"],
+            )
+        )
+    except (PlanCarga.DoesNotExist, TypeError, ValueError):
+        messages.error(request, "La carga seleccionada no es válida.")
+        return redirect("admin_tramos_generales")
+
+    detalles = list(
+        plan.detalles.select_related("producto")
+        .filter(cantidad_actual__gt=0)
+        .order_by("producto__nombre_producto")
+    )
+    if not detalles or plan.peso_total_kg <= 0:
+        messages.error(request, "La carga seleccionada no tiene productos disponibles.")
+        return redirect("admin_tramos_generales")
+
+    puntos_texto = (request.POST.get("puntos_paradas") or "").strip()
+    try:
+        puntos_recibidos = json.loads(puntos_texto) if puntos_texto else []
+    except (json.JSONDecodeError, TypeError):
+        puntos_recibidos = []
+
+    puntos = []
+    if isinstance(puntos_recibidos, list):
+        for indice, fila in enumerate(puntos_recibidos, start=1):
+            if not isinstance(fila, dict):
+                continue
+            lat = _float(fila.get("lat"), None)
+            lon = _float(fila.get("lon"), None)
+            if lat is None or lon is None:
+                continue
+            puntos.append({
+                "numero": indice,
+                "nombre": str(fila.get("nombre") or f"Punto {indice}")[:250],
+                "lat": float(lat),
+                "lon": float(lon),
+            })
+
+    if not puntos:
+        messages.error(request, "Agrega al menos el punto 1 en el mapa antes de calcular.")
+        return redirect("admin_tramos_generales")
+
+    ajustes_por_punto = {}
+    ajustes_texto = (request.POST.get("entregas_ajustadas") or "").strip()
+    if ajustes_texto:
+        try:
+            ajustes_recibidos = json.loads(ajustes_texto)
+        except (json.JSONDecodeError, TypeError):
+            ajustes_recibidos = []
+        if isinstance(ajustes_recibidos, list):
+            for fila in ajustes_recibidos:
+                if not isinstance(fila, dict):
+                    continue
+                try:
+                    punto_numero = int(fila.get("punto_numero"))
+                except (TypeError, ValueError):
+                    continue
+                mapa = {}
+                entregas = fila.get("entregas", [])
+                if isinstance(entregas, list):
+                    for entrega in entregas:
+                        try:
+                            detalle_id = int(entrega.get("detalle_id"))
+                            cantidad = int(entrega.get("cantidad"))
+                        except (TypeError, ValueError, AttributeError):
+                            continue
+                        mapa[detalle_id] = cantidad
+                ajustes_por_punto[punto_numero] = mapa
+
+    notas_por_punto = {}
+    notas_texto = (request.POST.get("notas_tramos") or "").strip()
+    if notas_texto:
+        try:
+            notas_recibidas = json.loads(notas_texto)
+        except (json.JSONDecodeError, TypeError):
+            notas_recibidas = {}
+        if isinstance(notas_recibidas, dict):
+            for clave, valor in notas_recibidas.items():
+                try:
+                    punto_numero = int(clave)
+                except (TypeError, ValueError):
+                    continue
+                notas_por_punto[punto_numero] = str(valor or "").strip()[:1000]
+
+    vehiculo = plan.vehiculo
+    usuario = vehiculo.usuario
+    snapshot = _snapshot_carga_plan(plan)
+    carga_inicial_kg = _peso_snapshot_carga(snapshot)
+    cantidades_restantes = {
+        int(item["detalle_id"]): int(item.get("cantidad_actual") or 0)
+        for item in snapshot
+    }
+    detalles_por_id = {detalle.id_detalle_plan_carga: detalle for detalle in detalles}
+    carga_actual_kg = carga_inicial_kg
+
+    calculos = []
+    punto_origen = {
+        "nombre": origen_nombre or "Punto 0",
+        "lat": float(origen_lat),
+        "lon": float(origen_lon),
+    }
+    continuidad_origen = None
+
+    try:
+        for indice, punto_destino in enumerate(puntos, start=1):
+            ruta = _calcular_ruta_recomendada_general(
+                vehiculo=vehiculo,
+                plan=plan,
+                carga_actual_kg=carga_actual_kg,
+                lat_origen=punto_origen["lat"],
+                lon_origen=punto_origen["lon"],
+                lat_dest=punto_destino["lat"],
+                lon_dest=punto_destino["lon"],
+                continuidad_origen=continuidad_origen,
+            )
+
+            # Protección adicional: dos geometrías consecutivas deben compartir
+            # el mismo punto físico. Si no ocurre, se detiene el plan general en
+            # lugar de guardar una ruta visualmente partida o cruzada.
+            if calculos:
+                fin_anterior = calculos[-1]["ruta"].get("coords", [])[-1]
+                inicio_actual = (ruta.get("coords") or [None])[0]
+                if not inicio_actual:
+                    raise ValueError("Uno de los tramos generales no produjo una geometría válida.")
+                separacion_empalme = distancia_aprox_metros(
+                    fin_anterior[0],
+                    fin_anterior[1],
+                    inicio_actual[0],
+                    inicio_actual[1],
+                )
+                if separacion_empalme > 3.0:
+                    raise ValueError(
+                        f"El empalme entre los tramos {indice - 2} y {indice - 1} quedó separado "
+                        f"{separacion_empalme:.1f} m. Ajusta el punto intermedio para mantener "
+                        "una ruta vehicular continua."
+                    )
+                # Unifica la coordenada compartida para que no exista ni siquiera
+                # una separación visual por redondeo entre dos tramos consecutivos.
+                ruta["coords"][0] = list(fin_anterior)
+                ruta["origen_ajustado"] = list(fin_anterior)
+
+            punto_numero = indice
+            ajustes_punto = ajustes_por_punto.get(punto_numero, {})
+            entregas = []
+            peso_entregado = Decimal("0.00")
+
+            for detalle in detalles:
+                detalle_id = int(detalle.id_detalle_plan_carga)
+                disponible = int(cantidades_restantes.get(detalle_id, 0))
+                cantidad = ajustes_punto.get(detalle_id, 0)
+                if cantidad < 0:
+                    raise ValueError("Las cantidades a entregar no pueden ser negativas.")
+                if cantidad > disponible:
+                    raise ValueError(
+                        f"La entrega de {detalle.producto.nombre_producto} en el punto {punto_numero} "
+                        f"supera la cantidad disponible ({disponible})."
+                    )
+
+                if cantidad > 0:
+                    producto = detalle.producto
+                    peso_unitario = _decimal(detalle.peso_unitario_kg)
+                    peso = Decimal(cantidad) * peso_unitario
+                    peso_entregado += peso
+                    entregas.append({
+                        "detalle": detalles_por_id[detalle_id],
+                        "producto_nombre": producto.nombre_producto,
+                        "marca_producto": producto.marca_producto or "",
+                        "presentacion_producto": producto.get_presentacion_producto_display(),
+                        "cantidad": cantidad,
+                        "peso_unitario_kg": peso_unitario,
+                    })
+
+                cantidades_restantes[detalle_id] = disponible - cantidad
+
+            carga_restante = max(carga_actual_kg - peso_entregado, Decimal("0.00"))
+            calculos.append({
+                "orden": indice,
+                "origen": punto_origen,
+                "destino": punto_destino,
+                "ruta": ruta,
+                "carga_inicio_kg": carga_actual_kg,
+                "peso_entregado_kg": peso_entregado,
+                "carga_restante_kg": carga_restante,
+                "entregas": entregas,
+                "nota": notas_por_punto.get(punto_numero, ""),
+            })
+            carga_actual_kg = carga_restante
+            # El nombre/coordenada original se conserva para la interfaz y el
+            # reporte; el cálculo siguiente parte del punto vial ajustado.
+            punto_origen = punto_destino
+            continuidad_origen = ruta.get("continuidad_destino")
+
+    except ValueError as error:
+        messages.error(request, str(error))
+        return redirect("admin_tramos_generales")
+    except Exception:
+        logger.exception("Error calculando tramos generales para el plan %s", plan.id_plan_carga)
+        messages.error(request, "No se pudo completar el cálculo general. Revisa los puntos y la red vial e inténtalo nuevamente.")
+        return redirect("admin_tramos_generales")
+
+    if not calculos:
+        messages.error(request, "No fue posible generar los tramos generales.")
+        return redirect("admin_tramos_generales")
+
+    # Última barrera antes de guardar: ningún plan nuevo puede persistir con
+    # tramos flotantes, invertidos o ajustados demasiado lejos del marcador.
+    fin_validado = None
+    for item in calculos:
+        ruta_validar = item.get("ruta", {})
+        coords_validar = _coords_general_limpias(ruta_validar.get("coords", []))
+        if len(coords_validar) < 2:
+            messages.error(request, "Uno de los tramos no produjo una geometría vial válida.")
+            return redirect("admin_tramos_generales")
+
+        origen_ajustado = ruta_validar.get("origen_ajustado") or coords_validar[0]
+        destino_ajustado = ruta_validar.get("destino_ajustado") or coords_validar[-1]
+        if distancia_aprox_metros(
+            coords_validar[0][0], coords_validar[0][1], origen_ajustado[0], origen_ajustado[1]
+        ) > 3.0 or distancia_aprox_metros(
+            coords_validar[-1][0], coords_validar[-1][1], destino_ajustado[0], destino_ajustado[1]
+        ) > 3.0:
+            messages.error(request, "La red vial generó un extremo inconsistente. Ajusta ligeramente el punto y vuelve a calcular.")
+            return redirect("admin_tramos_generales")
+
+        if fin_validado is not None and distancia_aprox_metros(
+            fin_validado[0], fin_validado[1], coords_validar[0][0], coords_validar[0][1]
+        ) > 3.0:
+            messages.error(request, "La secuencia de tramos no quedó físicamente continua. Ajusta el punto intermedio y vuelve a calcular.")
+            return redirect("admin_tramos_generales")
+
+        destino_original = item.get("destino", {})
+        if distancia_aprox_metros(
+            float(destino_original.get("lat")),
+            float(destino_original.get("lon")),
+            float(destino_ajustado[0]),
+            float(destino_ajustado[1]),
+        ) > 95.0:
+            messages.error(request, "Uno de los destinos quedó demasiado lejos de la calzada. Coloca el punto más cerca de una vía y vuelve a calcular.")
+            return redirect("admin_tramos_generales")
+
+        ruta_validar["coords"] = coords_validar
+        fin_validado = list(coords_validar[-1])
+
+    with transaction.atomic():
+        ubicacion_origen = UbicacionVehiculo.objects.create(
+            vehiculo=vehiculo,
+            latitud=origen_lat,
+            longitud=origen_lon,
+        )
+        ultimo_punto = puntos[-1]
+        viaje = Viaje.objects.create(
+            usuario=usuario,
+            vehiculo=vehiculo,
+            origen=ubicacion_origen,
+            destino=None,
+            plan_carga=plan,
+            es_prueba_administrativa=True,
+            es_plan_general=True,
+            administrador_ejecutor=administrador,
+            carga_prueba_snapshot=snapshot,
+            estado="PLANIFICADO",
+            origen_nombre=origen_nombre,
+            origen_latitud=origen_lat,
+            origen_longitud=origen_lon,
+            destino_final_nombre=ultimo_punto["nombre"],
+            destino_final_latitud=ultimo_punto["lat"],
+            destino_final_longitud=ultimo_punto["lon"],
+            carga_inicial_kg=carga_inicial_kg,
+            carga_final_kg=carga_actual_kg,
+            notas_cierre="Plan general calculado en secuencia con puntos seleccionados en el mapa.",
+        )
+
+        total_distancia = Decimal("0.000")
+        total_tiempo = Decimal("0.00")
+        total_consumo = Decimal("0.000")
+        total_costo = Decimal("0.00")
+        acumulado_operativo = 0.0
+
+        for item in calculos:
+            ruta = item["ruta"]
+            trafico = ruta.get("trafico", {}) or {}
+            clima = ruta.get("clima", {}) or {}
+            modelo = ruta.get("modelo", {}) or {}
+            acumulado_operativo += _float(ruta["tiempo_min"]) + 15.0
+            detalle_prediccion = {
+                "modelo": modelo,
+                "trafico": trafico,
+                "clima": clima,
+                "topografia": ruta.get("topografia", {}),
+                "velocidad_promedio_kmh": round(_float(ruta.get("velocidad_promedio_kmh")), 2),
+                "detenciones_estimadas": ruta.get("detenciones_estimadas", 0),
+                "tipo_via_dominante": ruta.get("tipo_via_dominante", "URBANA"),
+                "distribucion_vias": ruta.get("distribucion_vias", {}),
+                "peso_vehiculo_kg": round(_peso_vehiculo_kg(vehiculo), 2),
+                "carga_kg": round(float(item["carga_inicio_kg"]), 2),
+                "plan_general": {
+                    "punto_origen": item["orden"] - 1,
+                    "punto_destino": item["orden"],
+                    "servicio_estimado_min": 15,
+                    "acumulado_operativo_min": round(acumulado_operativo, 2),
+                    "origen_original": [item["origen"]["lat"], item["origen"]["lon"]],
+                    "destino_original": [item["destino"]["lat"], item["destino"]["lon"]],
+                    "nota_planificacion": item["nota"],
+                },
+            }
+
+            tramo = TramoViaje.objects.create(
+                viaje=viaje,
+                orden=item["orden"],
+                estado="PREPARADO",
+                origen_nombre=item["origen"]["nombre"],
+                origen_latitud=ruta["origen_ajustado"][0],
+                origen_longitud=ruta["origen_ajustado"][1],
+                destino_nombre=item["destino"]["nombre"],
+                destino_latitud=ruta["destino_ajustado"][0],
+                destino_longitud=ruta["destino_ajustado"][1],
+                carga_inicio_kg=item["carga_inicio_kg"],
+                peso_entregado_kg=item["peso_entregado_kg"],
+                carga_restante_kg=item["carga_restante_kg"],
+                distancia_estimada_km=_decimal(ruta["distancia_km"]),
+                tiempo_estimado_min=_decimal(ruta["tiempo_min"]),
+                consumo_base_l=_decimal(ruta["consumo_base"]),
+                consumo_estimado_l=_decimal(ruta["consumo_predicho"]),
+                costo_estimado=_decimal(ruta["costo_estimado"]),
+                trafico_factor=_decimal(trafico.get("factor_trafico", 1.0)),
+                trafico_descripcion=str(trafico.get("descripcion_trafico", "tráfico neutral de respaldo"))[:100],
+                clima_factor=_decimal(clima.get("factor_clima", 1.0)),
+                clima_descripcion=str(clima.get("descripcion_clima", "condición neutral de respaldo"))[:150],
+                temperatura_c=(
+                    _decimal(clima.get("temperatura"))
+                    if clima.get("temperatura") is not None else None
+                ),
+                modelo_ia=modelo.get("modelo", "Random Forest Regressor"),
+                detalle_prediccion=detalle_prediccion,
+                geometria_ruta=ruta["coords"],
+                nota_finalizacion=item["nota"],
+            )
+            opcion = RutaOpcion.objects.create(
+                viaje=viaje,
+                tramo=tramo,
+                tipo="RECOMENDADA",
+                indice_opcion=1,
+                es_recomendada=True,
+                seleccionada=True,
+                tiempo_min=ruta["tiempo_min"],
+                distancia_km=ruta["distancia_km"],
+                consumo_litros=ruta["consumo_predicho"],
+                costo_estimado=ruta["costo_estimado"],
+                combustible_tipo=vehiculo.tipocombustible_vehiculo,
+                geometria=ruta["coords"],
+                fuente_ruta="Dijkstra + teoría de grafos + Random Forest",
+                consumo_base_litros=_decimal(ruta["consumo_base"]),
+                consumo_predicho_litros=_decimal(ruta["consumo_predicho"]),
+                carga_inicio_kg=item["carga_inicio_kg"],
+                score_optimizacion=_decimal(ruta["score"]),
+                modelo_ia=modelo.get("modelo", "Random Forest Regressor"),
+                detalle_prediccion=detalle_prediccion,
+            )
+            tramo.ruta_seleccionada = opcion
+            tramo.save(update_fields=["ruta_seleccionada"])
+
+            for entrega in item["entregas"]:
+                EntregaTramoViaje.objects.create(
+                    tramo=tramo,
+                    detalle_carga=entrega["detalle"],
+                    producto_nombre=entrega["producto_nombre"],
+                    marca_producto=entrega["marca_producto"],
+                    presentacion_producto=entrega["presentacion_producto"],
+                    cantidad_entregada=entrega["cantidad"],
+                    peso_unitario_kg=entrega["peso_unitario_kg"],
+                )
+
+            total_distancia += _decimal(ruta["distancia_km"])
+            total_tiempo += _decimal(ruta["tiempo_min"])
+            total_consumo += _decimal(ruta["consumo_predicho"])
+            total_costo += _decimal(ruta["costo_estimado"])
+
+        viaje.distancia_estimada_total_km = total_distancia
+        viaje.tiempo_estimado_total_min = total_tiempo
+        viaje.consumo_estimado_total_l = total_consumo
+        viaje.costo_estimado_total = total_costo
+        viaje.carga_final_kg = carga_actual_kg
+        viaje.save(update_fields=[
+            "distancia_estimada_total_km",
+            "tiempo_estimado_total_min",
+            "consumo_estimado_total_l",
+            "costo_estimado_total",
+            "carga_final_kg",
+        ])
+
+    messages.success(request, "Tramos generales calculados en secuencia con la ruta recomendada de cada tramo.")
+    return redirect("admin_detalle_tramos_generales", id_viaje=viaje.id_viaje)
+
+
+
+def _coords_general_limpias(coords):
+    """Convierte una geometría JSON almacenada en pares [lat, lon] válidos."""
+    salida = []
+    for punto in coords or []:
+        try:
+            lat = float(punto[0])
+            lon = float(punto[1])
+        except (TypeError, ValueError, IndexError):
+            continue
+        if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+            continue
+        actual = [lat, lon]
+        if not salida or distancia_aprox_metros(
+            salida[-1][0], salida[-1][1], actual[0], actual[1]
+        ) > 0.35:
+            salida.append(actual)
+    return salida
+
+
+def _rutas_generales_guardadas_continuas(tramos, tolerancia_m=8.0):
+    """Valida y normaliza las geometrías guardadas de un plan general.
+
+    Los cálculos antiguos podían conservar geometrías con extremos mal orientados
+    o con un salto entre dos tramos. Esta función nunca inventa una recta: solo
+    acepta la geometría si todos los tramos se tocan físicamente y sus extremos
+    coinciden con los extremos viales almacenados.
+    """
+    rutas = []
+    fin_anterior = None
+
+    ordenes = [int(tramo.orden) for tramo in tramos]
+    if ordenes and ordenes != list(range(1, len(ordenes) + 1)):
+        return None
+
+    for indice_tramo, tramo in enumerate(tramos):
+        coords = _coords_general_limpias(tramo.geometria_ruta or [])
+        if len(coords) < 2:
+            return None
+
+        origen = [float(tramo.origen_latitud), float(tramo.origen_longitud)]
+        destino = [float(tramo.destino_latitud), float(tramo.destino_longitud)]
+
+        directo = (
+            distancia_aprox_metros(coords[0][0], coords[0][1], origen[0], origen[1])
+            + distancia_aprox_metros(coords[-1][0], coords[-1][1], destino[0], destino[1])
+        )
+        inverso = (
+            distancia_aprox_metros(coords[-1][0], coords[-1][1], origen[0], origen[1])
+            + distancia_aprox_metros(coords[0][0], coords[0][1], destino[0], destino[1])
+        )
+        if inverso + 0.5 < directo:
+            coords.reverse()
+
+        if distancia_aprox_metros(coords[0][0], coords[0][1], origen[0], origen[1]) > tolerancia_m:
+            return None
+        if distancia_aprox_metros(coords[-1][0], coords[-1][1], destino[0], destino[1]) > tolerancia_m:
+            return None
+
+        # Además del extremo vial almacenado, valida el punto que el usuario
+        # marcó originalmente. Así un cálculo viejo que se enganchó a una calle
+        # demasiado lejana se considera dañado y se reconstruye para la vista.
+        detalle = tramo.detalle_prediccion or {}
+        plan_general = detalle.get("plan_general", {}) if isinstance(detalle, dict) else {}
+        destino_original = plan_general.get("destino_original")
+        if isinstance(destino_original, (list, tuple)) and len(destino_original) >= 2:
+            try:
+                if distancia_aprox_metros(
+                    coords[-1][0], coords[-1][1],
+                    float(destino_original[0]), float(destino_original[1]),
+                ) > 95.0:
+                    return None
+            except (TypeError, ValueError, IndexError):
+                pass
+        if indice_tramo == 0:
+            origen_original = plan_general.get("origen_original")
+            if isinstance(origen_original, (list, tuple)) and len(origen_original) >= 2:
+                try:
+                    if distancia_aprox_metros(
+                        coords[0][0], coords[0][1],
+                        float(origen_original[0]), float(origen_original[1]),
+                    ) > 95.0:
+                        return None
+                except (TypeError, ValueError, IndexError):
+                    pass
+
+        # Detecta saltos internos anómalos. Un tramo urbano normal puede tener
+        # puntos separados, pero no debe teletransportarse cientos de metros.
+        for a, b in zip(coords[:-1], coords[1:]):
+            if distancia_aprox_metros(a[0], a[1], b[0], b[1]) > 350.0:
+                return None
+
+        if fin_anterior is not None:
+            separacion = distancia_aprox_metros(
+                fin_anterior[0], fin_anterior[1], coords[0][0], coords[0][1]
+            )
+            if separacion > tolerancia_m:
+                return None
+            # El mismo punto se reutiliza literalmente para que Google Maps no
+            # muestre una grieta de uno o dos píxeles entre colores.
+            coords[0] = list(fin_anterior)
+
+        rutas.append(coords)
+        fin_anterior = list(coords[-1])
+
+    return rutas
+
+
+def _puntos_originales_plan_general(tramos):
+    """Recupera la secuencia que el administrador marcó originalmente."""
+    if not tramos:
+        return []
+
+    def _par(valor, defecto):
+        try:
+            if isinstance(valor, (list, tuple)) and len(valor) >= 2:
+                lat = float(valor[0])
+                lon = float(valor[1])
+                if -90 <= lat <= 90 and -180 <= lon <= 180:
+                    return [lat, lon]
+        except (TypeError, ValueError, IndexError):
+            pass
+        return list(defecto)
+
+    primero = tramos[0]
+    detalle_primero = primero.detalle_prediccion or {}
+    plan_primero = detalle_primero.get("plan_general", {}) if isinstance(detalle_primero, dict) else {}
+    origen_defecto = [float(primero.origen_latitud), float(primero.origen_longitud)]
+    puntos = [{
+        "numero": int(primero.orden) - 1,
+        "nombre": primero.origen_nombre,
+        "coords": _par(plan_primero.get("origen_original"), origen_defecto),
+    }]
+
+    for tramo in tramos:
+        detalle = tramo.detalle_prediccion or {}
+        plan_general = detalle.get("plan_general", {}) if isinstance(detalle, dict) else {}
+        destino_defecto = [float(tramo.destino_latitud), float(tramo.destino_longitud)]
+        puntos.append({
+            "numero": int(tramo.orden),
+            "nombre": tramo.destino_nombre,
+            "coords": _par(plan_general.get("destino_original"), destino_defecto),
+        })
+    return puntos
+
+
+def _reconstruir_rutas_generales_visuales(tramos):
+    """Reconstruye solo la geometría visual de planes antiguos dañados.
+
+    Usa la misma red dirigida y Dijkstra, pero sin consultar APIs externas ni
+    alterar distancias, consumos o costos guardados. El objetivo es reparar la
+    visualización histórica cuando la geometría vieja quedó partida.
+    """
+    puntos = _puntos_originales_plan_general(tramos)
+    if len(puntos) != len(tramos) + 1:
+        return None
+
+    grafo = construir_grafo_con_costos({})
+    rutas = []
+    continuidad = None
+    fin_anterior = None
+
+    for indice, tramo in enumerate(tramos):
+        origen_original = puntos[indice]["coords"]
+        destino_original = puntos[indice + 1]["coords"]
+
+        if continuidad:
+            enganche = _seleccionar_enganche_general_continuo(
+                continuidad_origen=continuidad,
+                lat_destino=destino_original[0],
+                lon_destino=destino_original[1],
+                grafo=grafo,
+            )
+        else:
+            enganche = _seleccionar_enganche_general_inicial(
+                lat_origen=origen_original[0],
+                lon_origen=origen_original[1],
+                lat_destino=destino_original[0],
+                lon_destino=destino_original[1],
+                grafo=grafo,
+            )
+
+        if not enganche:
+            return None
+
+        if enganche.get("ruta_directa"):
+            ruta_ids = []
+            distancia_base_km = float(enganche["tramo_directo"].distancia_km or 0) * float(
+                enganche.get("fraccion_directa", 0.0)
+            )
+        else:
+            ruta_ids, _ = dijkstra(
+                grafo,
+                enganche["nodo_origen"].id_nodo,
+                enganche["nodo_destino"].id_nodo,
+            )
+            if not ruta_ids:
+                return None
+            distancia_base_km = metricas_avanzadas_ruta(ruta_ids)["distancia_km"]
+            parciales = metricas_parciales_enganche(enganche)
+            distancia_base_km += float(parciales.get("distancia_km", 0.0))
+
+        coords = _construir_geometria_general_segura(ruta_ids, enganche)
+        if not _geometria_general_valida(
+            coords,
+            enganche["origen"]["punto_ajustado"],
+            enganche["destino"]["punto_ajustado"],
+            distancia_base_km,
+        ):
+            return None
+
+        if fin_anterior is not None:
+            separacion = distancia_aprox_metros(
+                fin_anterior[0], fin_anterior[1], coords[0][0], coords[0][1]
+            )
+            if separacion > 3.0:
+                return None
+            coords[0] = list(fin_anterior)
+
+        rutas.append(coords)
+        fin_anterior = list(coords[-1])
+        continuidad = {
+            "tramo_id": int(enganche["destino"]["tramo"].pk),
+            "lat": float(enganche["destino"]["punto_ajustado"][0]),
+            "lon": float(enganche["destino"]["punto_ajustado"][1]),
+            "fraccion_proyeccion": float(
+                enganche["destino"].get("fraccion_proyeccion", 0.0)
+            ),
+        }
+
+    return rutas
+
+
+def _puntos_visuales_desde_rutas(tramos, rutas):
+    """Crea marcadores exactamente en los extremos de la geometría mostrada."""
+    puntos = []
+    if not tramos or not rutas:
+        return puntos
+
+    primera = rutas[0]
+    if not primera:
+        return puntos
+    puntos.append({
+        "numero": int(tramos[0].orden) - 1,
+        "nombre": tramos[0].origen_nombre,
+        "lat": float(primera[0][0]),
+        "lon": float(primera[0][1]),
+    })
+
+    for tramo, coords in zip(tramos, rutas):
+        if not coords:
+            continue
+        puntos.append({
+            "numero": int(tramo.orden),
+            "nombre": tramo.destino_nombre,
+            "lat": float(coords[-1][0]),
+            "lon": float(coords[-1][1]),
+        })
+    return puntos
+
+def admin_detalle_tramos_generales(request, id_viaje):
+    administrador = _administrador_actual(request)
+    if not administrador:
+        return redirect("login")
+    try:
+        viaje = (
+            Viaje.objects
+            .select_related("usuario", "vehiculo", "plan_carga", "administrador_ejecutor")
+            .get(
+                id_viaje=id_viaje,
+                es_plan_general=True,
+                administrador_ejecutor=administrador,
+            )
+        )
+    except Viaje.DoesNotExist:
+        messages.error(request, "El plan general solicitado no existe.")
+        return redirect("admin_tramos_generales")
+
+    tramos = list(
+        viaje.tramos
+        .select_related("ruta_seleccionada")
+        .prefetch_related("entregas_realizadas")
+        .order_by("orden")
+    )
+    # Primero se intenta usar exactamente la ruta recomendada que quedó
+    # guardada. Si corresponde a un cálculo antiguo con geometría partida, se
+    # reconstruye SOLO la línea visual sobre la misma red vial para evitar
+    # fragmentos flotantes en el mapa. Los cálculos y métricas históricas no se
+    # modifican.
+    rutas_json = _rutas_generales_guardadas_continuas(tramos)
+    ruta_visual_reparada = False
+    if rutas_json is None and tramos:
+        rutas_json = _reconstruir_rutas_generales_visuales(tramos)
+        ruta_visual_reparada = rutas_json is not None
+    if rutas_json is None:
+        rutas_json = [_coords_general_limpias(tramo.geometria_ruta or []) for tramo in tramos]
+
+    puntos = _puntos_visuales_desde_rutas(tramos, rutas_json)
+
+    return render(request, "administrador/rutas/detalle_tramos_generales.html", {
+        "viaje": viaje,
+        "tramos": tramos,
+        "rutas_json": json.dumps(rutas_json),
+        "puntos_json": json.dumps(puntos),
+        "ruta_visual_reparada": ruta_visual_reparada,
+        "google_maps_api_key": settings.GOOGLE_MAPS_API_KEY,
+    })
+
+
+@require_GET
+def admin_pdf_tramos_generales(request, id_viaje):
+    administrador = _administrador_actual(request)
+    if not administrador:
+        return redirect("login")
+    try:
+        viaje = Viaje.objects.select_related(
+            "usuario", "vehiculo", "plan_carga", "administrador_ejecutor"
+        ).get(
+            id_viaje=id_viaje,
+            es_plan_general=True,
+            administrador_ejecutor=administrador,
+        )
+    except Viaje.DoesNotExist:
+        messages.error(request, "El plan general solicitado no existe.")
+        return redirect("admin_tramos_generales")
+
+    tramos = _tramos_para_pdf(viaje)
+    rutas_pdf = _rutas_generales_guardadas_continuas(tramos)
+    if rutas_pdf is None and tramos:
+        rutas_pdf = _reconstruir_rutas_generales_visuales(tramos)
+    if rutas_pdf:
+        # Solo se sustituye en memoria para el dibujo del PDF; no se alteran
+        # los registros históricos ni sus métricas.
+        for tramo, coords in zip(tramos, rutas_pdf):
+            tramo.geometria_ruta = coords
+
+    unidad = _unidad_combustible_pdf(request)
+    contenido = construir_pdf_viaje(viaje, tramos, unidad_combustible=unidad)
+    _respaldar_pdf_seguro(viaje, contenido, unidad)
+    respuesta = HttpResponse(contenido, content_type="application/pdf")
+    sufijo_unidad = "galones" if unidad == "GALONES" else "litros"
+    respuesta["Content-Disposition"] = (
+        f'attachment; filename="tramos_generales_{viaje.id_viaje}_{sufijo_unidad}.pdf"'
+    )
+    return respuesta
+
 def admin_planificacion_rutas(request):
     administrador = _administrador_actual(request)
     if not administrador:
@@ -2074,12 +3629,17 @@ def admin_reportes_viajes(request):
     if estado in {valor for valor, _ in Viaje.ESTADOS}:
         viajes = viajes.filter(estado=estado)
     if tipo == "PRUEBA":
-        viajes = viajes.filter(es_prueba_administrativa=True).filter(
+        viajes = viajes.filter(es_prueba_administrativa=True, es_plan_general=False).filter(
+            Q(administrador_ejecutor=administrador)
+            | Q(administrador_ejecutor__isnull=True)
+        )
+    elif tipo == "GENERAL":
+        viajes = viajes.filter(es_plan_general=True).filter(
             Q(administrador_ejecutor=administrador)
             | Q(administrador_ejecutor__isnull=True)
         )
     elif tipo == "OPERATIVO":
-        viajes = viajes.filter(es_prueba_administrativa=False)
+        viajes = viajes.filter(es_prueba_administrativa=False, es_plan_general=False)
 
     resumen = viajes.aggregate(
         distancia=Sum("distancia_estimada_total_km"),
@@ -2109,8 +3669,9 @@ def admin_reportes_viajes(request):
             "tipo": tipo,
         },
         "total_viajes": viajes.count(),
-        "total_pruebas": viajes.filter(es_prueba_administrativa=True).count(),
-        "total_operativos": viajes.filter(es_prueba_administrativa=False).count(),
+        "total_pruebas": viajes.filter(es_prueba_administrativa=True, es_plan_general=False).count(),
+        "total_operativos": viajes.filter(es_prueba_administrativa=False, es_plan_general=False).count(),
+        "total_generales": viajes.filter(es_plan_general=True).count(),
     })
 
 

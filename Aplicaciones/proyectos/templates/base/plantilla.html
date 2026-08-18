@@ -26,7 +26,7 @@
   <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
   <link href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-fileinput@5.5.3/css/fileinput.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/base/usuario.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base/usuario.css' %}?v=19">
   <link rel="stylesheet" href="{% static 'css/base/branding.css' %}">
   {% block extra_css %}{% endblock %}
 </head>
@@ -53,7 +53,7 @@
             </button>
 
             <div
-                class="offcanvas offcanvas-end text-bg-dark"
+                class="offcanvas offcanvas-end text-bg-dark{% if request.session.ruta_admin_modo %} admin-route-offcanvas{% endif %}"
                 tabindex="-1"
                 id="offcanvasUsuario"
                 aria-labelledby="offcanvasUsuarioLabel"
@@ -70,59 +70,108 @@
 
                 <div class="offcanvas-body">
                     {% if request.session.ruta_admin_modo %}
-                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/adminpanel/">
+                    <ul class="admin-route-menu">
+                        <li class="admin-route-menu-item">
+                            <a class="admin-route-menu-link" id="routeAdminMenuInicio" href="/adminpanel/">
                                 <i class="bi bi-house-door"></i>
-                                Inicio
+                                <span>Inicio</span>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/listadousuario/">
+                        <li class="admin-route-menu-item">
+                            <a class="admin-route-menu-link" id="routeAdminMenuUsuarios" href="/listadousuario/">
                                 <i class="bi bi-people"></i>
-                                Control de Usuarios
+                                <span>Control de Usuarios</span>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/listadocarros/">
+                        <li class="admin-route-menu-item">
+                            <a class="admin-route-menu-link" id="routeAdminMenuVehiculos" href="/listadocarros/">
                                 <i class="bi bi-car-front-fill"></i>
-                                Administración de Vehículos
+                                <span>Administración de Vehículos</span>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/productos-carga/">
-                                <i class="bi bi-grid"></i>
-                                Catálogo de Productos
-                            </a>
+
+                        <li class="admin-route-menu-group" data-route-admin-menu-group="gestion">
+                            <button type="button" class="admin-route-menu-group-toggle" aria-expanded="false">
+                                <span class="admin-route-menu-group-title">
+                                    <i class="bi bi-grid"></i>
+                                    <span>Gestión</span>
+                                </span>
+                                <i class="bi bi-chevron-down admin-route-menu-chevron"></i>
+                            </button>
+                            <ul class="admin-route-menu-subgroup" hidden>
+                                <li>
+                                    <a class="admin-route-menu-link admin-route-menu-sublink" id="routeAdminMenuProductos" href="/productos-carga/">
+                                        <i class="bi bi-box-seam"></i>
+                                        <span>Catálogo de Productos</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="admin-route-menu-link admin-route-menu-sublink" id="routeAdminMenuCombustible" href="{% url 'precioscombustibleadmin' %}">
+                                        <i class="bi bi-fuel-pump-fill"></i>
+                                        <span>Precios de Combustible</span>
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/plan-cargas/">
-                                <i class="bi bi-box-seam"></i>
-                                Planificación de Cargas
-                            </a>
+
+                        <li class="admin-route-menu-group" data-route-admin-menu-group="operacion">
+                            <button type="button" class="admin-route-menu-group-toggle" aria-expanded="false">
+                                <span class="admin-route-menu-group-title">
+                                    <i class="bi bi-diagram-3"></i>
+                                    <span>Operación</span>
+                                </span>
+                                <i class="bi bi-chevron-down admin-route-menu-chevron"></i>
+                            </button>
+                            <ul class="admin-route-menu-subgroup" hidden>
+                                <li>
+                                    <a class="admin-route-menu-link admin-route-menu-sublink" id="routeAdminMenuPlanCargas" href="/plan-cargas/">
+                                        <i class="bi bi-box-seam"></i>
+                                        <span>Planificación de Cargas</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="admin-route-menu-link admin-route-menu-sublink" id="routeAdminMenuConsultaCargas" href="{% url 'consultacargasadmin' %}">
+                                        <i class="bi bi-calendar3"></i>
+                                        <span>Consulta de Cargas</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="admin-route-menu-link admin-route-menu-sublink" id="routeAdminMenuTramos" href="{% url 'admin_tramos_generales' %}">
+                                        <i class="bi bi-signpost-2"></i>
+                                        <span>Tramos Generales</span>
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'precioscombustibleadmin' %}">
-                                <i class="bi bi-fuel-pump-fill"></i>
-                                Precios de Combustible
-                            </a>
+
+                        <li class="admin-route-menu-group" data-route-admin-menu-group="pruebas">
+                            <button type="button" class="admin-route-menu-group-toggle" aria-expanded="false">
+                                <span class="admin-route-menu-group-title">
+                                    <i class="bi bi-bezier2"></i>
+                                    <span>Pruebas</span>
+                                </span>
+                                <i class="bi bi-chevron-down admin-route-menu-chevron"></i>
+                            </button>
+                            <ul class="admin-route-menu-subgroup" hidden>
+                                <li>
+                                    <a class="admin-route-menu-link admin-route-menu-sublink" id="routeAdminMenuPlanificacion" href="{% url 'admin_planificacion_rutas' %}">
+                                        <i class="bi bi-signpost-split"></i>
+                                        <span>Planificaciones de Prueba</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="admin-route-menu-link admin-route-menu-sublink" id="routeAdminMenuReportes" href="{% url 'admin_reportes_viajes' %}?tipo=PRUEBA">
+                                        <i class="bi bi-file-earmark-bar-graph"></i>
+                                        <span>Reportes de Pruebas</span>
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'admin_planificacion_rutas' %}">
-                                <i class="bi bi-signpost-split"></i>
-                                Planificaciones de Prueba
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'admin_reportes_viajes' %}?tipo=PRUEBA">
-                                <i class="bi bi-file-earmark-bar-graph"></i>
-                                Reportes de Pruebas
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/logout/">
+
+                        <li class="admin-route-menu-item">
+                            <a class="admin-route-menu-link admin-route-logout" href="/logout/">
                                 <i class="bi bi-box-arrow-right"></i>
-                                Cerrar Sesión
+                                <span>Cerrar Sesión</span>
                             </a>
                         </li>
                     </ul>
@@ -210,7 +259,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-fileinput@5.5.3/js/locales/es.js"></script>
   <script src="{% static 'js/base/single_submit.js' %}"></script>
   <script src="{% static 'js/base/tab_lock.js' %}"></script>
-  <script src="{% static 'js/base/usuario.js' %}"></script>
+  <script src="{% static 'js/base/usuario.js' %}?v=19"></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

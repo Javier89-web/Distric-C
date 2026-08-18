@@ -1,7 +1,16 @@
 $(document).ready(function () {
     const LITROS_POR_GALON = 3.785411784;
     const $inputs = $(".fuel-input-wrap input");
+    const $nota = $("#nota_ajuste");
+    const $contadorNota = $("#fuelNoteCounter");
     let unidad = $("input[name='unidad_precio']:checked").val() || "GALON";
+
+    function actualizarContadorNota() {
+        if ($contadorNota.length) $contadorNota.text(String(($nota.val() || "").length));
+    }
+
+    $nota.on("input", actualizarContadorNota);
+    actualizarContadorNota();
 
     function numero(value) {
         const n = Number(String(value || "").replace(",", "."));
@@ -84,18 +93,71 @@ $(document).ready(function () {
             precio_EXTRA: {required:true, number:true, min:0.0001, max:1000},
             precio_DIESEL: {required:true, number:true, min:0.0001, max:1000},
             precio_SUPER: {required:true, number:true, min:0.0001, max:1000},
-            precio_ECOPAIS: {required:true, number:true, min:0.0001, max:1000}
+            precio_ECOPAIS: {required:true, number:true, min:0.0001, max:1000},
+            nota_ajuste: {required:true, maxlength:500}
         },
         messages: {
             precio_EXTRA: "Ingrese un precio válido",
             precio_DIESEL: "Ingrese un precio válido",
             precio_SUPER: "Ingrese un precio válido",
-            precio_ECOPAIS: "Ingrese un precio válido"
+            precio_ECOPAIS: "Ingrese un precio válido",
+            nota_ajuste: {required: "Agrega una nota antes de guardar los cambios", maxlength: "La nota no puede superar 500 caracteres"}
         },
-        errorPlacement: function (error, element) { error.insertAfter(element.closest(".fuel-input-wrap")); },
-        submitHandler: function (form) {
-            $("#btnGuardarPrecios").prop("disabled", true).html('<span class="spinner-border spinner-border-sm"></span> Guardando...');
-            form.submit();
+        errorPlacement: function (error, element) {
+            if (element.attr("name") === "nota_ajuste") error.insertAfter(element);
+            else error.insertAfter(element.closest(".fuel-input-wrap"));
+        },
+        submitHandler: function (form, event) {
+            if (event && typeof event.preventDefault === "function") event.preventDefault();
+
+            const nota = String($nota.val() || "").trim();
+            const boton = document.getElementById("btnGuardarPrecios");
+
+            function enviarFormulario() {
+                if (window.DistricSubmitGuard && typeof window.DistricSubmitGuard.submit === "function") {
+                    window.DistricSubmitGuard.submit(form, "Guardando...", boton);
+                    return;
+                }
+                $(boton).prop("disabled", true).html('<span class="spinner-border spinner-border-sm"></span> Guardando...');
+                HTMLFormElement.prototype.submit.call(form);
+            }
+
+            if (!nota) {
+                if (window.Swal) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Falta la nota del ajuste",
+                        text: "Escribe el motivo del cambio antes de guardar los precios.",
+                        confirmButtonColor: "#d71920",
+                        confirmButtonText: "Entendido"
+                    }).then(function () { $nota.trigger("focus"); });
+                } else {
+                    $nota.trigger("focus");
+                }
+                return false;
+            }
+
+            if (window.Swal) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "¿Guardar los nuevos precios?",
+                    text: "Los nuevos cálculos utilizarán estos valores.",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d71920",
+                    cancelButtonColor: "#23262b",
+                    confirmButtonText: "Guardar cambios",
+                    cancelButtonText: "Cancelar",
+                    reverseButtons: true,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then(function (result) {
+                    if (result.isConfirmed) enviarFormulario();
+                });
+                return false;
+            }
+
+            if (window.confirm("¿Guardar los nuevos precios?")) enviarFormulario();
+            return false;
         }
     });
 });

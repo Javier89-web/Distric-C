@@ -1,0 +1,140 @@
+{% extends "base/plantillaadministrador.html" %}
+{% load static %}
+{% block titulo %}Resultado de Tramos Generales | Distric C{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/administrador/rutas/tramos_generales.css' %}?v=34">
+{% endblock %}
+
+{% block contener %}
+<main class="general-route-page">
+  <div class="general-route-container">
+    <header class="general-route-header result-header">
+      <div>
+        <span>Plan general #{{ viaje.id_viaje }}</span>
+        <h1>Recorrido recomendado</h1>
+        <p>{{ viaje.vehiculo.matricula_vehiculo }} · {{ viaje.usuario.nombre_usuario }} {{ viaje.usuario.apellido_usuario }} · Plan de carga #{{ viaje.plan_carga_id }}</p>
+      </div>
+      <div class="header-actions">
+        <a href="{% url 'admin_tramos_generales' %}" class="general-btn outline"><i class="bi bi-arrow-left"></i> Nuevo cálculo</a>
+      </div>
+    </header>
+
+    <section class="general-card result-map-card">
+      <div class="section-heading">
+        <div><h2>Mapa general</h2><p>Los números indican el orden completo de la jornada. Cada tramo muestra únicamente su ruta recomendada.</p></div>
+      </div>
+      <div id="generalResultMap" data-google-maps-key="{{ google_maps_api_key|escape }}"></div>
+    </section>
+
+    <section class="general-card general-recap-card" aria-label="Resumen estimado del recorrido">
+      <div class="section-heading recap-heading">
+        <div>
+          <h2>Resumen estimado del recorrido</h2>
+          <p>Recapitulación de toda la ruta recomendada considerando todos los tramos calculados.</p>
+        </div>
+      </div>
+      <div class="general-recap-grid">
+        <article>
+          <span class="recap-icon"><i class="bi bi-signpost-split"></i></span>
+          <div><span>Tramos calculados</span><strong>{{ viaje.numero_tramos }}</strong></div>
+        </article>
+        <article>
+          <span class="recap-icon"><i class="bi bi-map"></i></span>
+          <div><span>Distancia estimada</span><strong>{{ viaje.distancia_estimada_total_km|floatformat:2 }} km</strong></div>
+        </article>
+        <article>
+          <span class="recap-icon"><i class="bi bi-clock"></i></span>
+          <div><span>Tiempo estimado</span><strong>{{ viaje.tiempo_estimado_total_min|floatformat:1 }} min</strong></div>
+        </article>
+        <article>
+          <span class="recap-icon recap-icon-red"><i class="bi bi-fuel-pump"></i></span>
+          <div><span>Combustible estimado</span><strong>{{ viaje.consumo_estimado_total_l|floatformat:2 }} L</strong></div>
+        </article>
+        <article>
+          <span class="recap-icon"><i class="bi bi-cash-coin"></i></span>
+          <div><span>Costo estimado</span><strong>${{ viaje.costo_estimado_total|floatformat:2 }}</strong></div>
+        </article>
+        <article>
+          <span class="recap-icon"><i class="bi bi-box-seam"></i></span>
+          <div><span>Carga inicial</span><strong>{{ viaje.carga_inicial_kg|floatformat:2 }} kg</strong></div>
+        </article>
+        <article>
+          <span class="recap-icon"><i class="bi bi-box2-heart"></i></span>
+          <div><span>Carga restante</span><strong>{{ viaje.carga_final_kg|floatformat:2 }} kg</strong></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="general-card segments-card">
+      <div class="section-heading"><div><h2>Detalle por tramo</h2><p>Selecciona un tramo para consultar sus valores sin extender toda la página.</p></div></div>
+
+      {% if tramos %}
+      <div class="result-segment-tabs" role="tablist" aria-label="Tramos calculados">
+        {% for tramo in tramos %}
+        <button type="button"
+                class="result-segment-tab{% if forloop.first %} active{% endif %}"
+                data-result-segment-tab="{{ forloop.counter0 }}"
+                role="tab"
+                aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+          <span>Tramo</span>
+          <strong>{{ tramo.orden|add:'-1' }} → {{ tramo.orden }}</strong>
+        </button>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="segments-list result-segments-list">
+        {% for tramo in tramos %}
+        <article class="segment-row result-segment-panel"
+                 data-result-segment-panel="{{ forloop.counter0 }}"
+                 {% if not forloop.first %}hidden{% endif %}>
+          <div class="segment-route">
+            <span class="segment-number">{{ tramo.orden|add:'-1' }}</span>
+            <div><strong>Punto {{ tramo.orden|add:'-1' }} → {{ tramo.orden }}</strong><small>{{ tramo.origen_nombre }} → {{ tramo.destino_nombre }}</small></div>
+          </div>
+          <div class="segment-metrics">
+            <div><span>Distancia</span><strong>{{ tramo.distancia_estimada_km|floatformat:2 }} km</strong></div>
+            <div><span>Tiempo</span><strong>{{ tramo.tiempo_estimado_min|floatformat:1 }} min</strong></div>
+            <div><span>Combustible</span><strong>{{ tramo.consumo_estimado_l|floatformat:2 }} L</strong></div>
+            <div><span>Carga inicial</span><strong>{{ tramo.carga_inicio_kg|floatformat:2 }} kg</strong></div>
+            <div><span>Entregado</span><strong>{{ tramo.peso_entregado_kg|floatformat:2 }} kg</strong></div>
+            <div><span>Restante</span><strong>{{ tramo.carga_restante_kg|floatformat:2 }} kg</strong></div>
+          </div>
+          {% if tramo.entregas_realizadas.all %}
+          <div class="segment-deliveries">
+            {% for entrega in tramo.entregas_realizadas.all %}
+            <span>{{ entrega.cantidad_entregada }} × {{ entrega.producto_nombre }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="general-card general-pdf-card" aria-label="Descargar informe consolidado">
+      <div class="general-pdf-copy">
+        <span>Informe consolidado</span>
+        <h2>Descargar recorrido completo en PDF</h2>
+        <p>Incluye el mapa general, la secuencia numerada y el detalle de cada tramo. Al descargarlo se respalda automáticamente en Cloudinary.</p>
+      </div>
+      <form method="get" action="{% url 'admin_pdf_tramos_generales' viaje.id_viaje %}" class="general-pdf-form">
+        <label for="generalPdfUnit">Combustible</label>
+        <select name="unidad" id="generalPdfUnit" aria-label="Unidad de combustible del PDF">
+          <option value="LITROS">Litros (L)</option>
+          <option value="GALONES">Galones (US)</option>
+        </select>
+        <button type="submit" class="general-btn red">
+          <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
+        </button>
+      </form>
+    </section>
+  </div>
+</main>
+<script id="generalResultRoutes" type="application/json">{{ rutas_json|safe }}</script>
+<script id="generalResultPoints" type="application/json">{{ puntos_json|safe }}</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pages/administrador/rutas/tramos_generales_resultado.js' %}?v=29" defer></script>
+{% endblock %}

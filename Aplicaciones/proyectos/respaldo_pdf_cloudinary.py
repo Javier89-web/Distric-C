@@ -42,10 +42,14 @@ def respaldar_pdf_viaje(viaje, contenido: bytes, unidad_combustible='LITROS') ->
 
     _configurar_cloudinary()
 
-    etiqueta = 'prueba' if getattr(viaje, 'es_prueba_administrativa', False) else 'viaje'
+    if getattr(viaje, 'es_plan_general', False):
+        etiqueta = 'tramos_generales'
+        carpeta = f'distric_c/reportes/tramos_generales/{viaje.id_viaje}'
+    else:
+        etiqueta = 'prueba' if getattr(viaje, 'es_prueba_administrativa', False) else 'viaje'
+        carpeta = f'distric_c/reportes/viajes/{viaje.id_viaje}'
     sufijo = 'galones' if unidad == 'GALONES' else 'litros'
     nombre_archivo = f'{etiqueta}_{viaje.id_viaje}_distric_c_{sufijo}.pdf'
-    carpeta = f'distric_c/reportes/viajes/{viaje.id_viaje}'
 
     resultado = cloudinary.uploader.upload(
         io.BytesIO(contenido),

@@ -1,7 +1,7 @@
 {% extends "base/plantillaadministrador.html" %}
 {% load static %}
 
-{% block titulo %}Reportes de Pruebas | Distric C{% endblock %}
+{% block titulo %}{% if filtros.tipo == 'GENERAL' %}Tramos Generales{% elif filtros.tipo == 'PRUEBA' %}Reportes de Pruebas{% else %}Reportes de Viajes{% endif %} | Distric C{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/administrador/rutas/reportes_viajes.css' %}">
@@ -13,13 +13,20 @@
         <header class="reports-header">
             <div>
                 <span>CONTROL CONSOLIDADO</span>
-                <h1>{% if filtros.tipo == 'PRUEBA' %}Reportes de Pruebas{% else %}Reportes de Viajes{% endif %}</h1>
-                <p>{% if filtros.tipo == 'PRUEBA' %}Consulta las simulaciones administrativas guardadas y descarga sus informes.{% else %}Consulta recorridos por fecha, conductor, vehículo, estado y tipo de registro.{% endif %}</p>
+                <h1>{% if filtros.tipo == 'PRUEBA' %}Reportes de Pruebas{% elif filtros.tipo == 'GENERAL' %}Tramos Generales{% else %}Reportes de Viajes{% endif %}</h1>
+                <p>{% if filtros.tipo == 'PRUEBA' %}Consulta las simulaciones administrativas guardadas y descarga sus informes.{% elif filtros.tipo == 'GENERAL' %}Consulta los recorridos consolidados calculados por tramos y descarga sus informes.{% else %}Consulta recorridos por fecha, conductor, vehículo, estado y tipo de registro.{% endif %}</p>
             </div>
+            {% if filtros.tipo == 'GENERAL' %}
+            <a href="{% url 'admin_tramos_generales' %}" class="reports-btn reports-btn-dark">
+                <i class="bi bi-arrow-left"></i>
+                Tramos generales
+            </a>
+            {% else %}
             <a href="{% url 'admin_planificacion_rutas' %}" class="reports-btn reports-btn-dark">
                 <i class="bi bi-arrow-left"></i>
                 Planificar prueba
             </a>
+            {% endif %}
         </header>
 
         <section class="reports-workspace">
@@ -32,6 +39,19 @@
                 <article>
                     <span>Pruebas administrativas</span>
                     <strong>{{ total_pruebas }}</strong>
+                </article>
+                <article>
+                    <span>Distancia estimada</span>
+                    <strong>{{ resumen.distancia|default:0|floatformat:2 }} km</strong>
+                </article>
+                <article>
+                    <span>Combustible estimado</span>
+                    <strong>{{ resumen.combustible|default:0|floatformat:2 }} L</strong>
+                </article>
+                {% elif filtros.tipo == 'GENERAL' %}
+                <article>
+                    <span>Planes generales</span>
+                    <strong>{{ total_viajes }}</strong>
                 </article>
                 <article>
                     <span>Distancia estimada</span>
@@ -66,7 +86,7 @@
                         <p>Combina la fecha con el conductor, vehículo, tipo o estado.</p>
                     </div>
                     {% if filtros.fecha or filtros.usuario or filtros.vehiculo or filtros.estado or filtros.tipo %}
-                    <a href="{% url 'admin_reportes_viajes' %}{% if filtros.tipo == 'PRUEBA' %}?tipo=PRUEBA{% endif %}" class="reports-btn reports-btn-outline">
+                    <a href="{% url 'admin_reportes_viajes' %}{% if filtros.tipo == 'PRUEBA' %}?tipo=PRUEBA{% elif filtros.tipo == 'GENERAL' %}?tipo=GENERAL{% endif %}" class="reports-btn reports-btn-outline">
                         Limpiar filtros
                     </a>
                     {% endif %}
@@ -108,6 +128,7 @@
                             <option value="">Todos los registros</option>
                             <option value="OPERATIVO" {% if filtros.tipo == 'OPERATIVO' %}selected{% endif %}>Viaje operativo</option>
                             <option value="PRUEBA" {% if filtros.tipo == 'PRUEBA' %}selected{% endif %}>Prueba administrativa</option>
+                            <option value="GENERAL" {% if filtros.tipo == 'GENERAL' %}selected{% endif %}>Tramos generales</option>
                         </select>
                     </div>
 
@@ -163,7 +184,7 @@
                         <tr>
                             <td>
                                 <span class="report-kind {% if viaje.es_prueba_administrativa %}report-kind-test{% else %}report-kind-trip{% endif %}">
-                                    {% if viaje.es_prueba_administrativa %}PRUEBA #{{ viaje.id_viaje }}{% else %}VIAJE #{{ viaje.id_viaje }}{% endif %}
+                                    {% if viaje.es_plan_general %}GENERAL #{{ viaje.id_viaje }}{% elif viaje.es_prueba_administrativa %}PRUEBA #{{ viaje.id_viaje }}{% else %}VIAJE #{{ viaje.id_viaje }}{% endif %}
                                 </span>
                                 {% if viaje.es_prueba_administrativa and viaje.administrador_ejecutor %}
                                 <small>Por {{ viaje.administrador_ejecutor.nombre_usuario }}</small>
@@ -189,8 +210,12 @@
                             </td>
                             <td>
                                 <div class="report-actions">
+                                    {% if viaje.es_plan_general %}
+                                    <a href="{% url 'admin_detalle_tramos_generales' viaje.id_viaje %}" class="reports-btn reports-btn-dark">Ver</a>
+                                    {% else %}
                                     <a href="{% url 'admin_detalle_viaje' viaje.id_viaje %}" class="reports-btn reports-btn-dark">Ver</a>
-                                    <form method="get" action="{% url 'admin_reporte_pdf_viaje' viaje.id_viaje %}" class="pdf-unit-form pdf-unit-form-compact">
+                                    {% endif %}
+                                    <form method="get" action="{% if viaje.es_plan_general %}{% url 'admin_pdf_tramos_generales' viaje.id_viaje %}{% else %}{% url 'admin_reporte_pdf_viaje' viaje.id_viaje %}{% endif %}" class="pdf-unit-form pdf-unit-form-compact">
                                         <select name="unidad" aria-label="Unidad de combustible del PDF">
                                             <option value="LITROS">L</option>
                                             <option value="GALONES">gal</option>

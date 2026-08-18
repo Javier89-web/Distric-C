@@ -164,3 +164,54 @@
         flex-direction: column-reverse;
     }
 }
+
+/* Indicador durante el cálculo de alternativas. No modifica la lógica de rutas. */
+.route-processing-overlay{
+    position:fixed;
+    inset:0;
+    z-index:12000;
+    display:grid;
+    place-items:center;
+    padding:18px;
+    background:rgba(20,23,28,.44);
+}
+.route-processing-overlay[hidden]{display:none!important}
+.route-processing-box{
+    width:min(250px,calc(100vw - 36px));
+    padding:20px 18px;
+    color:#23262b;
+    text-align:center;
+    background:#fff;
+    border:1px solid #e1e4e8;
+    border-radius:11px;
+    box-shadow:0 16px 38px rgba(0,0,0,.16);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+}
+.route-processing-spinner{
+    width:30px;
+    height:30px;
+    margin-bottom:3px;
+    border:3px solid #f2c7ca;
+    border-top-color:#d71920;
+    border-radius:50%;
+    animation:routeProcessingSpin .75s linear infinite;
+}
+.route-processing-box strong{
+    display:block;
+    color:#20242a;
+    font-size:14px;
+    font-weight:800;
+    line-height:1.2;
+}
+.route-processing-box>span:last-child{
+    display:block;
+    color:#69717b;
+    font-size:11px;
+    line-height:1.35;
+}
+body.route-processing-active{cursor:progress}
+@keyframes routeProcessingSpin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.route-processing-spinner{animation-duration:1.4s}}

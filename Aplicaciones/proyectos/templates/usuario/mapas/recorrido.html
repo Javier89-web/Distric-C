@@ -5,7 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/rutas_base.css' %}">
-<link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/recorrido.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/usuario/mapas/recorrido.css' %}?v=3">
 {% endblock %}
 
 {% block contenido %}
@@ -100,5 +100,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/pages/usuario/mapas/recorrido.js' %}" defer></script>
+<script src="{% static 'js/pages/usuario/mapas/recorrido.js' %}?v=3" defer></script>
 {% endblock %}

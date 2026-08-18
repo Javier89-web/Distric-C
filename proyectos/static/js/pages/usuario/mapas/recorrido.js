@@ -274,13 +274,38 @@
                 ? { lat: Number(point[0]), lng: Number(point[1]) }
                 : { lat: Number(point.lat), lng: Number(point.lng) };
         });
+        const routeColor = config.dataset.colorRuta || "#2563eb";
+
+        // Doble trazo visual: borde claro + color de la alternativa.
+        // No modifica la geometría ni el cálculo; solo hace más legible el recorrido.
         new google.maps.Polyline({
             map: state.map,
             path: rawPath,
-            strokeColor: config.dataset.colorRuta || "#2563eb",
+            strokeColor: "#ffffff",
+            strokeOpacity: 0.95,
+            strokeWeight: 11,
+            zIndex: 9,
+        });
+        new google.maps.Polyline({
+            map: state.map,
+            path: rawPath,
+            strokeColor: routeColor,
             strokeOpacity: 1,
             strokeWeight: 7,
             zIndex: 10,
+            icons: [{
+                icon: {
+                    path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                    scale: 2,
+                    fillColor: routeColor,
+                    fillOpacity: 1,
+                    strokeColor: "#ffffff",
+                    strokeOpacity: 1,
+                    strokeWeight: 1,
+                },
+                offset: "8%",
+                repeat: "95px",
+            }],
         });
         new google.maps.Marker({
             map: state.map,

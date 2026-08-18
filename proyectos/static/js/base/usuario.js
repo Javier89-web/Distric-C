@@ -161,6 +161,7 @@
             ["routeAdminMenuInicio", ["/adminpanel/"]],
             ["routeAdminMenuUsuarios", ["/listadousuario/", "/nuevousuario/", "/editarusuario/"]],
             ["routeAdminMenuVehiculos", ["/listadocarros/", "/nuevocarro/", "/editarcarro/", "/vehiculos/"]],
+            ["routeAdminMenuCombustible", ["/combustible/precios/"]],
             ["routeAdminMenuProductos", ["/productos-carga/"]],
             ["routeAdminMenuPlanCargas", ["/plan-cargas/"]],
             ["routeAdminMenuConsultaCargas", ["/consulta-cargas/"]],

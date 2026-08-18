@@ -91,6 +91,13 @@
                             </a>
                         </li>
 
+                        <li class="admin-route-menu-item">
+                            <a class="admin-route-menu-link" id="routeAdminMenuCombustible" href="{% url 'precioscombustibleadmin' %}">
+                                <i class="bi bi-fuel-pump-fill"></i>
+                                <span>Precios de Combustible</span>
+                            </a>
+                        </li>
+
                         <li class="admin-route-menu-group" data-route-admin-menu-group="gestion">
                             <button type="button" class="admin-route-menu-group-toggle" aria-expanded="false">
                                 <span class="admin-route-menu-group-title">
@@ -260,7 +267,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-fileinput@5.5.3/js/locales/es.js"></script>
   <script src="{% static 'js/base/single_submit.js' %}"></script>
   <script src="{% static 'js/base/tab_lock.js' %}"></script>
-  <script src="{% static 'js/base/usuario.js' %}?v=20"></script>
+  <script src="{% static 'js/base/usuario.js' %}?v=21"></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

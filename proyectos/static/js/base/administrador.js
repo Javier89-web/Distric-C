@@ -53,6 +53,7 @@
             ["menuInicio", ["/adminpanel/"]],
             ["menuUsuarios", ["/listadousuario/", "/nuevousuario/", "/editarusuario/"]],
             ["menuVehiculos", ["/listadocarros/", "/nuevocarro/", "/editarcarro/", "/vehiculos/"]],
+            ["menuCombustible", ["/combustible/precios/"]],
             ["menuProductosCarga", ["/productos-carga/"]],
             ["menuPlanCargas", ["/plan-cargas/"]],
             ["menuConsultaCargas", ["/consulta-cargas/"]],

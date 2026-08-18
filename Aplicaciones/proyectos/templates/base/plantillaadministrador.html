@@ -127,6 +127,18 @@
               </a>
             </li>
 
+            <!-- Combustible -->
+            <li class="admin-menu-item">
+              <a
+                href="{% url 'precioscombustibleadmin' %}"
+                id="menuCombustible"
+                class="admin-menu-link"
+              >
+                <i class="bi bi-fuel-pump-fill"></i>
+                <span>Precios de Combustible</span>
+              </a>
+            </li>
+
             <!-- Gestión -->
             <li class="admin-menu-group" data-admin-menu-group="gestion">
               <button
@@ -317,7 +329,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-fileinput@5.5.3/js/locales/es.js"></script>
   <script src="{% static 'js/base/single_submit.js' %}"></script>
   <script src="{% static 'js/base/tab_lock.js' %}"></script>
-  <script src="{% static 'js/base/administrador.js' %}?v=19"></script>
+  <script src="{% static 'js/base/administrador.js' %}?v=20"></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

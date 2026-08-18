@@ -76,12 +76,19 @@
     const displayRoutes=[];
 
     routes.forEach((coords,index)=>{
-      const visiblePath=(coords||[]).map(validPoint).filter(Boolean);
+      let visiblePath=(coords||[]).map(validPoint).filter(Boolean);
       if(visiblePath.length<2){displayRoutes.push(visiblePath);return;}
 
-      // La geometría ya llega validada y reparada desde Django. No se vuelve a
-      // recortar en el navegador porque dos recortes independientes podían
-      // escoger proyecciones distintas y dejar fragmentos "flotando".
+      // Corrección exclusivamente visual: si una geometría histórica conserva
+      // una pequeña "cola" antes o después del punto numerado, la línea mostrada
+      // se recorta exactamente entre los puntos compartidos del tramo. No se
+      // modifica la ruta guardada, sus métricas ni el cálculo de Dijkstra.
+      const startStop=validPoint(points[index]);
+      const endStop=validPoint(points[index+1]);
+      if(startStop&&endStop){
+        visiblePath=clipPathToStops(visiblePath,startStop,endStop);
+      }
+
       if(displayRoutes.length){
         const previous=displayRoutes[displayRoutes.length-1];
         if(previous&&previous.length){

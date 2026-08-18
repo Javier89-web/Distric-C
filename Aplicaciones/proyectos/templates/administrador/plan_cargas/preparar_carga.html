@@ -2,7 +2,7 @@
 {% load static l10n %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/administrador/plan_cargas/preparar_carga.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/administrador/plan_cargas/preparar_carga.css' %}?v=2">
 {% endblock %}
 
 {% block contener %}
@@ -42,13 +42,31 @@
                     <article class="product-row {% if not producto.activo %}inactive{% endif %}" data-busqueda="{{ producto.nombre_producto }} {{ producto.marca_producto }} {{ producto.get_presentacion_producto_display }}">
                         <div class="product-main">
                             <strong>{{ producto.nombre_producto }}</strong>
-                            <span>{{ producto.marca_producto|default:"Sin marca" }} · {{ producto.get_presentacion_producto_display }}</span>
+                            <span>
+                                {{ producto.marca_producto|default:"Sin marca" }} ·
+                                {{ producto.get_presentacion_producto_display }} x {{ producto.unidades_por_presentacion|default:1 }}
+                                {% if producto.contenido_unitario != None and producto.unidad_contenido %}
+                                    · {{ producto.contenido_unitario_formateado }} c/u
+                                {% endif %}
+                            </span>
                         </div>
                         <div class="product-weight"><span>Peso</span><strong>{{ producto.peso_unitario_kg|floatformat:2 }} kg</strong></div>
-                        <div class="quantity-control">
-                            <button type="button" class="quantity-button restar" data-input="cantidad_{{ producto.id_producto_carga }}" aria-label="Restar">−</button>
-                            <input type="number" name="cantidad_{{ producto.id_producto_carga }}" id="cantidad_{{ producto.id_producto_carga }}" class="quantity-input cantidad-producto" value="{{ producto.cantidad_plan }}" min="0" max="9999" step="1" data-peso="{{ producto.peso_unitario_kg|unlocalize }}">
-                            <button type="button" class="quantity-button sumar" data-input="cantidad_{{ producto.id_producto_carga }}" aria-label="Sumar">+</button>
+                        <div class="quantity-area">
+                            <div class="quantity-control">
+                                <button type="button" class="quantity-button restar" data-input="cantidad_{{ producto.id_producto_carga }}" aria-label="Restar">−</button>
+                                <input type="number"
+                                       name="cantidad_{{ producto.id_producto_carga }}"
+                                       id="cantidad_{{ producto.id_producto_carga }}"
+                                       class="quantity-input cantidad-producto"
+                                       value="{{ producto.cantidad_plan }}"
+                                       min="0" max="9999" step="1"
+                                       data-peso="{{ producto.peso_unitario_kg|unlocalize }}"
+                                       data-unidades-presentacion="{{ producto.unidades_por_presentacion|default:1 }}"
+                                       data-unidad-carga="{{ producto.unidad_carga }}"
+                                       data-unidad-carga-plural="{{ producto.unidad_carga_plural }}">
+                                <button type="button" class="quantity-button sumar" data-input="cantidad_{{ producto.id_producto_carga }}" aria-label="Sumar">+</button>
+                            </div>
+                            <small class="quantity-meta" id="unidades_{{ producto.id_producto_carga }}">0 unidades</small>
                         </div>
                         <strong class="subtotal" id="subtotal_{{ producto.id_producto_carga }}">{{ producto.subtotal_plan|floatformat:2 }} kg</strong>
                     </article>
@@ -74,5 +92,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/pages/administrador/plan_cargas/preparar_carga.js' %}" defer></script>
+<script src="{% static 'js/pages/administrador/plan_cargas/preparar_carga.js' %}?v=2" defer></script>
 {% endblock %}

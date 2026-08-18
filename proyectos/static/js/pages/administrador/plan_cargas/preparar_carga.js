@@ -15,6 +15,16 @@ document.addEventListener("DOMContentLoaded", function () {
         return value;
     }
 
+    function etiquetaCantidad(input, qty) {
+        const porPresentacion = Math.max(1, parseInt(input.dataset.unidadesPresentacion || "1", 10) || 1);
+        const singular = (input.dataset.unidadCarga || "unidad").trim() || "unidad";
+        const plural = (input.dataset.unidadCargaPlural || `${singular}s`).trim() || `${singular}s`;
+        const nombrePresentacion = qty === 1 ? singular : plural;
+        const unidadesTotales = qty * porPresentacion;
+        if (porPresentacion === 1) return `${qty} ${nombrePresentacion}`;
+        return `${qty} ${nombrePresentacion} · ${unidadesTotales} unidad${unidadesTotales === 1 ? "" : "es"}`;
+    }
+
     function recalcular() {
         let pesoTotal = 0;
         let unidades = 0;
@@ -27,6 +37,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const id = input.id.replace("cantidad_", "");
             const out = document.getElementById("subtotal_" + id);
             if (out) out.textContent = subtotal.toFixed(2) + " kg";
+            const unidadesOut = document.getElementById("unidades_" + id);
+            if (unidadesOut) unidadesOut.textContent = etiquetaCantidad(input, qty);
         });
         const porcentaje = capacidad > 0 ? (pesoTotal / capacidad) * 100 : 0;
         if (barra) {
